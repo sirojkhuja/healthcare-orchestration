@@ -34,6 +34,8 @@ This document defines the request metadata contract for HTTP, jobs, and emitted 
 - Structured logs must include request, correlation, and causation identifiers.
 - Tenant identifiers may be included when safe.
 - Future tracing integrations must reuse these identifiers instead of inventing parallel request lineage fields.
+- API error responses must expose `trace_id` and `correlation_id`.
+- Until OpenTelemetry trace propagation is implemented, `trace_id` mirrors the resolved request identifier.
 
 ## Testing Requirements
 

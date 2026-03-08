@@ -15,6 +15,8 @@
 }
 ```
 
+Until full distributed tracing is implemented, `trace_id` uses the resolved request identifier.
+
 ## Global Error Codes
 
 | Code | HTTP | Meaning |

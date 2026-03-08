@@ -1,7 +1,7 @@
 <?php
 
-use App\Shared\Application\Exceptions\TenantContextException;
 use App\Shared\Infrastructure\Context\Http\Middleware\ResolveRequestMetadata;
+use App\Shared\Infrastructure\Presentation\ApiErrorResponseFactory;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\RequireTenantContext;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\ResolveTenantContext;
 use Illuminate\Foundation\Application;
@@ -24,13 +24,5 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (TenantContextException $exception, Request $request) {
-            if (! $request->expectsJson()) {
-                return null;
-            }
-
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], $exception->statusCode());
-        });
+        $exceptions->render(fn (\Throwable $exception, Request $request) => app(ApiErrorResponseFactory::class)->make($exception, $request));
     })->create();

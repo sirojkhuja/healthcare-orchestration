@@ -37,6 +37,7 @@ Track at minimum:
 - Send application exceptions to Sentry.
 - Group errors by fingerprint where practical.
 - Include tenant and correlation context when safe.
+- Until OpenTelemetry trace IDs are available, API error payloads use the current request identifier as `trace_id`.
 
 ## Centralized Logs and Dashboards
 

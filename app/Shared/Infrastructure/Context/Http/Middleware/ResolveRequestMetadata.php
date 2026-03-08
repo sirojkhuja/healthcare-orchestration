@@ -4,6 +4,7 @@ namespace App\Shared\Infrastructure\Context\Http\Middleware;
 
 use App\Shared\Application\Contracts\RequestMetadataContext;
 use App\Shared\Application\Data\RequestMetadata;
+use App\Shared\Infrastructure\Context\RequestMetadataHeaderResolver;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,11 +15,12 @@ final class ResolveRequestMetadata
 {
     public function __construct(
         private readonly RequestMetadataContext $requestMetadataContext,
+        private readonly RequestMetadataHeaderResolver $headerResolver,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
-        $headerNames = $this->headerNames();
+        $headerNames = $this->headerResolver->resolve();
         $requestId = $this->resolveInboundId($request->header($headerNames['request_id'])) ?? (string) Str::uuid();
         $correlationId = $this->resolveInboundId($request->header($headerNames['correlation_id'])) ?? $requestId;
         $causationId = $this->resolveInboundId($request->header($headerNames['causation_id'])) ?? $requestId;
@@ -49,39 +51,6 @@ final class ResolveRequestMetadata
         }
 
         return $response;
-    }
-
-    /**
-     * @return array{request_id: string, correlation_id: string, causation_id: string}
-     */
-    private function headerNames(): array
-    {
-        $headerNames = config('medflow.request_context.headers', []);
-
-        if (! is_array($headerNames)) {
-            throw new LogicException('Request metadata header configuration must be an array.');
-        }
-
-        $defaults = [
-            'request_id' => 'X-Request-Id',
-            'correlation_id' => 'X-Correlation-Id',
-            'causation_id' => 'X-Causation-Id',
-        ];
-
-        $resolved = [];
-
-        foreach ($defaults as $key => $fallback) {
-            $value = $headerNames[$key] ?? $fallback;
-
-            if (! is_string($value) || $value === '') {
-                throw new LogicException("The configured {$key} header must be a non-empty string.");
-            }
-
-            $resolved[$key] = $value;
-        }
-
-        /** @var array{request_id: non-empty-string, correlation_id: non-empty-string, causation_id: non-empty-string} $resolved */
-        return $resolved;
     }
 
     private function resolveInboundId(mixed $value): ?string
