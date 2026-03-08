@@ -36,6 +36,7 @@
 ## API Security
 
 - OAuth2 or JWT for authenticated API access
+- JWT API access uses short-lived bearer tokens plus persisted rotating refresh sessions
 - per-tenant and per-IP rate limiting
 - idempotency keys for payment creation, appointment scheduling, and webhook processing
 - standardized error payloads with trace and correlation IDs

@@ -1,0 +1,168 @@
+openapi: 3.1.1
+info:
+  title: MedFlow Identity Access Auth Fragment
+  version: 0.1.0
+paths:
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      tags: [IdentityAccess]
+      summary: Authenticate a user and issue API tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated session created
+          headers:
+            X-Request-Id:
+              schema: { type: string, format: uuid }
+            X-Correlation-Id:
+              schema: { type: string, format: uuid }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          description: Invalid credentials
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      tags: [IdentityAccess]
+      summary: Revoke the current authenticated session
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Session revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: logged_out
+        '401':
+          description: Missing or invalid bearer token
+  /api/v1/auth/refresh:
+    post:
+      operationId: refreshToken
+      tags: [IdentityAccess]
+      summary: Rotate the refresh token and issue a new access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token pair rotated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          description: Refresh token is invalid or expired
+  /api/v1/auth/me:
+    get:
+      operationId: getMe
+      tags: [IdentityAccess]
+      summary: Return the authenticated API actor
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedRequestResponse'
+        '401':
+          description: Missing or invalid bearer token
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    RefreshTokenRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+    AuthSessionResponse:
+      type: object
+      required: [user, session, tokens]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        session:
+          $ref: '#/components/schemas/SessionSummary'
+        tokens:
+          $ref: '#/components/schemas/Tokens'
+    AuthenticatedRequestResponse:
+      type: object
+      required: [user, session]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        session:
+          $ref: '#/components/schemas/SessionSummary'
+    UserSummary:
+      type: object
+      required: [id, name, email]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+    SessionSummary:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+    Tokens:
+      type: object
+      required:
+        - token_type
+        - access_token
+        - access_token_expires_at
+        - refresh_token
+        - refresh_token_expires_at
+      properties:
+        token_type:
+          type: string
+          enum: [Bearer]
+        access_token:
+          type: string
+        access_token_expires_at:
+          type: string
+          format: date-time
+        refresh_token:
+          type: string
+        refresh_token_expires_at:
+          type: string
+          format: date-time

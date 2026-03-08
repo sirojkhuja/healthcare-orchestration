@@ -14,13 +14,14 @@ The split documents in this repository are derived from that source and exist to
 4. Read [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md) before touching migrations, indexes, UUIDs, or database schema helpers.
 5. Read [caching.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/caching.md) before touching Redis usage, cache keys, or invalidation behavior.
 6. Read [messaging.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/messaging.md) before touching Kafka, the outbox, relay workers, or consumers.
-7. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
-8. Read [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) before touching policies, permissions, RBAC, or protected routes.
-9. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
-10. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
-11. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
-12. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
-13. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+7. Read [authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authentication.md) before touching login flows, JWTs, refresh tokens, sessions, or current-user resolution.
+8. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
+9. Read [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) before touching policies, permissions, RBAC, or protected routes.
+10. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
+11. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
+12. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
+13. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
+14. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
 
 ## Documentation Areas
 
@@ -44,6 +45,7 @@ The split documents in this repository are derived from that source and exist to
 - [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md)
 - [caching.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/caching.md)
 - [messaging.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/messaging.md)
+- [authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authentication.md)
 - [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md)
 - [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md)
 - [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md)
@@ -61,6 +63,7 @@ The split documents in this repository are derived from that source and exist to
 ### API
 
 - [openapi-guidelines.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi-guidelines.md)
+- [openapi/identity-access-auth.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/identity-access-auth.yaml)
 - [error-catalog.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/error-catalog.md)
 - [webhooks.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/webhooks.md)
 - [endpoint-matrix.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/endpoint-matrix.md)
@@ -77,6 +80,7 @@ The split documents in this repository are derived from that source and exist to
 - [006-idempotency-keys.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/006-idempotency-keys.md)
 - [007-postgres-schema-conventions.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/007-postgres-schema-conventions.md)
 - [008-kafka-client-selection.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/008-kafka-client-selection.md)
+- [009-jwt-api-authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/009-jwt-api-authentication.md)
 
 ## Maintenance Rule
 

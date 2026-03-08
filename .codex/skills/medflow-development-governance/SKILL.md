@@ -14,6 +14,7 @@ Read these files in order before making changes:
 3. `docs/project/progress-workflow.md`
 4. `docs/dev/coding-standards.md`
 5. `docs/dev/architecture.md`
+6. `docs/dev/authentication.md` for login, JWT, refresh-token, and session work
 
 Then read only the relevant product, API, testing, security, observability, and ADR documents for the task.
 

@@ -26,6 +26,16 @@ return [
     'audit' => [
         'retention_days' => (int) env('AUDIT_RETENTION_DAYS', 0),
     ],
+    'auth' => [
+        'access_token_ttl_minutes' => (int) env('AUTH_ACCESS_TOKEN_TTL_MINUTES', 15),
+        'refresh_token_ttl_days' => (int) env('AUTH_REFRESH_TOKEN_TTL_DAYS', 30),
+        'jwt' => [
+            'issuer' => env('AUTH_JWT_ISSUER', 'medflow'),
+            'audience' => env('AUTH_JWT_AUDIENCE', 'medflow-api'),
+            'algorithm' => env('AUTH_JWT_ALGORITHM', 'HS256'),
+            'secret' => env('AUTH_JWT_SECRET', ''),
+        ],
+    ],
     'request_context' => [
         'headers' => [
             'request_id' => env('REQUEST_ID_HEADER', 'X-Request-Id'),

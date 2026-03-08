@@ -8,9 +8,18 @@ use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Services\ContextualAuditTrailWriter;
 use App\Modules\AuditCompliance\Infrastructure\AuthAuditActorResolver;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditEventRepository;
+use App\Modules\IdentityAccess\Application\Contracts\AccessTokenService;
+use App\Modules\IdentityAccess\Application\Contracts\AuthenticatedRequestContext;
+use App\Modules\IdentityAccess\Application\Contracts\AuthSessionRepository;
+use App\Modules\IdentityAccess\Application\Contracts\IdentityUserProvider;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionAuthorizer;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionRepository;
 use App\Modules\IdentityAccess\Application\Events\PermissionProjectionInvalidated;
+use App\Modules\IdentityAccess\Infrastructure\Auth\EloquentIdentityUserProvider;
+use App\Modules\IdentityAccess\Infrastructure\Auth\FirebaseJwtAccessTokenService;
+use App\Modules\IdentityAccess\Infrastructure\Auth\JwtRequestAuthenticator;
+use App\Modules\IdentityAccess\Infrastructure\Auth\LaravelAuthenticatedRequestContext;
+use App\Modules\IdentityAccess\Infrastructure\Auth\Persistence\DatabaseAuthSessionRepository;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\CachedPermissionAuthorizer;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\NullPermissionProjectionRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
@@ -39,6 +48,8 @@ use App\Shared\Infrastructure\Storage\FilesystemFileStorageManager;
 use App\Shared\Infrastructure\Tenancy\RequestTenantContext;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
 final class MedFlowServiceProvider extends ServiceProvider
@@ -46,9 +57,13 @@ final class MedFlowServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
+        $this->app->bind(AccessTokenService::class, FirebaseJwtAccessTokenService::class);
+        $this->app->scoped(AuthenticatedRequestContext::class, LaravelAuthenticatedRequestContext::class);
+        $this->app->bind(AuthSessionRepository::class, DatabaseAuthSessionRepository::class);
         $this->app->singleton(CacheKeyBuilder::class, TenantCacheKeyBuilder::class);
         $this->app->singleton(ConsumerReceiptStore::class, DatabaseConsumerReceiptStore::class);
         $this->app->singleton(FileStorageManager::class, FilesystemFileStorageManager::class);
+        $this->app->bind(IdentityUserProvider::class, EloquentIdentityUserProvider::class);
         $this->app->bind(IdempotencyStore::class, DatabaseIdempotencyStore::class);
         $this->app->singleton(KafkaProducer::class, LongLangKafkaProducer::class);
         $this->app->singleton(OutboxRepository::class, DatabaseOutboxRepository::class);
@@ -73,6 +88,7 @@ final class MedFlowServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::shouldBeStrict($this->app->environment() !== 'production');
+        Auth::viaRequest('medflow-jwt', fn (Request $request) => $this->app->make(JwtRequestAuthenticator::class)->authenticate($request));
         $this->app->make(Dispatcher::class)->listen(function (PermissionProjectionInvalidated $event): void {
             $this->app->make(PermissionAuthorizer::class)->forget($event->userId, $event->tenantId);
         });

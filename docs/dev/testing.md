@@ -67,6 +67,7 @@
 - Integrations: retries, signature verification, mapper correctness
 - Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
 - Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
+- Shared platform: JWT auth login, refresh rotation, logout revocation, and current-user retrieval
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation
 - Shared platform: migration freshness, UUID primary keys, and partial index presence
 - Shared platform: tenant-prefixed cache keys, item invalidation, and namespace invalidation behavior

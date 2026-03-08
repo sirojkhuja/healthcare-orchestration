@@ -67,3 +67,6 @@
 - All auth and security endpoints must emit audit records.
 - Protected tenant-owned routes use the shared `permission:<permission-name>` middleware contract.
 - Permission changes must invalidate cached permission projections for the affected user and tenant scope.
+- Login and refresh responses return `user`, `session`, and `tokens` payloads.
+- `GET /auth/me` returns the current user plus the active auth session id.
+- Refresh rotates both the JWT `jti` and the opaque refresh token.

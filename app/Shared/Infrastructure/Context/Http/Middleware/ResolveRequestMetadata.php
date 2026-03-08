@@ -7,6 +7,7 @@ use App\Shared\Application\Data\RequestMetadata;
 use App\Shared\Infrastructure\Context\RequestMetadataHeaderResolver;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use LogicException;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,10 @@ final class ResolveRequestMetadata
 
     public function handle(Request $request, Closure $next): Response
     {
+        if (is_string($request->bearerToken()) && $request->bearerToken() !== '') {
+            Auth::forgetGuards();
+        }
+
         $headerNames = $this->headerResolver->resolve();
         $requestId = $this->resolveInboundId($request->header($headerNames['request_id'])) ?? (string) Str::uuid();
         $correlationId = $this->resolveInboundId($request->header($headerNames['correlation_id'])) ?? $requestId;

@@ -11,12 +11,13 @@ Codex must read, in this order:
 5. [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md) when the task touches migrations, PostgreSQL schema, UUIDs, or indexes
 6. [caching.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/caching.md) when the task touches Redis usage, cache keys, invalidation, or cache-aside behavior
 7. [messaging.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/messaging.md) when the task touches Kafka, outbox relays, consumers, or async delivery guarantees
-8. [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) when the task touches tenant-owned data or routes
-9. [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) when the task touches permissions, RBAC, policies, or protected routes
-10. [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) when the task touches protected commands, replay safety, payments, scheduling, or webhooks
-11. [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) when the task touches request metadata, jobs, or emitted messages
-12. [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) when the task touches regulated data changes or retention behavior
-13. the most relevant module, API, security, testing, and observability documents
+8. [authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authentication.md) when the task touches login, JWTs, refresh tokens, current-user flows, or auth sessions
+9. [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) when the task touches tenant-owned data or routes
+10. [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) when the task touches permissions, RBAC, policies, or protected routes
+11. [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) when the task touches protected commands, replay safety, payments, scheduling, or webhooks
+12. [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) when the task touches request metadata, jobs, or emitted messages
+13. [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) when the task touches regulated data changes or retention behavior
+14. the most relevant module, API, security, testing, and observability documents
 
 ## Golden Path for Features
 
