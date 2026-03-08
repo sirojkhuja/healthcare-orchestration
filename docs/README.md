@@ -13,8 +13,9 @@ The split documents in this repository are derived from that source and exist to
 3. Read [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md) and [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md).
 4. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
 5. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
-6. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
-7. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+6. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
+7. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
+8. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
 
 ## Documentation Areas
 
@@ -37,6 +38,7 @@ The split documents in this repository are derived from that source and exist to
 - [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md)
 - [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md)
 - [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md)
+- [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md)
 - [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md)
 - [testing.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/testing.md)
 - [security.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/security.md)

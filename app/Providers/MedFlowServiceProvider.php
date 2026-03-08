@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Modules\AuditCompliance\Application\Contracts\AuditActorResolver;
+use App\Modules\AuditCompliance\Application\Contracts\AuditEventRepository;
+use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
+use App\Modules\AuditCompliance\Application\Services\ContextualAuditTrailWriter;
+use App\Modules\AuditCompliance\Infrastructure\AuthAuditActorResolver;
+use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditEventRepository;
 use App\Shared\Application\Contracts\EventContextFactory;
 use App\Shared\Application\Contracts\FileStorageManager;
 use App\Shared\Application\Contracts\RequestMetadataContext;
@@ -20,6 +26,9 @@ final class MedFlowServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(FileStorageManager::class, FilesystemFileStorageManager::class);
+        $this->app->bind(AuditActorResolver::class, AuthAuditActorResolver::class);
+        $this->app->bind(AuditEventRepository::class, DatabaseAuditEventRepository::class);
+        $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
         $this->app->scoped(RequestMetadataContext::class, ContextBackedRequestMetadataContext::class);
         $this->app->scoped(TenantContext::class, RequestTenantContext::class);
         $this->app->scoped(TenantScope::class, fn () => new TenantScope($this->app->make(TenantContext::class)));

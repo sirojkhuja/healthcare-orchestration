@@ -63,6 +63,7 @@
 - Claims: adjudication transitions and attachment handling
 - Integrations: retries, signature verification, mapper correctness
 - Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
+- Audit: immutable persistence, actor capture, before and after values, and retention pruning
 
 ## Release Gate
 

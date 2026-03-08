@@ -23,6 +23,9 @@ return [
         'exports_disk' => 'exports',
         'artifacts_disk' => 'artifacts',
     ],
+    'audit' => [
+        'retention_days' => (int) env('AUDIT_RETENTION_DAYS', 0),
+    ],
     'request_context' => [
         'headers' => [
             'request_id' => env('REQUEST_ID_HEADER', 'X-Request-Id'),

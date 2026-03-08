@@ -21,6 +21,7 @@
 
 - Sensitive PII requires field-level encryption where appropriate.
 - Audit data must capture actor, timing, before and after values, and request metadata.
+- Audit storage is write-once; normal application flows must not mutate existing audit records.
 - Retention policies must be explicit for audit and compliance artifacts.
 
 ## Integration Security
