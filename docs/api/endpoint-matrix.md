@@ -1,0 +1,49 @@
+# Endpoint Matrix
+
+The original SSoT carries the full route inventory. This document is the split navigation layer for that inventory. Each module file below contains the route set, target use case, and owning module.
+
+## Module Route Documents
+
+- [identity-access.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules/identity-access.md)
+- [tenancy-clinics.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules/tenancy-clinics.md)
+- [patients-providers.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules/patients-providers.md)
+- [scheduling-clinical.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules/scheduling-clinical.md)
+- [revenue-insurance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules/revenue-insurance.md)
+- [platform-integrations-ops.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules/platform-integrations-ops.md)
+
+## Route Conventions
+
+- Base path: `/api/v1`
+- Explicit state transitions use `:action` routes.
+- Bulk operations use `/bulk` or `:bulk-*`.
+- Export endpoints use `/export`.
+- Webhooks live under `/webhooks/*`.
+- Admin operations live under `/admin/*`.
+
+## Inventory Summary
+
+| Area | Approximate endpoints |
+| --- | --- |
+| Auth and Identity | `16` |
+| Tenants | `12` |
+| Clinics and Locations | `26` |
+| Users, Roles, Permissions | `38` |
+| Patients | `30` |
+| Providers and Availability | `34` |
+| Scheduling and Appointments | `44` |
+| Treatment and Encounters | `32` |
+| Labs | `28` |
+| Prescriptions and Pharmacy | `22` |
+| Billing and Payments | `40` |
+| Insurance Claims | `28` |
+| Notifications | `34` |
+| Integrations Hub | `36` |
+| Audit and Compliance | `18` |
+| Observability and Admin Ops | `22` |
+| Reference Data and Search | `18` |
+
+Total planned inventory is roughly `280` to `320` distinct endpoints depending on optional integrations and reporting scope.
+
+## Matrix Rule
+
+Every route must map to exactly one application command or query handler.

@@ -1,0 +1,37 @@
+# AI Agent Playbook
+
+## Mandatory Reading Before Work
+
+Codex must read, in this order:
+
+1. [source-of-truth-policy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/source-of-truth-policy.md)
+2. [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md)
+3. [progress-workflow.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/progress-workflow.md)
+4. [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md)
+5. the most relevant module, API, security, testing, and observability documents
+
+## Golden Path for Features
+
+1. choose the module and verify dependencies are complete
+2. mark the task `In Progress`
+3. define or extend domain objects
+4. add application commands or queries and handlers
+5. add contracts
+6. implement infrastructure adapters
+7. add presentation endpoints
+8. update OpenAPI and docs
+9. add tests
+10. run all required quality gates
+11. commit, push, and mark task `Done`
+
+## Behavior Rules
+
+- never implement undocumented material decisions silently
+- never bypass the task workflow
+- never leave docs behind code
+- never treat optional integrations as enabled by default
+- never violate file, method, or layering limits
+
+## Escalation Rule
+
+If the documentation does not answer a decision that changes business behavior, create or request an ADR before continuing.

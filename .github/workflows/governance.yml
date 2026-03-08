@@ -1,0 +1,21 @@
+name: Governance
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  docs-and-governance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x .githooks/pre-commit .githooks/pre-push scripts/*.sh
+
+      - name: Validate task list
+        run: bash scripts/check-tasklist.sh
+
+      - name: Validate governance artifacts
+        run: bash scripts/quality-gate.sh --docs-only

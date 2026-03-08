@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+bash scripts/check-tasklist.sh
+bash scripts/quality-gate.sh --docs-only
+
+if [[ -f composer.json ]]; then
+  make format
+  make lint
+  make analyse
+fi

@@ -1,0 +1,3 @@
+display_name: MedFlow Governance
+short_description: Follow MedFlow documentation, task workflow, and quality gates.
+default_prompt: Work from the canonical MedFlow docs, keep the task list updated, and enforce quality gates before commit and push.
