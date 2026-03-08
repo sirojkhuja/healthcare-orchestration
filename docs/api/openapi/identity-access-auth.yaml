@@ -1,6 +1,6 @@
 openapi: 3.1.1
 info:
-  title: MedFlow Identity Access Auth Fragment
+  title: MedFlow Identity Access Fragment
   version: 0.1.0
 paths:
   /api/v1/auth/login:
@@ -445,6 +445,471 @@ paths:
                 $ref: '#/components/schemas/RevokeAllSessionsResponse'
         '401':
           description: Missing or invalid bearer token
+  /api/v1/roles:
+    get:
+      operationId: ListRolesQuery
+      tags: [IdentityAccess]
+      summary: List tenant-scoped roles in the active tenant
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant role list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+    post:
+      operationId: CreateRoleCommand
+      tags: [IdentityAccess]
+      summary: Create a tenant-scoped custom role
+      description: Requires `rbac.manage` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleCreateRequest'
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.manage` permission
+        '409':
+          description: Role name already exists in the active tenant
+  /api/v1/roles/{roleId}:
+    get:
+      operationId: GetRoleQuery
+      tags: [IdentityAccess]
+      summary: Return one tenant-scoped role
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant role detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleGetResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+        '404':
+          description: Role not found in the active tenant
+    patch:
+      operationId: UpdateRoleCommand
+      tags: [IdentityAccess]
+      summary: Update one tenant-scoped role
+      description: Requires `rbac.manage` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleUpdateRequest'
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.manage` permission
+        '404':
+          description: Role not found in the active tenant
+        '409':
+          description: Role name already exists in the active tenant
+    delete:
+      operationId: DeleteRoleCommand
+      tags: [IdentityAccess]
+      summary: Delete one unassigned tenant-scoped role
+      description: Requires `rbac.manage` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDeletedResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.manage` permission
+        '404':
+          description: Role not found in the active tenant
+        '409':
+          description: Role is still assigned to one or more users
+  /api/v1/roles/{roleId}/permissions:
+    get:
+      operationId: ListRolePermissionsQuery
+      tags: [IdentityAccess]
+      summary: List permissions assigned to one tenant-scoped role
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role permission list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+        '404':
+          description: Role not found in the active tenant
+    put:
+      operationId: SetRolePermissionsCommand
+      tags: [IdentityAccess]
+      summary: Replace the full permission set for one tenant-scoped role
+      description: Requires `rbac.manage` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePermissionsUpdateRequest'
+      responses:
+        '200':
+          description: Role permissions replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePermissionsUpdateResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.manage` permission
+        '404':
+          description: Role not found in the active tenant
+        '422':
+          description: Permission payload is invalid
+  /api/v1/permissions:
+    get:
+      operationId: ListPermissionsQuery
+      tags: [IdentityAccess]
+      summary: List the static permission catalog
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Flat permission catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+  /api/v1/permissions/groups:
+    get:
+      operationId: ListPermissionGroupsQuery
+      tags: [IdentityAccess]
+      summary: List the static permission catalog grouped by group key
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Grouped permission catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionGroupCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+  /api/v1/users/{userId}/roles:
+    get:
+      operationId: ListUserRolesQuery
+      tags: [IdentityAccess]
+      summary: List the tenant-scoped roles assigned to one user
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User role assignments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+        '404':
+          description: User not found
+    put:
+      operationId: SetUserRolesCommand
+      tags: [IdentityAccess]
+      summary: Replace the full tenant-scoped role set for one user
+      description: Requires `rbac.manage` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRolesUpdateRequest'
+      responses:
+        '200':
+          description: User roles replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRolesUpdateResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.manage` permission
+        '404':
+          description: User not found
+        '422':
+          description: One or more role ids do not belong to the active tenant
+  /api/v1/users/{userId}/permissions:
+    get:
+      operationId: GetUserPermissionsQuery
+      tags: [IdentityAccess]
+      summary: Return the effective permissions for one user in the active tenant
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Effective user permission set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPermissionSetResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
+        '404':
+          description: User not found
+  /api/v1/rbac/audit:
+    get:
+      operationId: GetRbacAuditQuery
+      tags: [IdentityAccess]
+      summary: Return recent tenant-scoped RBAC audit events
+      description: Requires `rbac.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Recent RBAC audit events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RbacAuditCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `rbac.view` permission
 components:
   securitySchemes:
     bearerAuth:
@@ -550,6 +1015,42 @@ components:
                 type: string
               label:
                 type: [string, 'null']
+    RoleCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 1000
+    RoleUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 1000
+    RolePermissionsUpdateRequest:
+      type: object
+      required: [permissions]
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+    UserRolesUpdateRequest:
+      type: object
+      required: [role_ids]
+      properties:
+        role_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
     AuthSessionResponse:
       type: object
       required: [user, session, tokens]
@@ -740,6 +1241,88 @@ components:
         revoked_sessions:
           type: integer
           minimum: 0
+    RoleGetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/RoleSummary'
+    RoleMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [role_created, role_updated]
+        data:
+          $ref: '#/components/schemas/RoleSummary'
+    RoleDeletedResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: role_deleted
+    RoleCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleSummary'
+    RolePermissionsUpdateResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: role_permissions_updated
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDefinition'
+    PermissionCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDefinition'
+    PermissionGroupCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionGroup'
+    UserRolesUpdateResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: user_roles_updated
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleSummary'
+    UserPermissionSetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/UserPermissionSet'
+    RbacAuditCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
     UserSummary:
       type: object
       required: [id, name, email]
@@ -780,6 +1363,128 @@ components:
           type: [string, 'null']
           format: date-time
         created_at:
+          type: string
+          format: date-time
+    RoleSummary:
+      type: object
+      required: [id, name, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PermissionDefinition:
+      type: object
+      required: [name, group_key, group_name, group_description, description]
+      properties:
+        name:
+          type: string
+        group_key:
+          type: string
+        group_name:
+          type: string
+        group_description:
+          type: string
+        description:
+          type: string
+    PermissionGroup:
+      type: object
+      required: [key, name, description, permissions]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDefinition'
+    UserPermissionSet:
+      type: object
+      required: [user_id, tenant_id, roles, permissions]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleSummary'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDefinition'
+    AuditActor:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+        id:
+          type: [string, 'null']
+          format: uuid
+        name:
+          type: [string, 'null']
+    AuditEvent:
+      type: object
+      required:
+        - event_id
+        - tenant_id
+        - action
+        - object_type
+        - object_id
+        - actor
+        - request_id
+        - correlation_id
+        - before
+        - after
+        - metadata
+        - occurred_at
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: [string, 'null']
+          format: uuid
+        action:
+          type: string
+        object_type:
+          type: string
+        object_id:
+          type: string
+        actor:
+          $ref: '#/components/schemas/AuditActor'
+        request_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        occurred_at:
           type: string
           format: date-time
     DeviceSummary:

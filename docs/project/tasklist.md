@@ -1,8 +1,8 @@
 # Project Task List
 
-Last Updated: `2026-03-08`
+Last Updated: `2026-03-09`
 
-Overall Progress: `32% (23/70 tasks completed)`
+Overall Progress: `34% (24/70 tasks completed)`
 
 Active Task: `None`
 
@@ -56,7 +56,7 @@ Active Task: `None`
 | T021 | Done | Implement password reset, session management, and revoke-all session flows. | T020 | Reset tokens, session queries, revoke operations. | Session revocation tests and password reset tests pass. |
 | T022 | Done | Implement MFA setup, verification, disable flow, and security event tracking. | T020, T014 | MFA secrets, verification handlers, audit and security events. | MFA tests cover setup, challenge, recovery, and disable. |
 | T023 | Done | Implement API keys, device registration, and IP allowlist administration. | T020, T015 | API key lifecycle, device endpoints, IP policy storage. | Feature tests cover creation, revocation, and enforcement. |
-| T024 | Todo | Implement roles, permissions, permission groups, and RBAC administration APIs. | T015 | RBAC commands, queries, policies, audit integration. | Role assignment and permission propagation tests pass. |
+| T024 | Done | Implement roles, permissions, permission groups, and RBAC administration APIs. | T015 | RBAC commands, queries, policies, audit integration. | Role assignment and permission propagation tests pass. |
 | T025 | Todo | Implement user lifecycle management, status transitions, and bulk user operations. | T024 | User CRUD, activate, deactivate, lock, unlock, bulk import and update. | Feature tests cover all status transitions and bulk paths. |
 | T026 | Todo | Implement profile endpoints, avatar upload, and profile update policies. | T025, T010 | Profile views, update handlers, avatar storage integration. | Storage and authorization tests pass. |
 | T027 | Todo | Implement tenant lifecycle, limits, usage, and settings management. | T011, T014, T015 | Tenant CRUD, activation, suspension, limits, settings, usage endpoints. | Tenant admin feature tests pass with audit coverage. |

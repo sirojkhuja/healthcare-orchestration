@@ -58,6 +58,31 @@ final class DatabaseAuditEventRepository implements AuditEventRepository
     }
 
     #[\Override]
+    public function forActionPrefix(string $actionPrefix, ?string $tenantId = null, int $limit = 50): array
+    {
+        $actionPattern = sprintf('%s%%', $actionPrefix);
+        $query = AuditEventRecord::query()
+            ->whereRaw('action like ?', [$actionPattern])
+            ->orderByDesc('occurred_at')
+            ->limit($limit);
+
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, AuditEventRecord> $records */
+        $records = $query->get();
+
+        /** @var list<AuditEventData> $events */
+        $events = array_values(array_map(
+            fn (AuditEventRecord $record) => $this->toData($record),
+            $records->all(),
+        ));
+
+        return $events;
+    }
+
+    #[\Override]
     public function pruneOlderThan(CarbonImmutable $cutoff): int
     {
         /** @psalm-suppress MixedAssignment */

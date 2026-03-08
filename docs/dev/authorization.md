@@ -9,12 +9,15 @@ This document defines the shared authorization foundation for tenant-aware MedFl
 - Authorization defaults to deny when no permission projection exists.
 - Permission checks must stay in the application and infrastructure layers, not in controllers or domain entities.
 - Permission evaluation must be deterministic for the same user, tenant, and permission tuple.
+- Roles are tenant-scoped and user-role assignments are tenant-scoped.
+- Permission definitions and permission groups come from a fixed catalog, not runtime CRUD.
 
 ## Permission Projection Contract
 
 - The shared authorization service is `PermissionAuthorizer`.
 - Permission data loads through `PermissionProjectionRepository`.
 - A permission projection is scoped by `user_id` and `tenant_id`.
+- Effective permissions are the union of permissions attached to the user's assigned roles in the active tenant.
 - Tenant-aware permissions must not reuse global cache entries.
 - Missing projections return an empty permission set rather than granting access implicitly.
 
@@ -25,6 +28,8 @@ This document defines the shared authorization foundation for tenant-aware MedFl
 - The shared invalidation event is `PermissionProjectionInvalidated`.
 - Any future role, permission, tenant-admin, or bulk user change that affects effective permissions must dispatch an invalidation event for the impacted user and tenant scope.
 - Cache invalidation must be narrower than full-cache flushes unless an ADR explicitly allows broader invalidation.
+- Role-permission replacement must invalidate every assigned user projection in the affected tenant.
+- User-role replacement must invalidate the affected user projection in the affected tenant.
 
 ## HTTP Middleware Contract
 
@@ -46,4 +51,4 @@ This document defines the shared authorization foundation for tenant-aware MedFl
 - Feature tests must prove authorized access succeeds.
 - Feature tests must prove cached permission lookups do not re-query the repository until invalidation occurs.
 - Feature tests must prove invalidation causes the next permission check to reload the projection.
-- Future IAM work must add tests for role assignment, permission group changes, and tenant-admin overrides.
+- RBAC feature tests must prove role assignment and role-permission changes invalidate cached projections.

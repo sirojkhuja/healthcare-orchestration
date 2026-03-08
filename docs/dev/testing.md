@@ -68,6 +68,7 @@
 - Integrations: retries, signature verification, mapper correctness
 - Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
 - Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
+- Shared platform: tenant-scoped role CRUD, user-role assignment, role-permission replacement, permission catalog reads, and RBAC audit queries
 - Shared platform: JWT auth login, MFA challenge flows, recovery-code handling, security-event writes, refresh rotation, logout revocation, current-user retrieval, password reset flows, and auth-session administration
 - Shared platform: API key create/list/revoke flows, revoked-key rejection, tenant allowlist enforcement, and device registration lifecycle
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation

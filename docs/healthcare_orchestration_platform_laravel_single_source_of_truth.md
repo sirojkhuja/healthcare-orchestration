@@ -127,6 +127,8 @@ Roles (baseline):
 Permissions:
 - Fine-grained action permissions, policy-driven.
 - Permission caching per user with event-based invalidation.
+- Custom roles are tenant-scoped and user-role assignments are tenant-scoped.
+- Permission definitions and permission groups are fixed catalog data, not tenant-editable records.
 
 ### 3.3 Audit
 - Full audit trail for regulated objects:

@@ -67,6 +67,9 @@
 - All auth and security endpoints must emit audit records.
 - Protected tenant-owned routes use the shared `permission:<permission-name>` middleware contract.
 - Permission changes must invalidate cached permission projections for the affected user and tenant scope.
+- RBAC roles are tenant-scoped custom records and user-role assignments are tenant-scoped.
+- Permission definitions and permission groups are fixed catalog data exposed through read-only endpoints.
+- RBAC read endpoints require `rbac.view`; RBAC mutation endpoints require `rbac.manage`.
 - Login and refresh responses return `user`, `session`, and `tokens` payloads.
 - API key creation returns plaintext key material exactly once and list responses return only non-secret metadata.
 - API keys authenticate through the `X-API-Key` header on routes that opt into the dedicated API-key guard.
