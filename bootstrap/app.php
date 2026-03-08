@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\IdentityAccess\Infrastructure\Authorization\Http\Middleware\RequirePermission;
 use App\Shared\Infrastructure\Context\Http\Middleware\ResolveRequestMetadata;
 use App\Shared\Infrastructure\Presentation\ApiErrorResponseFactory;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\RequireTenantContext;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(ResolveRequestMetadata::class);
         $middleware->appendToGroup('api', ResolveTenantContext::class);
         $middleware->alias([
+            'permission' => RequirePermission::class,
             'tenant.require' => RequireTenantContext::class,
         ]);
     })

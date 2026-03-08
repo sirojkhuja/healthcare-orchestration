@@ -82,7 +82,7 @@ docs/
 
 1. HTTP request enters Laravel edge.
 2. Request metadata, tenant, and correlation context are resolved.
-3. Authorization is checked.
+3. Authorization is checked through tenant-aware permission projections.
 4. Presentation layer maps transport payload into an application command or query.
 5. Application handler coordinates domain logic and infrastructure boundaries.
 6. Domain logic applies policies, invariants, and state transitions.
@@ -113,6 +113,7 @@ docs/
 - Redis uses cache-aside with explicit invalidation.
 - Cache keys are tenant-prefixed.
 - Cached domains include permissions, availability, settings, token metadata, rate limits, and reference data.
+- Permission caches must invalidate through domain or application events when RBAC state changes.
 
 ## Messaging Model
 

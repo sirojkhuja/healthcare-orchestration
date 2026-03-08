@@ -65,3 +65,5 @@
 - MFA, sessions, API keys, and security events are part of the IAM boundary.
 - Tenant awareness still applies to IAM resources except for true platform-wide administration.
 - All auth and security endpoints must emit audit records.
+- Protected tenant-owned routes use the shared `permission:<permission-name>` middleware contract.
+- Permission changes must invalidate cached permission projections for the affected user and tenant scope.

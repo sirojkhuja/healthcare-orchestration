@@ -23,6 +23,7 @@
 - auth and authorization behavior
 - tenant scoping
 - tenant context resolution from headers and route parameters
+- protected route permission enforcement and invalidation behavior
 - request metadata headers and propagation across queue boundaries
 - validation and error handling
 - serialization and pagination
@@ -63,6 +64,7 @@
 - Claims: adjudication transitions and attachment handling
 - Integrations: retries, signature verification, mapper correctness
 - Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
+- Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
 - Audit: immutable persistence, actor capture, before and after values, and retention pruning
 
 ## Release Gate

@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-08`
 
-Overall Progress: `20% (14/70 tasks completed)`
+Overall Progress: `21% (15/70 tasks completed)`
 
 Active Task: `None`
 
@@ -42,7 +42,7 @@ Active Task: `None`
 | T012 | Done | Implement correlation, request, and causation ID propagation across HTTP, jobs, and events. | T005 | Request metadata middleware, context propagation helpers. | Logs and traces contain stable IDs end to end. |
 | T013 | Done | Implement the standard API error envelope and exception mapping layer. | T004, T005 | Exception handler strategy, shared error DTOs, error codes. | Feature tests validate status codes and payload shape. |
 | T014 | Done | Implement the audit event foundation with immutable persistence and actor metadata. | T011, T012, T013 | Audit schema, repository, writer service, retention hooks. | Audit records capture before and after values where required. |
-| T015 | Todo | Implement authorization policy infrastructure and permission cache invalidation. | T011 | Policy layer, permission projection, invalidation events. | Authorization feature tests and cache invalidation tests pass. |
+| T015 | Done | Implement authorization policy infrastructure and permission cache invalidation. | T011 | Policy layer, permission projection, invalidation events. | Authorization feature tests and cache invalidation tests pass. |
 | T016 | Todo | Implement idempotency key storage and middleware for protected commands. | T011, T013 | Idempotency storage, middleware, replay policy. | Duplicate payment and scheduling requests are safely deduplicated. |
 | T017 | Todo | Create base PostgreSQL migrations, UUID conventions, indexing rules, and common schema primitives. | T004 | Shared migration helpers, base tables, index strategy. | Migration suite runs cleanly on a fresh database. |
 | T018 | Todo | Implement Redis cache infrastructure with tenant-prefixed keys and explicit invalidation helpers. | T011, T017 | Cache contracts, key builder, invalidation listeners. | Cache tests prove tenant isolation and invalidation behavior. |
