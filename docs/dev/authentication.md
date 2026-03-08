@@ -41,6 +41,8 @@ This document defines the MedFlow API authentication contract.
 - `GET /api/v1/auth/me` requires a valid bearer token and returns the authenticated user plus current session id.
 - `POST /api/v1/auth/sessions` requires a valid bearer token and returns the authenticated user's auth sessions.
 - `DELETE /api/v1/auth/sessions/{sessionId}` requires a valid bearer token and revokes one owned session.
+- `GET /api/v1/profiles/me` and `PATCH /api/v1/profiles/me` require a valid bearer token and operate on the authenticated user's shared profile without tenant context.
+- `POST /api/v1/profiles/me/avatar` requires a valid bearer token, accepts an image upload, and stores avatar metadata on the authenticated user's shared profile.
 - `POST /api/v1/auth/api-keys` requires a valid bearer token, accepts a name plus optional `expires_at`, and returns the plaintext API key exactly once.
 - `GET /api/v1/auth/api-keys` requires a valid bearer token and lists API keys owned by the authenticated user without returning plaintext key material.
 - `DELETE /api/v1/auth/api-keys/{keyId}` requires a valid bearer token and revokes one owned API key.

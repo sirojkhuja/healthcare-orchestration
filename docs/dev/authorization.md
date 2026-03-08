@@ -47,6 +47,8 @@ This document defines the shared authorization foundation for tenant-aware MedFl
 - Cache keys use the shape `permissions:{tenant|global}:{userId}`.
 - Permission middleware must run after tenant resolution on tenant-owned routes.
 - Permission failures flow through the standard API error envelope and use the `FORBIDDEN` error code.
+- Self-service profile routes rely on bearer authentication alone, while tenant-admin profile routes use `profiles.view` and `profiles.manage` permission checks in tenant scope.
+- Tenant-admin profile reads and writes must also verify that the target user belongs to the active tenant membership scope.
 
 ## Testing Requirements
 

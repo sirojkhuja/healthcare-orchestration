@@ -76,6 +76,11 @@
 - `DELETE /users/{userId}` removes the user from the active tenant and clears that tenant's role assignments without deleting the shared account.
 - `POST /users/{userId}:reset-password` sets a new password for the shared account and revokes all active sessions for that user.
 - `POST /users/bulk` applies one tenant-scoped action across multiple tenant user memberships in one all-or-nothing request.
+- Profile data is shared with the global identity account and includes `name`, `phone`, `job_title`, `locale`, `timezone`, and avatar metadata.
+- `GET /profiles/me`, `PATCH /profiles/me`, and `POST /profiles/me/avatar` are self-service routes that require bearer authentication but not tenant context or `profiles.*` permissions.
+- `GET /profiles/{userId}` requires `profiles.view` plus tenant context, and `PATCH /profiles/{userId}` requires `profiles.manage` plus tenant context.
+- Tenant-admin profile routes require that the target user belongs to the active tenant membership scope.
+- Avatar uploads use the shared attachment storage abstraction and return profile-safe avatar metadata rather than storage-internal disk or path values.
 - Permission definitions and permission groups are fixed catalog data exposed through read-only endpoints.
 - RBAC read endpoints require `rbac.view`; RBAC mutation endpoints require `rbac.manage`.
 - Login and refresh responses return `user`, `session`, and `tokens` payloads.

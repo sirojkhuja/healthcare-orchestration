@@ -372,6 +372,153 @@ paths:
           description: Missing or invalid bearer token
         '404':
           description: Device not found or not owned by the actor
+  /api/v1/profiles/me:
+    get:
+      operationId: GetMyProfileQuery
+      tags: [IdentityAccess]
+      summary: Return the authenticated user's shared profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          description: Missing or invalid bearer token
+    patch:
+      operationId: UpdateMyProfileCommand
+      tags: [IdentityAccess]
+      summary: Update the authenticated user's shared profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Current user profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '422':
+          description: Profile payload is empty or invalid
+  /api/v1/profiles/me/avatar:
+    post:
+      operationId: UploadMyAvatarCommand
+      tags: [IdentityAccess]
+      summary: Upload or replace the authenticated user's avatar
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar uploaded and profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarUploadResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '422':
+          description: Avatar payload is invalid
+  /api/v1/profiles/{userId}:
+    get:
+      operationId: GetProfileQuery
+      tags: [IdentityAccess]
+      summary: Return one tenant member's shared profile
+      description: Requires `profiles.view` permission in the active tenant. The target user must belong to the active tenant membership scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant member profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `profiles.view` permission
+        '404':
+          description: User does not belong to the active tenant
+    patch:
+      operationId: UpdateProfileCommand
+      tags: [IdentityAccess]
+      summary: Update one tenant member's shared profile
+      description: Requires `profiles.manage` permission in the active tenant. The target user must belong to the active tenant membership scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Tenant member profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `profiles.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '422':
+          description: Profile payload is empty or invalid
   /api/v1/security/ip-allowlist:
     get:
       operationId: GetIpAllowlistQuery
@@ -1480,6 +1627,24 @@ components:
                 type: string
               label:
                 type: [string, 'null']
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        phone:
+          type: [string, 'null']
+          maxLength: 32
+        job_title:
+          type: [string, 'null']
+          maxLength: 120
+        locale:
+          type: [string, 'null']
+          maxLength: 16
+        timezone:
+          type: [string, 'null']
+      minProperties: 1
     RoleCreateRequest:
       type: object
       required: [name]
@@ -1777,6 +1942,30 @@ components:
         status:
           type: string
           const: device_deregistered
+    UserProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/UserProfile'
+    ProfileMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: profile_updated
+        data:
+          $ref: '#/components/schemas/UserProfile'
+    AvatarUploadResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: avatar_uploaded
+        data:
+          $ref: '#/components/schemas/UserProfile'
     RevokeAllSessionsResponse:
       type: object
       required: [status, revoked_sessions]
@@ -1940,6 +2129,47 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuditEvent'
+    UserProfile:
+      type: object
+      required: [id, name, email, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: [string, 'null']
+        job_title:
+          type: [string, 'null']
+        locale:
+          type: [string, 'null']
+        timezone:
+          type: [string, 'null']
+        avatar:
+          oneOf:
+            - $ref: '#/components/schemas/ProfileAvatar'
+            - type: 'null'
+        updated_at:
+          type: string
+          format: date-time
+    ProfileAvatar:
+      type: object
+      required: [file_name, mime_type, size_bytes, uploaded_at]
+      properties:
+        file_name:
+          type: string
+        mime_type:
+          type: string
+        size_bytes:
+          type: integer
+          minimum: 0
+        uploaded_at:
+          type: string
+          format: date-time
     ManagedUserSummary:
       type: object
       required:

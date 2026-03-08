@@ -70,6 +70,7 @@
 - Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
 - Shared platform: tenant-scoped role CRUD, user-role assignment, role-permission replacement, permission catalog reads, and RBAC audit queries
 - Shared platform: tenant user create, update, activate, deactivate, lock, unlock, delete, admin password reset, bulk import, and bulk action flows
+- Shared platform: self profile read and update, avatar upload and replacement, tenant-admin profile read and update, profile authorization, and tenant membership gating
 - Shared platform: JWT auth login, MFA challenge flows, recovery-code handling, security-event writes, refresh rotation, logout revocation, current-user retrieval, password reset flows, and auth-session administration
 - Shared platform: API key create/list/revoke flows, revoked-key rejection, tenant allowlist enforcement, and device registration lifecycle
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation

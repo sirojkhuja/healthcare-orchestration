@@ -4,6 +4,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApiKeyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\DeviceController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PermissionCatalogController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\ProfileController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\RbacAuditController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
@@ -44,10 +45,19 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
         Route::post('/devices', [DeviceController::class, 'register'])->name('devices.register');
         Route::delete('/devices/{deviceId}', [DeviceController::class, 'deregister'])->name('devices.deregister');
+        Route::get('/profiles/me', [ProfileController::class, 'me'])->name('profiles.me.show');
+        Route::patch('/profiles/me', [ProfileController::class, 'updateMe'])->name('profiles.me.update');
+        Route::post('/profiles/me/avatar', [ProfileController::class, 'uploadMyAvatar'])->name('profiles.me.avatar.upload');
         Route::post('/security/sessions:revoke-all', [SecurityController::class, 'revokeAllSessions'])->name('security.sessions.revoke-all');
         Route::middleware('tenant.require')->group(function (): void {
             Route::get('/security/ip-allowlist', [SecurityController::class, 'getIpAllowlist'])->name('security.ip-allowlist.get');
             Route::post('/security/ip-allowlist', [SecurityController::class, 'updateIpAllowlist'])->name('security.ip-allowlist.update');
+            Route::middleware('permission:profiles.view')->group(function (): void {
+                Route::get('/profiles/{userId}', [ProfileController::class, 'show'])->name('profiles.show');
+            });
+            Route::middleware('permission:profiles.manage')->group(function (): void {
+                Route::patch('/profiles/{userId}', [ProfileController::class, 'update'])->name('profiles.update');
+            });
             Route::middleware('permission:users.view')->group(function (): void {
                 Route::get('/users', [UserController::class, 'list'])->name('users.list');
                 Route::get('/users/{userId}', [UserController::class, 'show'])->name('users.show');

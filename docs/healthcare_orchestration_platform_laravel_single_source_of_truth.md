@@ -131,6 +131,7 @@ Permissions:
 - Users are shared identity accounts attached to tenants through tenant-scoped memberships.
 - Tenant user lifecycle status is membership-scoped with `active`, `inactive`, and `locked` states.
 - Attaching an existing global user account to a tenant must not silently overwrite shared identity fields; shared identity changes go through explicit user update endpoints.
+- Shared profile data and avatar metadata live with the global identity account, while tenant-admin profile access remains constrained by tenant membership and `profiles.*` permissions.
 - Permission definitions and permission groups are fixed catalog data, not tenant-editable records.
 
 ### 3.3 Audit

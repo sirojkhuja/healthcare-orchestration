@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-09`
 
-Overall Progress: `35% (25/70 tasks completed)`
+Overall Progress: `37% (26/70 tasks completed)`
 
 Active Task: `None`
 
@@ -58,7 +58,7 @@ Active Task: `None`
 | T023 | Done | Implement API keys, device registration, and IP allowlist administration. | T020, T015 | API key lifecycle, device endpoints, IP policy storage. | Feature tests cover creation, revocation, and enforcement. |
 | T024 | Done | Implement roles, permissions, permission groups, and RBAC administration APIs. | T015 | RBAC commands, queries, policies, audit integration. | Role assignment and permission propagation tests pass. |
 | T025 | Done | Implement user lifecycle management, status transitions, and bulk user operations. | T024 | User CRUD, activate, deactivate, lock, unlock, bulk import and update. | Feature tests cover all status transitions and bulk paths. |
-| T026 | Todo | Implement profile endpoints, avatar upload, and profile update policies. | T025, T010 | Profile views, update handlers, avatar storage integration. | Storage and authorization tests pass. |
+| T026 | Done | Implement profile endpoints, avatar upload, and profile update policies. | T025, T010 | Profile views, update handlers, avatar storage integration. | Storage and authorization tests pass. |
 | T027 | Todo | Implement tenant lifecycle, limits, usage, and settings management. | T011, T014, T015 | Tenant CRUD, activation, suspension, limits, settings, usage endpoints. | Tenant admin feature tests pass with audit coverage. |
 | T028 | Todo | Implement clinics, departments, rooms, work hours, holidays, and location endpoints. | T027 | Clinic management APIs and location reference views. | Feature tests cover nested resources and tenant scoping. |
 

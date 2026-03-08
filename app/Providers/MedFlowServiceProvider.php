@@ -27,6 +27,8 @@ use App\Modules\IdentityAccess\Application\Contracts\PermissionAuthorizer;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionCatalog;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionInvalidationDispatcher;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionRepository;
+use App\Modules\IdentityAccess\Application\Contracts\ProfileAvatarStore;
+use App\Modules\IdentityAccess\Application\Contracts\ProfileRepository;
 use App\Modules\IdentityAccess\Application\Contracts\RoleRepository;
 use App\Modules\IdentityAccess\Application\Contracts\TenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Application\Contracts\UserRoleAssignmentRepository;
@@ -49,6 +51,8 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\Persistence\Database
 use App\Modules\IdentityAccess\Infrastructure\Authorization\Persistence\DatabaseRoleRepository;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\Persistence\DatabaseUserRoleAssignmentRepository;
 use App\Modules\IdentityAccess\Infrastructure\Devices\Persistence\DatabaseDeviceRepository;
+use App\Modules\IdentityAccess\Infrastructure\Profiles\Persistence\DatabaseProfileRepository;
+use App\Modules\IdentityAccess\Infrastructure\Profiles\Storage\AttachmentBackedProfileAvatarStore;
 use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
@@ -103,6 +107,8 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(IdentityUserProvider::class, EloquentIdentityUserProvider::class);
         $this->app->bind(PasswordResetManager::class, LaravelPasswordResetManager::class);
         $this->app->bind(IdempotencyStore::class, DatabaseIdempotencyStore::class);
+        $this->app->bind(ProfileAvatarStore::class, AttachmentBackedProfileAvatarStore::class);
+        $this->app->bind(ProfileRepository::class, DatabaseProfileRepository::class);
         $this->app->singleton(KafkaProducer::class, LongLangKafkaProducer::class);
         $this->app->singleton(OutboxRepository::class, DatabaseOutboxRepository::class);
         $this->app->singleton(ExponentialBackoffRetryStrategy::class, ExponentialBackoffRetryStrategy::class);
