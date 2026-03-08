@@ -445,6 +445,471 @@ paths:
                 $ref: '#/components/schemas/RevokeAllSessionsResponse'
         '401':
           description: Missing or invalid bearer token
+  /api/v1/users:
+    get:
+      operationId: ListUsersQuery
+      tags: [IdentityAccess]
+      summary: List tenant user memberships in the active tenant
+      description: Requires `users.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, locked]
+      responses:
+        '200':
+          description: Tenant user list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserCollectionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.view` permission
+    post:
+      operationId: CreateUserCommand
+      tags: [IdentityAccess]
+      summary: Create or attach one tenant user membership
+      description: Requires `users.manage` permission in the active tenant. Creates a new global identity when the email is new, otherwise attaches the existing global account without overwriting shared identity fields.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagedUserCreateRequest'
+      responses:
+        '201':
+          description: Tenant user membership created or attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '409':
+          description: User already belongs to the active tenant or email conflicts with another account
+        '422':
+          description: User payload is invalid or missing a password required for new-account creation
+  /api/v1/users/{userId}:
+    get:
+      operationId: GetUserQuery
+      tags: [IdentityAccess]
+      summary: Return one tenant user membership
+      description: Requires `users.view` permission in the active tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant user membership detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserGetResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.view` permission
+        '404':
+          description: User does not belong to the active tenant
+    patch:
+      operationId: UpdateUserCommand
+      tags: [IdentityAccess]
+      summary: Update shared identity data for one tenant user
+      description: Requires `users.manage` permission in the active tenant. Shared identity updates affect every tenant membership held by the target user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagedUserUpdateRequest'
+      responses:
+        '200':
+          description: Shared identity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '409':
+          description: Email conflicts with another global account
+        '422':
+          description: Patch payload is empty or invalid
+    delete:
+      operationId: DeleteUserCommand
+      tags: [IdentityAccess]
+      summary: Remove one user membership from the active tenant
+      description: Requires `users.manage` permission in the active tenant. Deletes tenant-scoped role assignments for the target user in the active tenant and removes the tenant membership without deleting the shared account.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant user membership deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserDeletedResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+  /api/v1/users/{userId}:activate:
+    post:
+      operationId: ActivateUserCommand
+      tags: [IdentityAccess]
+      summary: Activate one tenant user membership
+      description: Requires `users.manage` permission in the active tenant. Valid only from the `inactive` lifecycle state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant user membership activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserStatusMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '409':
+          description: Lifecycle transition is not allowed from the current state
+  /api/v1/users/{userId}:deactivate:
+    post:
+      operationId: DeactivateUserCommand
+      tags: [IdentityAccess]
+      summary: Deactivate one tenant user membership
+      description: Requires `users.manage` permission in the active tenant. Valid only from the `active` lifecycle state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant user membership deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserStatusMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '409':
+          description: Lifecycle transition is not allowed from the current state
+  /api/v1/users/{userId}:lock:
+    post:
+      operationId: LockUserCommand
+      tags: [IdentityAccess]
+      summary: Lock one tenant user membership
+      description: Requires `users.manage` permission in the active tenant. Valid only from the `active` lifecycle state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant user membership locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserStatusMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '409':
+          description: Lifecycle transition is not allowed from the current state
+  /api/v1/users/{userId}:unlock:
+    post:
+      operationId: UnlockUserCommand
+      tags: [IdentityAccess]
+      summary: Unlock one tenant user membership
+      description: Requires `users.manage` permission in the active tenant. Valid only from the `locked` lifecycle state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant user membership unlocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedUserStatusMutationResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '409':
+          description: Lifecycle transition is not allowed from the current state
+  /api/v1/users/{userId}:reset-password:
+    post:
+      operationId: AdminResetPasswordCommand
+      tags: [IdentityAccess]
+      summary: Reset the shared password for one tenant user
+      description: Requires `users.manage` permission in the active tenant. Revokes every active auth session owned by the target user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserPasswordResetRequest'
+      responses:
+        '200':
+          description: Shared account password reset and sessions revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserPasswordResetResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: User does not belong to the active tenant
+        '422':
+          description: Password payload is invalid
+  /api/v1/users:bulk-import:
+    post:
+      operationId: BulkImportUsersCommand
+      tags: [IdentityAccess]
+      summary: Bulk import tenant user memberships
+      description: Requires `users.manage` permission in the active tenant. Creates new global accounts when emails are new, attaches existing global accounts without overwriting shared identity fields, and counts already-attached memberships under `existing_count` without changing them.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkImportUsersRequest'
+      responses:
+        '200':
+          description: Bulk import completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkImportUsersResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '422':
+          description: Import payload is invalid or missing passwords required for new-account creation
+  /api/v1/users/bulk:
+    post:
+      operationId: BulkUpdateUsersCommand
+      tags: [IdentityAccess]
+      summary: Apply one lifecycle action across multiple tenant user memberships
+      description: Requires `users.manage` permission in the active tenant. The request is all-or-nothing across the submitted memberships.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkUserActionRequest'
+      responses:
+        '200':
+          description: Bulk lifecycle action completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUserActionResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '403':
+          description: Missing `users.manage` permission
+        '404':
+          description: One or more users do not belong to the active tenant
+        '409':
+          description: One or more lifecycle transitions are not allowed from the current state
+        '422':
+          description: Bulk action payload is invalid
   /api/v1/roles:
     get:
       operationId: ListRolesQuery
@@ -764,7 +1229,7 @@ paths:
       operationId: ListUserRolesQuery
       tags: [IdentityAccess]
       summary: List the tenant-scoped roles assigned to one user
-      description: Requires `rbac.view` permission in the active tenant.
+      description: Requires `rbac.view` permission in the active tenant. The target user must belong to the active tenant.
       security:
         - bearerAuth: []
       parameters:
@@ -794,12 +1259,12 @@ paths:
         '403':
           description: Missing `rbac.view` permission
         '404':
-          description: User not found
+          description: User does not belong to the active tenant
     put:
       operationId: SetUserRolesCommand
       tags: [IdentityAccess]
       summary: Replace the full tenant-scoped role set for one user
-      description: Requires `rbac.manage` permission in the active tenant.
+      description: Requires `rbac.manage` permission in the active tenant. The target user must belong to the active tenant.
       security:
         - bearerAuth: []
       parameters:
@@ -835,7 +1300,7 @@ paths:
         '403':
           description: Missing `rbac.manage` permission
         '404':
-          description: User not found
+          description: User does not belong to the active tenant
         '422':
           description: One or more role ids do not belong to the active tenant
   /api/v1/users/{userId}/permissions:
@@ -843,7 +1308,7 @@ paths:
       operationId: GetUserPermissionsQuery
       tags: [IdentityAccess]
       summary: Return the effective permissions for one user in the active tenant
-      description: Requires `rbac.view` permission in the active tenant.
+      description: Requires `rbac.view` permission in the active tenant. Inactive or locked memberships return an empty effective permission set.
       security:
         - bearerAuth: []
       parameters:
@@ -873,7 +1338,7 @@ paths:
         '403':
           description: Missing `rbac.view` permission
         '404':
-          description: User not found
+          description: User does not belong to the active tenant
   /api/v1/rbac/audit:
     get:
       operationId: GetRbacAuditQuery
@@ -1042,6 +1507,87 @@ components:
           type: array
           items:
             type: string
+    ManagedUserCreateRequest:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: [string, 'null']
+          minLength: 8
+        password_confirmation:
+          type: [string, 'null']
+        status:
+          type: string
+          enum: [active, inactive]
+          default: active
+    ManagedUserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        email:
+          type: string
+          format: email
+          maxLength: 255
+      minProperties: 1
+    AdminUserPasswordResetRequest:
+      type: object
+      required: [password, password_confirmation]
+      properties:
+        password:
+          type: string
+          minLength: 8
+        password_confirmation:
+          type: string
+    BulkImportUsersRequest:
+      type: object
+      required: [users]
+      properties:
+        users:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/BulkImportUserInput'
+    BulkImportUserInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: [string, 'null']
+          minLength: 8
+        status:
+          type: string
+          enum: [active, inactive]
+    BulkUserActionRequest:
+      type: object
+      required: [action, user_ids]
+      properties:
+        action:
+          type: string
+          enum: [activate, deactivate, lock, unlock, delete]
+        user_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
     UserRolesUpdateRequest:
       type: object
       required: [role_ids]
@@ -1241,6 +1787,77 @@ components:
         revoked_sessions:
           type: integer
           minimum: 0
+    ManagedUserCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedUserSummary'
+    ManagedUserGetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ManagedUserSummary'
+    ManagedUserMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [user_created, user_updated]
+        data:
+          $ref: '#/components/schemas/ManagedUserSummary'
+    ManagedUserDeletedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: user_deleted
+        data:
+          $ref: '#/components/schemas/ManagedUserSummary'
+    ManagedUserStatusMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [user_activated, user_deactivated, user_locked, user_unlocked]
+        data:
+          $ref: '#/components/schemas/ManagedUserSummary'
+    AdminUserPasswordResetResponse:
+      type: object
+      required: [status, revoked_sessions, data]
+      properties:
+        status:
+          type: string
+          const: user_password_reset
+        revoked_sessions:
+          type: integer
+          minimum: 0
+        data:
+          $ref: '#/components/schemas/ManagedUserSummary'
+    BulkImportUsersResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: users_imported
+        data:
+          $ref: '#/components/schemas/BulkImportUsersResult'
+    BulkUserActionResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: users_bulk_updated
+        data:
+          $ref: '#/components/schemas/BulkUserActionResult'
     RoleGetResponse:
       type: object
       required: [data]
@@ -1323,6 +1940,82 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuditEvent'
+    ManagedUserSummary:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - name
+        - email
+        - status
+        - created_at
+        - updated_at
+        - joined_at
+        - membership_updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [active, inactive, locked]
+        email_verified_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        joined_at:
+          type: string
+          format: date-time
+        membership_updated_at:
+          type: string
+          format: date-time
+    BulkImportUsersResult:
+      type: object
+      required: [processed_count, created_count, attached_count, existing_count, users]
+      properties:
+        processed_count:
+          type: integer
+          minimum: 0
+        created_count:
+          type: integer
+          minimum: 0
+        attached_count:
+          type: integer
+          minimum: 0
+        existing_count:
+          type: integer
+          minimum: 0
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedUserSummary'
+    BulkUserActionResult:
+      type: object
+      required: [action, affected_count, users]
+      properties:
+        action:
+          type: string
+          enum: [activate, deactivate, lock, unlock, delete]
+        affected_count:
+          type: integer
+          minimum: 0
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedUserSummary'
     UserSummary:
       type: object
       required: [id, name, email]

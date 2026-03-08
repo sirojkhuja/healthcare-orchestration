@@ -7,6 +7,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PermissionCatalogCo
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\RbacAuditController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +48,22 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('tenant.require')->group(function (): void {
             Route::get('/security/ip-allowlist', [SecurityController::class, 'getIpAllowlist'])->name('security.ip-allowlist.get');
             Route::post('/security/ip-allowlist', [SecurityController::class, 'updateIpAllowlist'])->name('security.ip-allowlist.update');
+            Route::middleware('permission:users.view')->group(function (): void {
+                Route::get('/users', [UserController::class, 'list'])->name('users.list');
+                Route::get('/users/{userId}', [UserController::class, 'show'])->name('users.show');
+            });
+            Route::middleware('permission:users.manage')->group(function (): void {
+                Route::post('/users', [UserController::class, 'create'])->name('users.create');
+                Route::patch('/users/{userId}', [UserController::class, 'update'])->name('users.update');
+                Route::delete('/users/{userId}', [UserController::class, 'delete'])->name('users.delete');
+                Route::post('/users/{userId}:activate', [UserController::class, 'activate'])->name('users.activate');
+                Route::post('/users/{userId}:deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+                Route::post('/users/{userId}:lock', [UserController::class, 'lock'])->name('users.lock');
+                Route::post('/users/{userId}:unlock', [UserController::class, 'unlock'])->name('users.unlock');
+                Route::post('/users/{userId}:reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+                Route::post('/users:bulk-import', [UserController::class, 'bulkImport'])->name('users.bulk-import');
+                Route::post('/users/bulk', [UserController::class, 'bulkUpdate'])->name('users.bulk-update');
+            });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');
                 Route::get('/roles/{roleId}', [RoleController::class, 'show'])->name('roles.show');

@@ -68,6 +68,14 @@
 - Protected tenant-owned routes use the shared `permission:<permission-name>` middleware contract.
 - Permission changes must invalidate cached permission projections for the affected user and tenant scope.
 - RBAC roles are tenant-scoped custom records and user-role assignments are tenant-scoped.
+- User identities are shared accounts, while tenant onboarding and lifecycle state are stored in tenant-scoped user memberships.
+- Tenant user memberships use the lifecycle states `active`, `inactive`, and `locked`.
+- Effective tenant permissions require an `active` tenant user membership.
+- `POST /users` creates a new global account when the email is new, or attaches an existing global account to the active tenant when the email already exists.
+- Attaching an existing global account through `POST /users` or `POST /users:bulk-import` keeps the current shared identity fields unchanged. Use `PATCH /users/{userId}` for explicit cross-tenant identity updates.
+- `DELETE /users/{userId}` removes the user from the active tenant and clears that tenant's role assignments without deleting the shared account.
+- `POST /users/{userId}:reset-password` sets a new password for the shared account and revokes all active sessions for that user.
+- `POST /users/bulk` applies one tenant-scoped action across multiple tenant user memberships in one all-or-nothing request.
 - Permission definitions and permission groups are fixed catalog data exposed through read-only endpoints.
 - RBAC read endpoints require `rbac.view`; RBAC mutation endpoints require `rbac.manage`.
 - Login and refresh responses return `user`, `session`, and `tokens` payloads.

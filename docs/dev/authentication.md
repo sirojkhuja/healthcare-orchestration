@@ -21,6 +21,7 @@ This document defines the MedFlow API authentication contract.
 - Old access tokens become invalid immediately after refresh because `jti` must match the current session record.
 - Logout revokes the current auth session and invalidates all access tokens bound to that session.
 - Password reset completion revokes every non-revoked auth session owned by the user.
+- Admin password reset revokes every non-revoked auth session owned by the target user.
 - Session listing returns all sessions for the authenticated user and must place the current session first.
 - Session revocation endpoints may revoke only sessions owned by the authenticated user.
 
@@ -49,6 +50,7 @@ This document defines the MedFlow API authentication contract.
 - `GET /api/v1/security/ip-allowlist` requires a valid bearer token plus tenant context and returns the active tenant CIDR allowlist.
 - `POST /api/v1/security/ip-allowlist` requires a valid bearer token plus tenant context and replaces the active tenant CIDR allowlist.
 - `POST /api/v1/security/sessions:revoke-all` requires a valid bearer token and revokes every active session owned by the current user, including the current one.
+- `POST /api/v1/users/{userId}:reset-password` requires tenant context plus `users.manage`, resets the shared account password, and revokes every active session owned by the target user.
 
 ## Guard Rules
 

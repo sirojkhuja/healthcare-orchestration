@@ -128,6 +128,9 @@ Permissions:
 - Fine-grained action permissions, policy-driven.
 - Permission caching per user with event-based invalidation.
 - Custom roles are tenant-scoped and user-role assignments are tenant-scoped.
+- Users are shared identity accounts attached to tenants through tenant-scoped memberships.
+- Tenant user lifecycle status is membership-scoped with `active`, `inactive`, and `locked` states.
+- Attaching an existing global user account to a tenant must not silently overwrite shared identity fields; shared identity changes go through explicit user update endpoints.
 - Permission definitions and permission groups are fixed catalog data, not tenant-editable records.
 
 ### 3.3 Audit

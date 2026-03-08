@@ -6,6 +6,7 @@ use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
 use App\Modules\IdentityAccess\Application\Commands\SetUserRolesCommand;
 use App\Modules\IdentityAccess\Application\Contracts\IdentityUserProvider;
+use App\Modules\IdentityAccess\Application\Contracts\ManagedUserRepository;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionInvalidationDispatcher;
 use App\Modules\IdentityAccess\Application\Contracts\RoleRepository;
 use App\Modules\IdentityAccess\Application\Contracts\UserRoleAssignmentRepository;
@@ -19,6 +20,7 @@ final class SetUserRolesCommandHandler
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly IdentityUserProvider $identityUserProvider,
+        private readonly ManagedUserRepository $managedUserRepository,
         private readonly RoleRepository $roleRepository,
         private readonly UserRoleAssignmentRepository $userRoleAssignmentRepository,
         private readonly PermissionProjectionInvalidationDispatcher $permissionProjectionInvalidationDispatcher,
@@ -30,11 +32,15 @@ final class SetUserRolesCommandHandler
      */
     public function handle(SetUserRolesCommand $command): array
     {
-        if ($this->identityUserProvider->findById($command->userId) === null) {
-            throw new NotFoundHttpException('The requested user does not exist.');
+        $tenantId = $this->tenantContext->requireTenantId();
+
+        if (
+            $this->identityUserProvider->findById($command->userId) === null
+            || $this->managedUserRepository->findInTenant($command->userId, $tenantId) === null
+        ) {
+            throw new NotFoundHttpException('The requested user does not belong to the active tenant.');
         }
 
-        $tenantId = $this->tenantContext->requireTenantId();
         $roleIds = $this->normalizedRoleIds($command->roleIds);
         $resolvedRoles = $this->resolvedRoles($roleIds, $tenantId);
         $beforeRoles = $this->userRoleAssignmentRepository->listRolesForUser($command->userId, $tenantId);

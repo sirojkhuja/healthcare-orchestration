@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\AuditEventRecord;
+use App\Modules\IdentityAccess\Application\Contracts\ManagedUserRepository;
 use App\Modules\IdentityAccess\Application\Contracts\RoleRepository;
 use App\Modules\IdentityAccess\Application\Contracts\UserRoleAssignmentRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -111,6 +112,7 @@ it('replaces role permissions and blocks deleting assigned roles', function (): 
     $tenantId = (string) Str::uuid();
 
     grantPermissions($admin, $tenantId, ['rbac.view', 'rbac.manage']);
+    ensureTenantMembership($staff, $tenantId);
     $token = issueBearerToken($this, 'admin-roles@example.test');
 
     $roleId = $this->withToken($token)
@@ -177,6 +179,7 @@ it('returns effective user roles and permissions inside the active tenant', func
     $tenantId = (string) Str::uuid();
 
     grantPermissions($admin, $tenantId, ['rbac.view', 'rbac.manage']);
+    ensureTenantMembership($staff, $tenantId);
     $token = issueBearerToken($this, 'permissions-admin@example.test');
 
     $frontDeskRole = createTenantRole($tenantId, 'Front Desk', ['patients.view']);
@@ -355,9 +358,29 @@ function createTenantRole(string $tenantId, string $name, array $permissions = [
 
 function assignTenantRoles(User $user, string $tenantId, array $roleIds): void
 {
+    ensureTenantMembership($user, $tenantId);
+
     /** @var UserRoleAssignmentRepository $userRoleAssignmentRepository */
     $userRoleAssignmentRepository = app(UserRoleAssignmentRepository::class);
     $userRoleAssignmentRepository->replaceRolesForUser((string) $user->getAuthIdentifier(), $tenantId, $roleIds);
+}
+
+function ensureTenantMembership(User $user, string $tenantId, string $status = 'active'): void
+{
+    /** @var ManagedUserRepository $managedUserRepository */
+    $managedUserRepository = app(ManagedUserRepository::class);
+    $userId = (string) $user->getAuthIdentifier();
+    $membership = $managedUserRepository->findInTenant($userId, $tenantId);
+
+    if ($membership === null) {
+        $managedUserRepository->attachToTenant($userId, $tenantId, $status);
+
+        return;
+    }
+
+    if ($membership->status !== $status) {
+        $managedUserRepository->updateStatusInTenant($userId, $tenantId, $status);
+    }
 }
 
 function grantPermissions(User $user, string $tenantId, array $permissions): void

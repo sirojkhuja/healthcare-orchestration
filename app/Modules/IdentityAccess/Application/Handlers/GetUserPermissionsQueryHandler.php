@@ -3,6 +3,7 @@
 namespace App\Modules\IdentityAccess\Application\Handlers;
 
 use App\Modules\IdentityAccess\Application\Contracts\IdentityUserProvider;
+use App\Modules\IdentityAccess\Application\Contracts\ManagedUserRepository;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionCatalog;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionRepository;
 use App\Modules\IdentityAccess\Application\Contracts\UserRoleAssignmentRepository;
@@ -16,6 +17,7 @@ final class GetUserPermissionsQueryHandler
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly IdentityUserProvider $identityUserProvider,
+        private readonly ManagedUserRepository $managedUserRepository,
         private readonly UserRoleAssignmentRepository $userRoleAssignmentRepository,
         private readonly PermissionProjectionRepository $permissionProjectionRepository,
         private readonly PermissionCatalog $permissionCatalog,
@@ -23,11 +25,15 @@ final class GetUserPermissionsQueryHandler
 
     public function handle(GetUserPermissionsQuery $query): UserPermissionSetData
     {
-        if ($this->identityUserProvider->findById($query->userId) === null) {
-            throw new NotFoundHttpException('The requested user does not exist.');
+        $tenantId = $this->tenantContext->requireTenantId();
+
+        if (
+            $this->identityUserProvider->findById($query->userId) === null
+            || $this->managedUserRepository->findInTenant($query->userId, $tenantId) === null
+        ) {
+            throw new NotFoundHttpException('The requested user does not belong to the active tenant.');
         }
 
-        $tenantId = $this->tenantContext->requireTenantId();
         $roles = $this->userRoleAssignmentRepository->listRolesForUser($query->userId, $tenantId);
         $projection = $this->permissionProjectionRepository->forUser($query->userId, $tenantId);
 

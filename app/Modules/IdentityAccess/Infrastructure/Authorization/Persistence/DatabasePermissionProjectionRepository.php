@@ -30,6 +30,13 @@ final class DatabasePermissionProjectionRepository implements PermissionProjecti
                     ->where('user_role_assignments.tenant_id', '=', $tenantId)
                     ->where('user_role_assignments.user_id', '=', $userId);
             })
+            ->join('tenant_user_memberships', function (JoinClause $join) use ($tenantId, $userId): void {
+                $join->on('tenant_user_memberships.user_id', '=', 'user_role_assignments.user_id')
+                    ->on('tenant_user_memberships.tenant_id', '=', 'user_role_assignments.tenant_id')
+                    ->where('tenant_user_memberships.tenant_id', '=', $tenantId)
+                    ->where('tenant_user_memberships.user_id', '=', $userId)
+                    ->where('tenant_user_memberships.status', '=', 'active');
+            })
             ->distinct()
             ->orderBy('role_permissions.permission')
             ->pluck('role_permissions.permission')

@@ -18,6 +18,7 @@ This document defines the shared authorization foundation for tenant-aware MedFl
 - Permission data loads through `PermissionProjectionRepository`.
 - A permission projection is scoped by `user_id` and `tenant_id`.
 - Effective permissions are the union of permissions attached to the user's assigned roles in the active tenant.
+- Effective permissions require an `active` tenant user membership in addition to tenant-scoped role assignment.
 - Tenant-aware permissions must not reuse global cache entries.
 - Missing projections return an empty permission set rather than granting access implicitly.
 
@@ -30,6 +31,7 @@ This document defines the shared authorization foundation for tenant-aware MedFl
 - Cache invalidation must be narrower than full-cache flushes unless an ADR explicitly allows broader invalidation.
 - Role-permission replacement must invalidate every assigned user projection in the affected tenant.
 - User-role replacement must invalidate the affected user projection in the affected tenant.
+- Tenant user lifecycle changes and tenant user deletion must invalidate the affected user projection in the affected tenant.
 
 ## HTTP Middleware Contract
 

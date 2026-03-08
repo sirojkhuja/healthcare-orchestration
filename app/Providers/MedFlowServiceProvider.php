@@ -18,6 +18,7 @@ use App\Modules\IdentityAccess\Application\Contracts\AuthenticatedRequestContext
 use App\Modules\IdentityAccess\Application\Contracts\AuthSessionRepository;
 use App\Modules\IdentityAccess\Application\Contracts\DeviceRepository;
 use App\Modules\IdentityAccess\Application\Contracts\IdentityUserProvider;
+use App\Modules\IdentityAccess\Application\Contracts\ManagedUserRepository;
 use App\Modules\IdentityAccess\Application\Contracts\MfaChallengeRepository;
 use App\Modules\IdentityAccess\Application\Contracts\MfaCredentialRepository;
 use App\Modules\IdentityAccess\Application\Contracts\MfaTotpService;
@@ -50,6 +51,7 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\Persistence\Database
 use App\Modules\IdentityAccess\Infrastructure\Devices\Persistence\DatabaseDeviceRepository;
 use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
+use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
 use App\Shared\Application\Contracts\ConsumerReceiptStore;
 use App\Shared\Application\Contracts\EventContextFactory;
@@ -92,6 +94,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(DeviceRepository::class, DatabaseDeviceRepository::class);
         $this->app->bind(MfaChallengeRepository::class, DatabaseMfaChallengeRepository::class);
         $this->app->bind(MfaCredentialRepository::class, DatabaseMfaCredentialRepository::class);
+        $this->app->bind(ManagedUserRepository::class, DatabaseManagedUserRepository::class);
         $this->app->singleton(MfaTotpService::class, TotpMfaService::class);
         $this->app->singleton(CidrMatcher::class, CidrMatcher::class);
         $this->app->singleton(CacheKeyBuilder::class, TenantCacheKeyBuilder::class);
