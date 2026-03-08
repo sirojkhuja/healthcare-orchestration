@@ -96,6 +96,9 @@ docs/
 - Tenant scoping lives in infrastructure and shared request context, not in domain entities.
 - Every query against tenant-owned data must include tenant filtering.
 - Shared reference data may be global only when explicitly documented.
+- HTTP tenant context resolves from `X-Tenant-Id` first and may fall back to route parameters only when documented.
+- Tenant-owned HTTP endpoints must require tenant context explicitly.
+- Tenant-owned Eloquent models use infrastructure-level global scopes and write guards instead of domain-layer conditionals.
 
 ## Persistence Rules
 

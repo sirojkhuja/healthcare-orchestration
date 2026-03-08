@@ -76,6 +76,8 @@ Document:
 
 - Document auth requirements on every endpoint.
 - Describe tenant scoping behavior where relevant.
+- For tenant-owned endpoints, document the `X-Tenant-Id` header unless the route parameter is the documented tenant context source.
+- If a tenant-owned endpoint accepts both route tenant scope and `X-Tenant-Id`, document that mismatches fail with `403`.
 - Mark admin-only endpoints explicitly.
 - Document webhook signature expectations in webhook operations.
 

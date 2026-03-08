@@ -23,4 +23,11 @@ return [
         'exports_disk' => 'exports',
         'artifacts_disk' => 'artifacts',
     ],
+    'tenancy' => [
+        'header' => env('TENANCY_HEADER', 'X-Tenant-Id'),
+        'route_parameters' => [
+            'tenantId',
+            'tenant',
+        ],
+    ],
 ];

@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-08`
 
-Overall Progress: `14% (10/70 tasks completed)`
+Overall Progress: `15% (11/70 tasks completed)`
 
 Active Task: `None`
 
@@ -38,7 +38,7 @@ Active Task: `None`
 
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
-| T011 | Todo | Implement tenant request context resolution and infrastructure-level tenant scoping. | T005, T009 | Middleware, tenant context service, scope adapters. | Feature tests prove no cross-tenant leakage. |
+| T011 | Done | Implement tenant request context resolution and infrastructure-level tenant scoping. | T005, T009 | Middleware, tenant context service, scope adapters. | Feature tests prove no cross-tenant leakage. |
 | T012 | Todo | Implement correlation, request, and causation ID propagation across HTTP, jobs, and events. | T005 | Request metadata middleware, context propagation helpers. | Logs and traces contain stable IDs end to end. |
 | T013 | Todo | Implement the standard API error envelope and exception mapping layer. | T004, T005 | Exception handler strategy, shared error DTOs, error codes. | Feature tests validate status codes and payload shape. |
 | T014 | Todo | Implement the audit event foundation with immutable persistence and actor metadata. | T011, T012, T013 | Audit schema, repository, writer service, retention hooks. | Audit records capture before and after values where required. |

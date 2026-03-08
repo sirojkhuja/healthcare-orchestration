@@ -8,7 +8,8 @@ Codex must read, in this order:
 2. [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md)
 3. [progress-workflow.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/progress-workflow.md)
 4. [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md)
-5. the most relevant module, API, security, testing, and observability documents
+5. [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) when the task touches tenant-owned data or routes
+6. the most relevant module, API, security, testing, and observability documents
 
 ## Golden Path for Features
 

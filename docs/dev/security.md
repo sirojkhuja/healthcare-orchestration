@@ -11,6 +11,8 @@
 ## Tenant and Access Control
 
 - Tenant isolation is mandatory for every tenant-owned record.
+- Tenant context conflicts between headers and route scope must fail closed.
+- Missing tenant context on tenant-owned endpoints must fail with a client error instead of returning unscoped data.
 - Authorization is policy-driven and role-based.
 - Permission caches must be invalidated on relevant changes.
 - Admin overrides must be explicit, auditable, and narrow in scope.

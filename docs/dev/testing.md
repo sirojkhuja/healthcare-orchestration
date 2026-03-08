@@ -22,6 +22,7 @@
 - HTTP endpoints
 - auth and authorization behavior
 - tenant scoping
+- tenant context resolution from headers and route parameters
 - validation and error handling
 - serialization and pagination
 
@@ -55,6 +56,7 @@
 
 - IAM: auth, MFA, token lifecycle, RBAC, rate limits
 - Tenancy: tenant scope leakage tests, settings, limits
+- Tenancy: missing tenant context, conflicting tenant context, and write-guard behavior
 - Scheduling: slot conflicts, transition guards, reminder rules
 - Billing: invoice lifecycle, idempotent payments, reconciliation
 - Claims: adjudication transitions and attachment handling

@@ -11,8 +11,9 @@ The split documents in this repository are derived from that source and exist to
 1. Start with [source-of-truth-policy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/source-of-truth-policy.md).
 2. Review [overview.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/product/overview.md) and [modules-and-domain.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/product/modules-and-domain.md).
 3. Read [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md) and [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md).
-4. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
-5. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+4. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
+5. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
+6. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
 
 ## Documentation Areas
 
@@ -33,6 +34,7 @@ The split documents in this repository are derived from that source and exist to
 ### Engineering
 
 - [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md)
+- [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md)
 - [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md)
 - [testing.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/testing.md)
 - [security.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/security.md)
