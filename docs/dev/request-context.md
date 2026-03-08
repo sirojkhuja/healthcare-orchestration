@@ -25,7 +25,7 @@ This document defines the request metadata contract for HTTP, jobs, and emitted 
 
 ## Event and Message Rules
 
-- Emitted messages must carry `correlation_id` and `causation_id`.
+- Emitted messages must carry `request_id`, `correlation_id`, and `causation_id`.
 - Event helpers must source metadata from the active request context instead of generating unrelated identifiers.
 - The current request identifier is the default causation value for emitted downstream messages unless a more specific causation identifier is provided.
 

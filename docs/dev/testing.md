@@ -70,6 +70,7 @@
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation
 - Shared platform: migration freshness, UUID primary keys, and partial index presence
 - Shared platform: tenant-prefixed cache keys, item invalidation, and namespace invalidation behavior
+- Shared platform: outbox delivery, retry scheduling, and consumer replay suppression
 - Audit: immutable persistence, actor capture, before and after values, and retention pruning
 
 ## Release Gate

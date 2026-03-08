@@ -14,17 +14,26 @@ use App\Modules\IdentityAccess\Application\Events\PermissionProjectionInvalidate
 use App\Modules\IdentityAccess\Infrastructure\Authorization\CachedPermissionAuthorizer;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\NullPermissionProjectionRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
+use App\Shared\Application\Contracts\ConsumerReceiptStore;
 use App\Shared\Application\Contracts\EventContextFactory;
 use App\Shared\Application\Contracts\FileStorageManager;
 use App\Shared\Application\Contracts\IdempotencyStore;
+use App\Shared\Application\Contracts\KafkaProducer;
+use App\Shared\Application\Contracts\OutboxRepository;
 use App\Shared\Application\Contracts\RequestMetadataContext;
 use App\Shared\Application\Contracts\TenantCache;
 use App\Shared\Application\Contracts\TenantContext;
+use App\Shared\Application\Services\ExponentialBackoffRetryStrategy;
+use App\Shared\Application\Services\IdempotentKafkaConsumerBus;
+use App\Shared\Application\Services\OutboxRelay;
 use App\Shared\Infrastructure\Cache\TenantCacheKeyBuilder;
 use App\Shared\Infrastructure\Cache\VersionedTenantCache;
 use App\Shared\Infrastructure\Context\ContextBackedRequestMetadataContext;
 use App\Shared\Infrastructure\Context\StandardEventContextFactory;
 use App\Shared\Infrastructure\Idempotency\Persistence\DatabaseIdempotencyStore;
+use App\Shared\Infrastructure\Messaging\Kafka\LongLangKafkaProducer;
+use App\Shared\Infrastructure\Messaging\Persistence\DatabaseConsumerReceiptStore;
+use App\Shared\Infrastructure\Messaging\Persistence\DatabaseOutboxRepository;
 use App\Shared\Infrastructure\Persistence\TenantScope;
 use App\Shared\Infrastructure\Storage\FilesystemFileStorageManager;
 use App\Shared\Infrastructure\Tenancy\RequestTenantContext;
@@ -38,8 +47,14 @@ final class MedFlowServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CacheKeyBuilder::class, TenantCacheKeyBuilder::class);
+        $this->app->singleton(ConsumerReceiptStore::class, DatabaseConsumerReceiptStore::class);
         $this->app->singleton(FileStorageManager::class, FilesystemFileStorageManager::class);
         $this->app->bind(IdempotencyStore::class, DatabaseIdempotencyStore::class);
+        $this->app->singleton(KafkaProducer::class, LongLangKafkaProducer::class);
+        $this->app->singleton(OutboxRepository::class, DatabaseOutboxRepository::class);
+        $this->app->singleton(ExponentialBackoffRetryStrategy::class, ExponentialBackoffRetryStrategy::class);
+        $this->app->singleton(IdempotentKafkaConsumerBus::class, IdempotentKafkaConsumerBus::class);
+        $this->app->singleton(OutboxRelay::class, OutboxRelay::class);
         $this->app->singleton(TenantCache::class, VersionedTenantCache::class);
         $this->app->bind(AuditActorResolver::class, AuthAuditActorResolver::class);
         $this->app->bind(AuditEventRepository::class, DatabaseAuditEventRepository::class);

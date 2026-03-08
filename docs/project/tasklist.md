@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-08`
 
-Overall Progress: `25% (18/70 tasks completed)`
+Overall Progress: `27% (19/70 tasks completed)`
 
 Active Task: `None`
 
@@ -46,7 +46,7 @@ Active Task: `None`
 | T016 | Done | Implement idempotency key storage and middleware for protected commands. | T011, T013 | Idempotency storage, middleware, replay policy. | Duplicate payment and scheduling requests are safely deduplicated. |
 | T017 | Done | Create base PostgreSQL migrations, UUID conventions, indexing rules, and common schema primitives. | T004 | Shared migration helpers, base tables, index strategy. | Migration suite runs cleanly on a fresh database. |
 | T018 | Done | Implement Redis cache infrastructure with tenant-prefixed keys and explicit invalidation helpers. | T011, T017 | Cache contracts, key builder, invalidation listeners. | Cache tests prove tenant isolation and invalidation behavior. |
-| T019 | Todo | Implement Kafka outbox schema, relay worker, retry strategy, and consumer base framework. | T017, T012 | Outbox tables, relay process, consumer abstraction, lag metrics. | Integration tests cover publish, retry, and replay behavior. |
+| T019 | Done | Implement Kafka outbox schema, relay worker, retry strategy, and consumer base framework. | T017, T012 | Outbox tables, relay process, consumer abstraction, lag metrics. | Integration tests cover publish, retry, and replay behavior. |
 
 ## Phase 3: IAM and Organization
 

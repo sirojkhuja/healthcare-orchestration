@@ -123,6 +123,7 @@ docs/
 - Kafka is the event backbone.
 - Domain events are persisted through an outbox table inside the same transaction as business changes.
 - Consumers must be idempotent and operationally observable.
+- Relay workers publish claimed outbox records and schedule bounded retries on failures.
 
 ## Integration Model
 
