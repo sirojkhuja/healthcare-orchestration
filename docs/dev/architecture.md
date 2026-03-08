@@ -116,6 +116,7 @@ docs/
 - Cache keys are tenant-prefixed.
 - Cached domains include permissions, availability, settings, token metadata, rate limits, and reference data.
 - Permission caches must invalidate through domain or application events when RBAC state changes.
+- Shared cache helpers support item invalidation and namespace version bumps per tenant scope.
 
 ## Messaging Model
 

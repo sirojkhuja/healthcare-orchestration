@@ -5,13 +5,13 @@ namespace App\Modules\IdentityAccess\Infrastructure\Authorization;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionAuthorizer;
 use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionRepository;
 use App\Modules\IdentityAccess\Application\Data\PermissionProjection;
-use Illuminate\Contracts\Cache\Factory as CacheFactory;
+use App\Shared\Application\Contracts\TenantCache;
 
 final class CachedPermissionAuthorizer implements PermissionAuthorizer
 {
     public function __construct(
         private readonly PermissionProjectionRepository $permissionProjectionRepository,
-        private readonly CacheFactory $cacheFactory,
+        private readonly TenantCache $tenantCache,
     ) {}
 
     #[\Override]
@@ -23,24 +23,20 @@ final class CachedPermissionAuthorizer implements PermissionAuthorizer
     #[\Override]
     public function forget(string $userId, ?string $tenantId): void
     {
-        $this->cacheFactory->store()->forget($this->cacheKey($userId, $tenantId));
+        $this->tenantCache->forget('permissions', [$userId], $tenantId);
     }
 
     private function projection(string $userId, ?string $tenantId): PermissionProjection
     {
         /** @var PermissionProjection $projection */
-        $projection = $this->cacheFactory->store()->rememberForever(
-            $this->cacheKey($userId, $tenantId),
+        $projection = $this->tenantCache->remember(
+            'permissions',
+            [$userId],
+            $tenantId,
+            null,
             fn () => $this->permissionProjectionRepository->forUser($userId, $tenantId),
         );
 
         return $projection;
-    }
-
-    private function cacheKey(string $userId, ?string $tenantId): string
-    {
-        $tenantKey = $tenantId ?? 'global';
-
-        return "permissions:{$tenantKey}:{$userId}";
     }
 }

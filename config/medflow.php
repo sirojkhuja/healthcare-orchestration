@@ -38,6 +38,9 @@ return [
         'replay_header' => env('IDEMPOTENCY_REPLAY_HEADER', 'X-Idempotent-Replay'),
         'retention_hours' => (int) env('IDEMPOTENCY_RETENTION_HOURS', 24),
     ],
+    'cache' => [
+        'namespace' => env('MEDFLOW_CACHE_NAMESPACE', 'medflow'),
+    ],
     'tenancy' => [
         'header' => env('TENANCY_HEADER', 'X-Tenant-Id'),
         'route_parameters' => [

@@ -14,7 +14,7 @@ The platform needs fast access to permission data, availability views, settings,
 
 ## Decision
 
-Use Redis with TLS as a cache-aside store. Keys are tenant-prefixed. Cache invalidation is driven by domain events and explicit application actions.
+Use Redis with TLS as a cache-aside store. Keys are tenant-prefixed through shared cache helpers. Cache invalidation is driven by domain events and explicit application actions, using item-level forgets and namespace version bumps per tenant scope.
 
 ## Alternatives Considered
 
@@ -33,3 +33,4 @@ Use Redis with TLS as a cache-aside store. Keys are tenant-prefixed. Cache inval
 - define shared cache contract
 - add tenant-prefixed key builder
 - add cache invalidation hooks from domain events
+- route existing permission caching through the shared cache helpers

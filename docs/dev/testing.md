@@ -69,6 +69,7 @@
 - Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation
 - Shared platform: migration freshness, UUID primary keys, and partial index presence
+- Shared platform: tenant-prefixed cache keys, item invalidation, and namespace invalidation behavior
 - Audit: immutable persistence, actor capture, before and after values, and retention pruning
 
 ## Release Gate

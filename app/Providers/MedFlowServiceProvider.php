@@ -13,11 +13,15 @@ use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionReposit
 use App\Modules\IdentityAccess\Application\Events\PermissionProjectionInvalidated;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\CachedPermissionAuthorizer;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\NullPermissionProjectionRepository;
+use App\Shared\Application\Contracts\CacheKeyBuilder;
 use App\Shared\Application\Contracts\EventContextFactory;
 use App\Shared\Application\Contracts\FileStorageManager;
 use App\Shared\Application\Contracts\IdempotencyStore;
 use App\Shared\Application\Contracts\RequestMetadataContext;
+use App\Shared\Application\Contracts\TenantCache;
 use App\Shared\Application\Contracts\TenantContext;
+use App\Shared\Infrastructure\Cache\TenantCacheKeyBuilder;
+use App\Shared\Infrastructure\Cache\VersionedTenantCache;
 use App\Shared\Infrastructure\Context\ContextBackedRequestMetadataContext;
 use App\Shared\Infrastructure\Context\StandardEventContextFactory;
 use App\Shared\Infrastructure\Idempotency\Persistence\DatabaseIdempotencyStore;
@@ -33,8 +37,10 @@ final class MedFlowServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
+        $this->app->singleton(CacheKeyBuilder::class, TenantCacheKeyBuilder::class);
         $this->app->singleton(FileStorageManager::class, FilesystemFileStorageManager::class);
         $this->app->bind(IdempotencyStore::class, DatabaseIdempotencyStore::class);
+        $this->app->singleton(TenantCache::class, VersionedTenantCache::class);
         $this->app->bind(AuditActorResolver::class, AuthAuditActorResolver::class);
         $this->app->bind(AuditEventRepository::class, DatabaseAuditEventRepository::class);
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);

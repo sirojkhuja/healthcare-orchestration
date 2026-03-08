@@ -12,13 +12,14 @@ The split documents in this repository are derived from that source and exist to
 2. Review [overview.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/product/overview.md) and [modules-and-domain.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/product/modules-and-domain.md).
 3. Read [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md) and [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md).
 4. Read [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md) before touching migrations, indexes, UUIDs, or database schema helpers.
-5. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
-6. Read [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) before touching policies, permissions, RBAC, or protected routes.
-7. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
-8. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
-9. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
-10. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
-11. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+5. Read [caching.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/caching.md) before touching Redis usage, cache keys, or invalidation behavior.
+6. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
+7. Read [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) before touching policies, permissions, RBAC, or protected routes.
+8. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
+9. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
+10. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
+11. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
+12. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
 
 ## Documentation Areas
 
@@ -40,6 +41,7 @@ The split documents in this repository are derived from that source and exist to
 
 - [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md)
 - [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md)
+- [caching.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/caching.md)
 - [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md)
 - [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md)
 - [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md)
