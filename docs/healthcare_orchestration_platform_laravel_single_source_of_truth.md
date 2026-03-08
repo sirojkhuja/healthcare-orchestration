@@ -37,7 +37,7 @@ Build an enterprise-grade, multi-tenant, event-driven **Healthcare Workflow & In
 - Swagger UI **5.31.2**
 
 ### Testing & Quality
-- Pest **4.2.0**
+- Pest **4.4.1**
 - PHPStan (max level; pinned in composer)
 - Psalm (strict; pinned in composer)
 - Laravel Pint (pinned; project config)

@@ -1,0 +1,39 @@
+name: Application CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x .githooks/pre-commit .githooks/pre-push scripts/*.sh
+
+      - name: Validate task list
+        run: bash scripts/check-tasklist.sh
+
+      - name: Validate governance artifacts
+        run: bash scripts/quality-gate.sh --docs-only
+
+      - name: Validate Docker Compose
+        run: docker compose config >/dev/null
+
+      - name: Bootstrap application workspace
+        run: make bootstrap
+
+      - name: Run lint
+        run: make lint
+
+      - name: Run analysis
+        run: make analyse
+
+      - name: Run tests
+        run: make test
+
+      - name: Run build
+        run: make build

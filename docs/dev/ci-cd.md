@@ -27,7 +27,12 @@ Future Laravel bootstrap work must provide these repository commands:
 - `make build`
 - `make verify`
 
-Each command may delegate to Composer scripts, Docker services, or both, but the interface must stay stable.
+Each command delegates through Docker Compose and Composer scripts in the current foundation setup, and the interface must stay stable even if the internals change later.
+
+## Current Workflow Files
+
+- `.github/workflows/governance.yml` validates tasklist and governance artifacts.
+- `.github/workflows/ci.yml` validates Docker Compose, runs `make bootstrap`, and then runs lint, analysis, tests, and build through the stable `make` contract.
 
 ## Release Rules
 

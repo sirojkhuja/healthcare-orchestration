@@ -16,6 +16,11 @@ required_files=(
   ".githooks/pre-commit"
   ".githooks/pre-push"
   "Makefile"
+  "docker-compose.yml"
+  "scripts/compose-app.sh"
+  "scripts/composer.sh"
+  "scripts/artisan.sh"
+  "scripts/node.sh"
 )
 
 for file in "${required_files[@]}"; do
@@ -39,6 +44,10 @@ if [[ ! -x "scripts/check-tasklist.sh" || ! -x "scripts/install-git-hooks.sh" ]]
 fi
 
 if [[ "$docs_only" == "--docs-only" || ! -f composer.json ]]; then
+  if [[ -f docker-compose.yml ]]; then
+    docker compose config >/dev/null
+  fi
+
   echo "Documentation and governance quality gate passed."
   exit 0
 fi

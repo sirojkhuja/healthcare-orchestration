@@ -23,18 +23,25 @@
 ## Local Environment Standards
 
 - `.env.example` must document required variables without secrets
+- local runtime uses `SESSION_DRIVER=file` until IAM-backed session persistence is implemented
 - test environment variables must be isolated from local development values
 - provider credentials must use sandbox accounts in non-production environments
 
 ## Developer Startup Sequence
 
-1. install dependencies
-2. copy environment template
-3. start Docker services
-4. run migrations
-5. seed minimal reference data
-6. run quality gates
-7. begin with the current `In Progress` task only
+1. run `make bootstrap`
+2. start the base runtime with `docker compose up -d nginx postgres redis kafka`
+3. start observability services only when needed with `docker compose --profile observability up -d`
+4. run `make verify`
+5. begin with the current `In Progress` task only
+
+## Local Command Contract
+
+- `make bootstrap` builds the app image, installs Composer and Node dependencies through Docker Compose, and runs the baseline test suite.
+- `make format`, `make lint`, `make analyse`, and `make test` execute through the Compose `app` service.
+- `make build` executes through the Compose `node` service.
+- `make verify` runs the full Composer verification path through Compose and then runs the frontend build through Compose.
+- `docker compose config` must validate before any compose change is committed.
 
 ## Local Safety Rules
 

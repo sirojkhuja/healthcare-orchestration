@@ -8,9 +8,17 @@
 /.env
 /.env.*
 !.env.example
+!.env.testing
 /storage/*.key
 /storage/app/*
 !/storage/app/.gitkeep
+!/storage/app/private/
+!/storage/app/private/attachments/
+!/storage/app/private/attachments/.gitkeep
+!/storage/app/private/exports/
+!/storage/app/private/exports/.gitkeep
+!/storage/app/private/artifacts/
+!/storage/app/private/artifacts/.gitkeep
 /storage/framework/cache/*
 !/storage/framework/cache/.gitkeep
 /storage/framework/sessions/*
@@ -23,6 +31,9 @@
 !/storage/logs/.gitkeep
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
+/database/database.sqlite
+/public/build/
 /coverage/
 /build/
 /tmp/
+/.tmp-laravel/

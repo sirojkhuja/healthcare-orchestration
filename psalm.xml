@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<psalm
+    cacheDirectory="build/psalm"
+    errorLevel="1"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
+    resolveFromConfigFile="true"
+>
+    <projectFiles>
+        <directory name="app" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+</psalm>

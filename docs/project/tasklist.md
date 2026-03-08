@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-08`
 
-Overall Progress: `4% (3/70 tasks completed)`
+Overall Progress: `14% (10/70 tasks completed)`
 
 Active Task: `None`
 
@@ -26,13 +26,13 @@ Active Task: `None`
 
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
-| T004 | Todo | Bootstrap Laravel 12 with PHP 8.5.3, Composer lock discipline, and pinned core tooling. | T002, T003 | `composer.json`, Laravel app skeleton, pinned dependencies. | `composer validate`, app boots, baseline tests pass. |
-| T005 | Todo | Create the module skeleton and shared kernel scaffolding under `app/Modules` and `app/Shared`. | T004 | Module directories, base namespaces, service provider wiring. | Autoloading works and architecture tests can discover modules. |
-| T006 | Todo | Implement the stable command contract for `make format`, `make lint`, `make analyse`, `make test`, `make build`, and `make verify`. | T004 | `Makefile`, Composer scripts, command documentation. | Each command executes successfully or fails with clear actionable output. |
-| T007 | Todo | Build Docker Compose for app, proxy, PostgreSQL, Redis, Kafka, and observability services with private internal networking. | T004 | `docker-compose.yml`, service configs, local runbook. | Services start and stateful ports stay private. |
-| T008 | Todo | Add GitHub Actions pipeline scaffolding for governance, quality, and future application CI. | T002, T006, T007 | Workflow YAML files and documented job contract. | Workflows validate on push and PR events. |
-| T009 | Todo | Add environment templates and config layering for local, test, and production-style settings. | T004, T007 | `.env.example`, config strategy, secrets contract. | Environments boot without committed secrets. |
-| T010 | Todo | Define shared storage abstractions for attachments, exports, and generated artifacts. | T005 | Storage interfaces, config contract, document handling approach. | Unit tests cover storage selection and path rules. |
+| T004 | Done | Bootstrap Laravel 12 with PHP 8.5.3, Composer lock discipline, and pinned core tooling. | T002, T003 | `composer.json`, Laravel app skeleton, pinned dependencies. | `composer validate`, app boots, baseline tests pass. |
+| T005 | Done | Create the module skeleton and shared kernel scaffolding under `app/Modules` and `app/Shared`. | T004 | Module directories, base namespaces, service provider wiring. | Autoloading works and architecture tests can discover modules. |
+| T006 | Done | Implement the stable command contract for `make format`, `make lint`, `make analyse`, `make test`, `make build`, and `make verify`. | T004 | `Makefile`, Composer scripts, command documentation. | Each command executes successfully or fails with clear actionable output. |
+| T007 | Done | Build Docker Compose for app, proxy, PostgreSQL, Redis, Kafka, and observability services with private internal networking. | T004 | `docker-compose.yml`, service configs, local runbook. | Services start and stateful ports stay private. |
+| T008 | Done | Add GitHub Actions pipeline scaffolding for governance, quality, and future application CI. | T002, T006, T007 | Workflow YAML files and documented job contract. | Workflows validate on push and PR events. |
+| T009 | Done | Add environment templates and config layering for local, test, and production-style settings. | T004, T007 | `.env.example`, config strategy, secrets contract. | Environments boot without committed secrets. |
+| T010 | Done | Define shared storage abstractions for attachments, exports, and generated artifacts. | T005 | Storage interfaces, config contract, document handling approach. | Unit tests cover storage selection and path rules. |
 
 ## Phase 2: Shared Platform Capabilities
 
