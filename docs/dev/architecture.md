@@ -81,7 +81,7 @@ docs/
 ## Request Flow
 
 1. HTTP request enters Laravel edge.
-2. Tenant and correlation context are resolved.
+2. Request metadata, tenant, and correlation context are resolved.
 3. Authorization is checked.
 4. Presentation layer maps transport payload into an application command or query.
 5. Application handler coordinates domain logic and infrastructure boundaries.

@@ -1,6 +1,7 @@
 <?php
 
 use App\Shared\Application\Exceptions\TenantContextException;
+use App\Shared\Infrastructure\Context\Http\Middleware\ResolveRequestMetadata;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\RequireTenantContext;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\ResolveTenantContext;
 use Illuminate\Foundation\Application;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(ResolveRequestMetadata::class);
         $middleware->appendToGroup('api', ResolveTenantContext::class);
         $middleware->alias([
             'tenant.require' => RequireTenantContext::class,

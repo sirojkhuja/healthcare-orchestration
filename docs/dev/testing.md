@@ -23,6 +23,7 @@
 - auth and authorization behavior
 - tenant scoping
 - tenant context resolution from headers and route parameters
+- request metadata headers and propagation across queue boundaries
 - validation and error handling
 - serialization and pagination
 
@@ -61,6 +62,7 @@
 - Billing: invoice lifecycle, idempotent payments, reconciliation
 - Claims: adjudication transitions and attachment handling
 - Integrations: retries, signature verification, mapper correctness
+- Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
 
 ## Release Gate
 

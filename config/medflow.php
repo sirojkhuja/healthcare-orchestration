@@ -23,6 +23,13 @@ return [
         'exports_disk' => 'exports',
         'artifacts_disk' => 'artifacts',
     ],
+    'request_context' => [
+        'headers' => [
+            'request_id' => env('REQUEST_ID_HEADER', 'X-Request-Id'),
+            'correlation_id' => env('CORRELATION_ID_HEADER', 'X-Correlation-Id'),
+            'causation_id' => env('CAUSATION_ID_HEADER', 'X-Causation-Id'),
+        ],
+    ],
     'tenancy' => [
         'header' => env('TENANCY_HEADER', 'X-Tenant-Id'),
         'route_parameters' => [

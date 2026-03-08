@@ -4,6 +4,7 @@
 
 - Emit structured JSON logs.
 - Include `X-Request-Id` and `X-Correlation-Id` in request context and logs.
+- Include `X-Causation-Id` in request context, queued jobs, and emitted message metadata.
 - Standardize log levels and event names.
 - Log business-significant state transitions and integration failures.
 
@@ -16,6 +17,8 @@ Instrument:
 - database access where sampling permits
 - Kafka produce and consume paths
 - long-running background jobs
+
+Use request, correlation, and causation identifiers as the primary lineage bridge until OpenTelemetry propagation is fully implemented.
 
 ## Metrics
 

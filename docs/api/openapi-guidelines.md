@@ -22,6 +22,7 @@ Every endpoint definition must include:
 - operation ID
 - tags
 - authentication requirements
+- documented request and correlation response headers where applicable
 - request body schema if applicable
 - response schemas for success and error cases
 - pagination schema when list endpoints paginate
@@ -76,6 +77,7 @@ Document:
 
 - Document auth requirements on every endpoint.
 - Describe tenant scoping behavior where relevant.
+- Document `X-Request-Id` and `X-Correlation-Id` response headers for API operations.
 - For tenant-owned endpoints, document the `X-Tenant-Id` header unless the route parameter is the documented tenant context source.
 - If a tenant-owned endpoint accepts both route tenant scope and `X-Tenant-Id`, document that mismatches fail with `403`.
 - Mark admin-only endpoints explicitly.
