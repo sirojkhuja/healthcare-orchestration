@@ -8,6 +8,8 @@ This document defines the MedFlow API authentication contract.
 - Access tokens are bearer tokens signed with `HS256`.
 - Refresh tokens are opaque random secrets and are stored only as SHA-256 hashes in `auth_sessions`.
 - JWTs carry `sub`, `sid`, and `jti` claims for user, session, and access-token identity.
+- MFA uses authenticator-app TOTP secrets plus one-time recovery codes.
+- MFA-enabled logins create a short-lived challenge instead of issuing tokens immediately.
 
 ## Session Rules
 
@@ -22,8 +24,14 @@ This document defines the MedFlow API authentication contract.
 ## Endpoint Contract
 
 - `POST /api/v1/auth/login` accepts email and password, then returns user, session, and token payloads.
+- MFA-enabled logins return `401 MFA_REQUIRED` with a `challenge_id` and `expires_at` instead of a token pair.
 - `POST /api/v1/auth/password/forgot` accepts an email address and always returns `202 Accepted` with `password_reset_requested`.
 - `POST /api/v1/auth/password/reset` accepts email, reset token, password, and password confirmation, then revokes all active sessions after a successful reset.
+- `POST /api/v1/auth/mfa/setup` requires a valid bearer token and returns a TOTP secret, an `otpauth://` URI, and one-time recovery codes with `mfa_setup_pending`.
+- `POST /api/v1/auth/mfa/verify` accepts either an authenticated setup-confirmation code or an MFA login challenge plus a TOTP or recovery code.
+- Setup verification returns `200` with `mfa_enabled`.
+- Login-challenge verification returns the same `user`, `session`, and `tokens` payload shape as a normal login.
+- `POST /api/v1/auth/mfa/disable` requires a valid bearer token and a valid TOTP or recovery code before disabling MFA.
 - `POST /api/v1/auth/refresh` accepts a refresh token and returns a rotated access and refresh token pair.
 - `POST /api/v1/auth/logout` requires a valid bearer token and revokes the current session.
 - `GET /api/v1/auth/me` requires a valid bearer token and returns the authenticated user plus current session id.
@@ -42,6 +50,9 @@ This document defines the MedFlow API authentication contract.
 - `AUTH_JWT_SECRET` may override the signing key; otherwise JWT signing falls back to `APP_KEY`.
 - JWT issuer and audience are validated on decode.
 - Refresh tokens must never be logged, stored in plaintext, or returned after logout.
+- MFA secrets must be encrypted at rest.
+- Recovery codes must be returned only once and persisted only as hashes.
+- MFA setup may be restarted while still pending, but setup must fail closed once MFA is already enabled.
 - Password reset requests must not disclose whether the submitted email exists.
 - Password reset tokens are handled through Laravel's password broker and must never be logged or returned in API responses.
 - Future MFA, API key, and Google OAuth work must preserve the same audit and session guarantees.
@@ -49,6 +60,10 @@ This document defines the MedFlow API authentication contract.
 ## Audit Rules
 
 - Login writes `auth.login`.
+- MFA setup start writes `auth.mfa.setup_started`.
+- MFA challenge creation writes `auth.mfa.challenge_required`.
+- MFA enablement writes `auth.mfa.enabled`.
+- MFA disablement writes `auth.mfa.disabled`.
 - Password reset request writes `auth.password_reset_requested`.
 - Password reset completion writes `auth.password_reset_completed`.
 - Refresh writes `auth.refresh`.
@@ -56,12 +71,23 @@ This document defines the MedFlow API authentication contract.
 - Single-session revocation writes `auth.session_revoked`.
 - Revoke-all writes `auth.sessions_revoked_all`.
 - Login, refresh, logout, and single-session revocation use `auth_session` as the object type and the auth session id as the object id.
+- MFA challenge creation uses `mfa_challenge` as the object type and the MFA challenge id as the object id.
+- MFA enablement and disablement use `mfa_credential` as the object type and the MFA credential id as the object id.
 - Password reset request uses `password_reset_request` as the object type and a hashed lowercase email as the object id.
 - Password reset completion and revoke-all use `user` as the object type and the user id as the object id.
 
+## Security Event Rules
+
+- MFA setup start writes `mfa.setup_started`.
+- MFA challenge creation writes `mfa.challenge_required`.
+- MFA challenge success writes `mfa.challenge_verified`.
+- MFA challenge failure writes `mfa.challenge_failed`.
+- Recovery code consumption writes `mfa.recovery_code_used`.
+- MFA disablement writes `mfa.disabled`.
+
 ## Testing Requirements
 
-- Feature tests must cover valid login, invalid credentials, `me`, refresh rotation, logout revocation, password reset request, password reset completion, and auth-session administration.
+- Feature tests must cover valid login, invalid credentials, MFA challenge responses, MFA setup, MFA verification with TOTP and recovery codes, MFA disable, `me`, refresh rotation, logout revocation, password reset request, password reset completion, and auth-session administration.
 - Tests must prove old access tokens stop working after refresh.
 - Tests must prove revoked sessions reject subsequent bearer token use.
 - Tests must prove password reset requests do not leak whether a user exists.

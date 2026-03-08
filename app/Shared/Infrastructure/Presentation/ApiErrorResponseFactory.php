@@ -2,6 +2,7 @@
 
 namespace App\Shared\Infrastructure\Presentation;
 
+use App\Modules\IdentityAccess\Application\Exceptions\MfaChallengeRequiredException;
 use App\Shared\Application\Contracts\RequestMetadataContext;
 use App\Shared\Application\Data\ApiError;
 use App\Shared\Application\Data\RequestMetadata;
@@ -66,6 +67,15 @@ final class ApiErrorResponseFactory
                 'VALIDATION_FAILED',
                 'The request payload is invalid.',
                 ['errors' => $throwable->errors()],
+            ],
+            $throwable instanceof MfaChallengeRequiredException => [
+                401,
+                'MFA_REQUIRED',
+                'Multi-factor authentication is required to complete login.',
+                [
+                    'challenge_id' => $throwable->challengeId,
+                    'expires_at' => $throwable->expiresAt->format(DATE_ATOM),
+                ],
             ],
             $throwable instanceof AuthenticationException => [
                 401,

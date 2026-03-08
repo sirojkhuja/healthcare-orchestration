@@ -27,7 +27,89 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthSessionResponse'
         '401':
-          description: Invalid credentials
+          description: Invalid credentials or MFA challenge required
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ApiErrorResponse'
+                  - $ref: '#/components/schemas/MfaRequiredErrorResponse'
+  /api/v1/auth/mfa/setup:
+    post:
+      operationId: SetupMfaCommand
+      tags: [IdentityAccess]
+      summary: Start MFA setup for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: MFA setup started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaSetupResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '409':
+          description: MFA is already enabled for the actor
+  /api/v1/auth/mfa/verify:
+    post:
+      operationId: VerifyMfaCommand
+      tags: [IdentityAccess]
+      summary: Confirm MFA setup or complete an MFA login challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaVerifyRequest'
+      responses:
+        '200':
+          description: MFA setup completed or login challenge verified
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MfaEnabledResponse'
+                  - $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          description: MFA challenge is invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: MFA code or recovery code is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/auth/mfa/disable:
+    post:
+      operationId: DisableMfaCommand
+      tags: [IdentityAccess]
+      summary: Disable MFA for the authenticated user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaDisableRequest'
+      responses:
+        '200':
+          description: MFA disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaDisabledResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '409':
+          description: MFA is not enabled for the actor
+        '422':
+          description: MFA code or recovery code is invalid
   /api/v1/auth/logout:
     post:
       operationId: LogoutCommand
@@ -202,6 +284,23 @@ components:
       properties:
         refresh_token:
           type: string
+    MfaVerifyRequest:
+      type: object
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        recovery_code:
+          type: string
+    MfaDisableRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        recovery_code:
+          type: string
     PasswordResetRequest:
       type: object
       required: [email]
@@ -255,6 +354,37 @@ components:
         status:
           type: string
           const: password_reset
+    MfaSetupResponse:
+      type: object
+      required: [status, credential, secret, otpauth_uri, recovery_codes]
+      properties:
+        status:
+          type: string
+          const: mfa_setup_pending
+        credential:
+          $ref: '#/components/schemas/SessionSummary'
+        secret:
+          type: string
+        otpauth_uri:
+          type: string
+        recovery_codes:
+          type: array
+          items:
+            type: string
+    MfaEnabledResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: mfa_enabled
+    MfaDisabledResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: mfa_disabled
     AuthSessionCollectionResponse:
       type: object
       required: [data]
@@ -263,6 +393,39 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuthSessionView'
+    ApiErrorResponse:
+      type: object
+      required: [code, message, details, trace_id, correlation_id]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        trace_id:
+          type: string
+        correlation_id:
+          type: string
+    MfaRequiredErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiErrorResponse'
+        - type: object
+          properties:
+            code:
+              type: string
+              const: MFA_REQUIRED
+            details:
+              type: object
+              required: [challenge_id, expires_at]
+              properties:
+                challenge_id:
+                  type: string
+                  format: uuid
+                expires_at:
+                  type: string
+                  format: date-time
     SessionRevokedResponse:
       type: object
       required: [status]

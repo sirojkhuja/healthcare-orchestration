@@ -530,11 +530,15 @@ Standard error:
 
 ## 15. Security
 - OAuth2 / JWT
+- TOTP-based MFA with recovery codes for accounts that enable MFA
+- MFA-enabled logins must return `MFA_REQUIRED` with a short-lived challenge until second-factor verification succeeds
+- MFA secrets encrypted at rest; recovery codes stored only as hashes
 - Rate limiting per tenant and per IP
 - Webhook signature verification for all inbound callbacks
 - Encrypt integration secrets at rest
 - PII handling: field-level encryption for sensitive fields
 - Audit logging mandatory
+- Security event tracking mandatory for authentication, MFA, and other sensitive IAM actions
 
 ---
 

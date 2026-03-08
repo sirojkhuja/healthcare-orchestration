@@ -29,6 +29,15 @@ return [
     'auth' => [
         'access_token_ttl_minutes' => (int) env('AUTH_ACCESS_TOKEN_TTL_MINUTES', 15),
         'refresh_token_ttl_days' => (int) env('AUTH_REFRESH_TOKEN_TTL_DAYS', 30),
+        'mfa' => [
+            'issuer' => env('AUTH_MFA_ISSUER', 'MedFlow'),
+            'digits' => (int) env('AUTH_MFA_DIGITS', 6),
+            'period_seconds' => (int) env('AUTH_MFA_PERIOD_SECONDS', 30),
+            'window' => (int) env('AUTH_MFA_WINDOW', 1),
+            'challenge_ttl_minutes' => (int) env('AUTH_MFA_CHALLENGE_TTL_MINUTES', 10),
+            'recovery_codes_count' => (int) env('AUTH_MFA_RECOVERY_CODES_COUNT', 8),
+            'recovery_code_length' => (int) env('AUTH_MFA_RECOVERY_CODE_LENGTH', 10),
+        ],
         'jwt' => [
             'issuer' => env('AUTH_JWT_ISSUER', 'medflow'),
             'audience' => env('AUTH_JWT_AUDIENCE', 'medflow-api'),

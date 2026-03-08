@@ -67,7 +67,7 @@ Until full distributed tracing is implemented, `trace_id` uses the resolved requ
 
 | Code | HTTP | Meaning |
 | --- | --- | --- |
-| `MFA_REQUIRED` | `401` | Actor must complete MFA. |
+| `MFA_REQUIRED` | `401` | Actor must complete MFA. `details` must include `challenge_id` and `expires_at`. |
 | `API_KEY_REVOKED` | `401` | API key is no longer valid. |
 | `CONSENT_REQUIRED` | `403` | Action requires active consent. |
 | `DATA_ACCESS_REQUEST_NOT_APPROVED` | `403` | Requested compliance operation lacks approval. |

@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Modules\IdentityAccess\Application\Commands;
+
+final readonly class DisableMfaCommand
+{
+    public function __construct(
+        public ?string $code,
+        public ?string $recoveryCode,
+    ) {}
+}
