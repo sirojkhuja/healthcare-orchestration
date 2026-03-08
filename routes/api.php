@@ -10,6 +10,11 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
+use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantController;
+use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLifecycleController;
+use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLimitsController;
+use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantSettingsController;
+use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantUsageController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -45,6 +50,8 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
         Route::post('/devices', [DeviceController::class, 'register'])->name('devices.register');
         Route::delete('/devices/{deviceId}', [DeviceController::class, 'deregister'])->name('devices.deregister');
+        Route::get('/tenants', [TenantController::class, 'list'])->name('tenants.list');
+        Route::post('/tenants', [TenantController::class, 'create'])->name('tenants.create');
         Route::get('/profiles/me', [ProfileController::class, 'me'])->name('profiles.me.show');
         Route::patch('/profiles/me', [ProfileController::class, 'updateMe'])->name('profiles.me.update');
         Route::post('/profiles/me/avatar', [ProfileController::class, 'uploadMyAvatar'])->name('profiles.me.avatar.upload');
@@ -73,6 +80,20 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/users/{userId}:reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
                 Route::post('/users:bulk-import', [UserController::class, 'bulkImport'])->name('users.bulk-import');
                 Route::post('/users/bulk', [UserController::class, 'bulkUpdate'])->name('users.bulk-update');
+            });
+            Route::middleware('permission:tenants.view')->group(function (): void {
+                Route::get('/tenants/{tenantId}', [TenantController::class, 'show'])->name('tenants.show');
+                Route::get('/tenants/{tenantId}/usage', [TenantUsageController::class, 'show'])->name('tenants.usage.show');
+                Route::get('/tenants/{tenantId}/limits', [TenantLimitsController::class, 'show'])->name('tenants.limits.show');
+                Route::get('/tenants/{tenantId}/settings', [TenantSettingsController::class, 'show'])->name('tenants.settings.show');
+            });
+            Route::middleware('permission:tenants.manage')->group(function (): void {
+                Route::patch('/tenants/{tenantId}', [TenantController::class, 'update'])->name('tenants.update');
+                Route::delete('/tenants/{tenantId}', [TenantController::class, 'delete'])->name('tenants.delete');
+                Route::post('/tenants/{tenantId}:activate', [TenantLifecycleController::class, 'activate'])->name('tenants.activate');
+                Route::post('/tenants/{tenantId}:suspend', [TenantLifecycleController::class, 'suspend'])->name('tenants.suspend');
+                Route::put('/tenants/{tenantId}/limits', [TenantLimitsController::class, 'update'])->name('tenants.limits.update');
+                Route::put('/tenants/{tenantId}/settings', [TenantSettingsController::class, 'update'])->name('tenants.settings.update');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

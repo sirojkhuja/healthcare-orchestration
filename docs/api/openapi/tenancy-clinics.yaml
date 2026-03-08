@@ -1,0 +1,663 @@
+openapi: 3.1.1
+info:
+  title: MedFlow Tenancy and Clinics Fragment
+  version: 0.1.0
+paths:
+  /api/v1/tenants:
+    get:
+      operationId: ListTenantsQuery
+      tags: [Tenancy]
+      summary: List tenants visible to the authenticated actor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: acme
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, suspended]
+      responses:
+        '200':
+          description: Tenant memberships visible to the actor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateTenantCommand
+      tags: [Tenancy]
+      summary: Bootstrap a new tenant for the authenticated actor
+      description: Creates the tenant, default settings, default limits, an active creator membership, and a bootstrap Tenant Administrator role.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+            examples:
+              default:
+                value:
+                  name: Acme Health
+                  contact_email: ops@acme.test
+                  contact_phone: '+998901112233'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/tenants/{tenantId}:
+    get:
+      operationId: GetTenantQuery
+      tags: [Tenancy]
+      summary: Get one tenant inside tenant scope
+      description: The `{tenantId}` route parameter is the documented tenant context source. If `X-Tenant-Id` is also sent, it must match.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Tenant not visible to the actor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateTenantCommand
+      tags: [Tenancy]
+      summary: Update tenant registry fields
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantRequest'
+            examples:
+              rename:
+                value:
+                  name: Acme Health Updated
+                  contact_phone: '+998907770011'
+      responses:
+        '200':
+          description: Tenant updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantMutationResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Tenant not visible to the actor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteTenantCommand
+      tags: [Tenancy]
+      summary: Delete a suspended tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantMutationResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Tenant not visible to the actor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Tenant is not suspended
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/tenants/{tenantId}:activate:
+    post:
+      operationId: ActivateTenantCommand
+      tags: [Tenancy]
+      summary: Activate a suspended tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantMutationResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invalid tenant lifecycle transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/tenants/{tenantId}:suspend:
+    post:
+      operationId: SuspendTenantCommand
+      tags: [Tenancy]
+      summary: Suspend an active tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant suspended
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantMutationResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invalid tenant lifecycle transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/tenants/{tenantId}/usage:
+    get:
+      operationId: GetTenantUsageQuery
+      tags: [Tenancy]
+      summary: Get the tenant usage snapshot
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant usage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantUsageResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/tenants/{tenantId}/limits:
+    get:
+      operationId: GetTenantLimitsQuery
+      tags: [Tenancy]
+      summary: Get tenant limits
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant limits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantLimitsResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: UpdateTenantLimitsCommand
+      tags: [Tenancy]
+      summary: Replace tenant limits
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantLimitsRequest'
+            examples:
+              default:
+                value:
+                  users: 25
+                  clinics: 4
+                  providers: 80
+                  patients: 1000
+                  storage_gb: 150
+                  monthly_notifications: 10000
+      responses:
+        '200':
+          description: Tenant limits updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantLimitsMutationResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/tenants/{tenantId}/settings:
+    get:
+      operationId: GetTenantSettingsQuery
+      tags: [Tenancy]
+      summary: Get tenant settings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSettingsResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: UpdateTenantSettingsCommand
+      tags: [Tenancy]
+      summary: Replace tenant settings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantSettingsRequest'
+            examples:
+              default:
+                value:
+                  locale: uz
+                  timezone: Asia/Tashkent
+                  currency: UZS
+      responses:
+        '200':
+          description: Tenant settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSettingsMutationResponse'
+        '403':
+          description: Missing permission or conflicting tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  parameters:
+    TenantIdHeader:
+      name: X-Tenant-Id
+      in: header
+      required: false
+      description: Optional explicit tenant context. When provided with a tenant-scoped route, it must match the route tenant id.
+      schema:
+        type: string
+        format: uuid
+    TenantIdPath:
+      name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    ApiErrorResponse:
+      type: object
+      required: [code, message, details, trace_id, correlation_id]
+      properties:
+        code:
+          type: string
+          example: FORBIDDEN
+        message:
+          type: string
+          example: You are not allowed to perform this action.
+        details:
+          type: object
+          additionalProperties: true
+        trace_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+    CreateTenantRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        contact_email:
+          type: [string, 'null']
+          format: email
+        contact_phone:
+          type: [string, 'null']
+          maxLength: 32
+    Tenant:
+      type: object
+      required: [id, name, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended]
+        membership_status:
+          type: [string, 'null']
+          enum: [active, inactive, locked, null]
+        contact_email:
+          type: [string, 'null']
+          format: email
+        contact_phone:
+          type: [string, 'null']
+        activated_at:
+          type: [string, 'null']
+          format: date-time
+        suspended_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TenantCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tenant'
+    TenantResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Tenant'
+    TenantMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: tenant_created
+        data:
+          $ref: '#/components/schemas/Tenant'
+    UpdateTenantRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        contact_email:
+          type: [string, 'null']
+          format: email
+        contact_phone:
+          type: [string, 'null']
+          maxLength: 32
+    TenantSettings:
+      type: object
+      required: [locale, timezone, currency, updated_at]
+      properties:
+        locale:
+          type: [string, 'null']
+        timezone:
+          type: [string, 'null']
+        currency:
+          type: [string, 'null']
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    TenantSettingsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/TenantSettings'
+    TenantSettingsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: tenant_settings_updated
+        data:
+          $ref: '#/components/schemas/TenantSettings'
+    UpdateTenantSettingsRequest:
+      type: object
+      required: [locale, timezone, currency]
+      properties:
+        locale:
+          type: [string, 'null']
+        timezone:
+          type: [string, 'null']
+        currency:
+          type: [string, 'null']
+          minLength: 3
+          maxLength: 3
+    TenantLimits:
+      type: object
+      required: [users, clinics, providers, patients, storage_gb, monthly_notifications, updated_at]
+      properties:
+        users:
+          type: [integer, 'null']
+        clinics:
+          type: [integer, 'null']
+        providers:
+          type: [integer, 'null']
+        patients:
+          type: [integer, 'null']
+        storage_gb:
+          type: [number, 'null']
+        monthly_notifications:
+          type: [integer, 'null']
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    TenantLimitsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/TenantLimits'
+    TenantLimitsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: tenant_limits_updated
+        data:
+          $ref: '#/components/schemas/TenantLimits'
+    UpdateTenantLimitsRequest:
+      type: object
+      required: [users, clinics, providers, patients, storage_gb, monthly_notifications]
+      properties:
+        users:
+          type: [integer, 'null']
+          minimum: 0
+        clinics:
+          type: [integer, 'null']
+          minimum: 0
+        providers:
+          type: [integer, 'null']
+          minimum: 0
+        patients:
+          type: [integer, 'null']
+          minimum: 0
+        storage_gb:
+          type: [number, 'null']
+          minimum: 0
+        monthly_notifications:
+          type: [integer, 'null']
+          minimum: 0
+    UsageMetricInt:
+      type: object
+      required: [used, limit, remaining]
+      properties:
+        used:
+          type: integer
+        limit:
+          type: [integer, 'null']
+        remaining:
+          type: [integer, 'null']
+    UsageMetricNumber:
+      type: object
+      required: [used, limit, remaining]
+      properties:
+        used:
+          type: number
+        limit:
+          type: [number, 'null']
+        remaining:
+          type: [number, 'null']
+    TenantUsage:
+      type: object
+      required: [tenant_id, users, clinics, providers, patients, storage_gb, monthly_notifications]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        users:
+          $ref: '#/components/schemas/UsageMetricInt'
+        clinics:
+          $ref: '#/components/schemas/UsageMetricInt'
+        providers:
+          $ref: '#/components/schemas/UsageMetricInt'
+        patients:
+          $ref: '#/components/schemas/UsageMetricInt'
+        storage_gb:
+          $ref: '#/components/schemas/UsageMetricNumber'
+        monthly_notifications:
+          $ref: '#/components/schemas/UsageMetricInt'
+    TenantUsageResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/TenantUsage'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

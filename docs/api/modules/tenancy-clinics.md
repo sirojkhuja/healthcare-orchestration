@@ -46,6 +46,13 @@
 
 ## API Notes
 
+- `GET /tenants` is an authenticated tenant-discovery route and returns only tenants where the actor has a membership.
+- `POST /tenants` is an authenticated bootstrap route that creates a tenant, attaches the creator as an active member, and assigns a bootstrap `Tenant Administrator` role with the full permission catalog.
 - Tenant activation and suspension are administrative lifecycle transitions.
+- Tenant-specific routes use `{tenantId}` as a documented tenant context source and may also accept `X-Tenant-Id`; mismatches fail with tenant-scope violations.
+- Tenant suspension is exposed as a lifecycle state without removing tenant-administration access, so authorized actors can inspect and reactivate a suspended tenant.
+- Tenant settings currently contain `locale`, `timezone`, and `currency`.
+- Tenant limits currently contain `users`, `clinics`, `providers`, `patients`, `storage_gb`, and `monthly_notifications`.
+- Tenant usage returns `used`, `limit`, and `remaining` for each documented limit key. Not-yet-implemented resources report `0` usage until their modules exist.
 - Clinic settings, schedules, and room inventories remain tenant-owned data.
 - Location endpoints may expose approved global reference data.

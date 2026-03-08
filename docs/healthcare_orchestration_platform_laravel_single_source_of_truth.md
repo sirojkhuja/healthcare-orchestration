@@ -421,6 +421,10 @@ Standard error:
 - CRUD tenants
 - CRUD clinics
 - clinic settings
+- tenant bootstrap attaches the creator as an active member of the new tenant and assigns a bootstrap administrator role
+- tenant settings: locale, timezone, currency
+- tenant limits: users, clinics, providers, patients, storage_gb, monthly_notifications
+- tenant usage reports used, limit, and remaining values for each documented limit key
 
 ### 12.3 Users & RBAC
 - CRUD users
@@ -700,6 +704,13 @@ Standard error:
 - PUT `/tenants/{tenantId}/limits` → `UpdateTenantLimitsCommand` → Tenancy
 - GET `/tenants/{tenantId}/settings` → `GetTenantSettingsQuery` → Tenancy
 - PUT `/tenants/{tenantId}/settings` → `UpdateTenantSettingsCommand` → Tenancy
+
+Tenant route notes:
+- `GET /tenants` returns only tenants where the authenticated actor has a membership.
+- `POST /tenants` is an authenticated bootstrap route and does not require an active tenant context.
+- Tenant-specific routes accept `{tenantId}` as the documented tenant context source and may also accept `X-Tenant-Id`; mismatches fail closed.
+- Tenant lifecycle states are `active` and `suspended`.
+- Suspended tenants remain administratively accessible for authorized tenant actors so recovery and reactivation remain possible.
 
 ---
 

@@ -56,6 +56,12 @@ use App\Modules\IdentityAccess\Infrastructure\Profiles\Storage\AttachmentBackedP
 use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
+use App\Modules\TenantManagement\Application\Contracts\TenantConfigurationRepository;
+use App\Modules\TenantManagement\Application\Contracts\TenantMetricsRepository;
+use App\Modules\TenantManagement\Application\Contracts\TenantRepository;
+use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantConfigurationRepository;
+use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantMetricsRepository;
+use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
 use App\Shared\Application\Contracts\ConsumerReceiptStore;
 use App\Shared\Application\Contracts\EventContextFactory;
@@ -126,7 +132,10 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(PermissionProjectionRepository::class, DatabasePermissionProjectionRepository::class);
         $this->app->bind(RoleRepository::class, DatabaseRoleRepository::class);
         $this->app->scoped(RequestMetadataContext::class, ContextBackedRequestMetadataContext::class);
+        $this->app->bind(TenantConfigurationRepository::class, DatabaseTenantConfigurationRepository::class);
         $this->app->bind(TenantIpAllowlistRepository::class, DatabaseTenantIpAllowlistRepository::class);
+        $this->app->bind(TenantMetricsRepository::class, DatabaseTenantMetricsRepository::class);
+        $this->app->bind(TenantRepository::class, DatabaseTenantRepository::class);
         $this->app->bind(UserRoleAssignmentRepository::class, DatabaseUserRoleAssignmentRepository::class);
         $this->app->scoped(TenantContext::class, RequestTenantContext::class);
         $this->app->scoped(TenantScope::class, fn () => new TenantScope($this->app->make(TenantContext::class)));
