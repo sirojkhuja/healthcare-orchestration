@@ -72,6 +72,7 @@ Document:
 - uniqueness scope
 - retention window
 - replay behavior
+- replay response header when the original result is returned again
 
 ## Security Documentation
 

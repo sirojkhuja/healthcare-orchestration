@@ -5,6 +5,7 @@ namespace App\Shared\Infrastructure\Presentation;
 use App\Shared\Application\Contracts\RequestMetadataContext;
 use App\Shared\Application\Data\ApiError;
 use App\Shared\Application\Data\RequestMetadata;
+use App\Shared\Application\Exceptions\IdempotencyReplayException;
 use App\Shared\Application\Exceptions\InvalidTenantContext;
 use App\Shared\Application\Exceptions\MissingTenantContext;
 use App\Shared\Application\Exceptions\TenantScopeViolation;
@@ -89,6 +90,12 @@ final class ApiErrorResponseFactory
                 'TENANT_SCOPE_VIOLATION',
                 $throwable->getMessage(),
                 [],
+            ],
+            $throwable instanceof IdempotencyReplayException => [
+                409,
+                'IDEMPOTENCY_REPLAY',
+                $throwable->getMessage(),
+                $throwable->details,
             ],
             $throwable instanceof ModelNotFoundException, $throwable instanceof NotFoundHttpException => [
                 404,

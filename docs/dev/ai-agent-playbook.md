@@ -10,9 +10,10 @@ Codex must read, in this order:
 4. [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md)
 5. [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) when the task touches tenant-owned data or routes
 6. [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) when the task touches permissions, RBAC, policies, or protected routes
-7. [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) when the task touches request metadata, jobs, or emitted messages
-8. [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) when the task touches regulated data changes or retention behavior
-9. the most relevant module, API, security, testing, and observability documents
+7. [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) when the task touches protected commands, replay safety, payments, scheduling, or webhooks
+8. [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) when the task touches request metadata, jobs, or emitted messages
+9. [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) when the task touches regulated data changes or retention behavior
+10. the most relevant module, API, security, testing, and observability documents
 
 ## Golden Path for Features
 

@@ -33,6 +33,11 @@ return [
             'causation_id' => env('CAUSATION_ID_HEADER', 'X-Causation-Id'),
         ],
     ],
+    'idempotency' => [
+        'header' => env('IDEMPOTENCY_HEADER', 'Idempotency-Key'),
+        'replay_header' => env('IDEMPOTENCY_REPLAY_HEADER', 'X-Idempotent-Replay'),
+        'retention_hours' => (int) env('IDEMPOTENCY_RETENTION_HOURS', 24),
+    ],
     'tenancy' => [
         'header' => env('TENANCY_HEADER', 'X-Tenant-Id'),
         'route_parameters' => [

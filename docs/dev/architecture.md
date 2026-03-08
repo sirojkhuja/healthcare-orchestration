@@ -83,12 +83,13 @@ docs/
 1. HTTP request enters Laravel edge.
 2. Request metadata, tenant, and correlation context are resolved.
 3. Authorization is checked through tenant-aware permission projections.
-4. Presentation layer maps transport payload into an application command or query.
-5. Application handler coordinates domain logic and infrastructure boundaries.
-6. Domain logic applies policies, invariants, and state transitions.
-7. Infrastructure persists data, writes outbox records, and resolves integrations.
-8. Response DTO is mapped back to transport output.
-9. Logs, traces, and audit data are emitted.
+4. Protected commands may acquire an idempotency record before execution.
+5. Presentation layer maps transport payload into an application command or query.
+6. Application handler coordinates domain logic and infrastructure boundaries.
+7. Domain logic applies policies, invariants, and state transitions.
+8. Infrastructure persists data, writes outbox records, and resolves integrations.
+9. Response DTO is mapped back to transport output.
+10. Logs, traces, audit data, and replay metadata are emitted.
 
 ## Tenancy Model
 

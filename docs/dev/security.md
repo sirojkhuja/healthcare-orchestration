@@ -16,6 +16,7 @@
 - Authorization is policy-driven and role-based.
 - Permission caches must be invalidated on relevant changes.
 - Protected routes must bind permission checks to both the authenticated actor and active tenant context.
+- Payment, scheduling, and webhook mutation routes must require idempotency protection.
 - Admin overrides must be explicit, auditable, and narrow in scope.
 
 ## Data Protection

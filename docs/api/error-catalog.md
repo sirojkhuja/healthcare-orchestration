@@ -28,7 +28,7 @@ Until full distributed tracing is implemented, `trace_id` uses the resolved requ
 | `TENANT_CONTEXT_REQUIRED` | `400` | Tenant context was missing. |
 | `TENANT_SCOPE_VIOLATION` | `403` | Request attempted cross-tenant access. |
 | `CONFLICT` | `409` | Request conflicts with current system state. |
-| `IDEMPOTENCY_REPLAY` | `409` | Duplicate idempotent request received. |
+| `IDEMPOTENCY_REPLAY` | `409` | Duplicate idempotent request received or same key reused with a conflicting payload. |
 | `RATE_LIMITED` | `429` | Rate limit exceeded. |
 | `INTERNAL_ERROR` | `500` | Unexpected server-side failure. |
 
