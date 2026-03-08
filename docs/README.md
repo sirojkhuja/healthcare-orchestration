@@ -11,13 +11,14 @@ The split documents in this repository are derived from that source and exist to
 1. Start with [source-of-truth-policy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/source-of-truth-policy.md).
 2. Review [overview.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/product/overview.md) and [modules-and-domain.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/product/modules-and-domain.md).
 3. Read [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md) and [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md).
-4. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
-5. Read [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) before touching policies, permissions, RBAC, or protected routes.
-6. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
-7. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
-8. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
-9. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
-10. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+4. Read [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md) before touching migrations, indexes, UUIDs, or database schema helpers.
+5. Read [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md) before touching tenant-owned data or routes.
+6. Read [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md) before touching policies, permissions, RBAC, or protected routes.
+7. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
+8. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
+9. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
+10. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
+11. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
 
 ## Documentation Areas
 
@@ -38,6 +39,7 @@ The split documents in this repository are derived from that source and exist to
 ### Engineering
 
 - [architecture.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/architecture.md)
+- [persistence.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/persistence.md)
 - [tenancy.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/tenancy.md)
 - [authorization.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/authorization.md)
 - [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md)
@@ -69,6 +71,7 @@ The split documents in this repository are derived from that source and exist to
 - [004-integrations-framework.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/004-integrations-framework.md)
 - [005-observability-stack.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/005-observability-stack.md)
 - [006-idempotency-keys.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/006-idempotency-keys.md)
+- [007-postgres-schema-conventions.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/007-postgres-schema-conventions.md)
 
 ## Maintenance Rule
 

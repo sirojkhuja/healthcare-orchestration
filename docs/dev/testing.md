@@ -32,6 +32,7 @@
 ### Integration Tests
 
 - PostgreSQL repositories
+- migration suite freshness, schema conventions, and index creation
 - Redis cache behavior
 - Kafka outbox relay and consumers
 - provider adapters and webhook verification
@@ -67,6 +68,7 @@
 - Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
 - Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation
+- Shared platform: migration freshness, UUID primary keys, and partial index presence
 - Audit: immutable persistence, actor capture, before and after values, and retention pruning
 
 ## Release Gate

@@ -108,6 +108,7 @@ docs/
 - Foreign keys and indexes are mandatory.
 - Partial indexes should optimize tenant, status, and date filters.
 - Full-text search is required for patient and provider directories.
+- Shared schema helpers define UUID primaries, tenant columns, and request-context UUID columns for reusable migrations.
 
 ## Caching Model
 
