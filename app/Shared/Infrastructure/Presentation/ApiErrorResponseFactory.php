@@ -2,7 +2,9 @@
 
 namespace App\Shared\Infrastructure\Presentation;
 
+use App\Modules\IdentityAccess\Application\Exceptions\IpAddressNotAllowedException;
 use App\Modules\IdentityAccess\Application\Exceptions\MfaChallengeRequiredException;
+use App\Modules\IdentityAccess\Application\Exceptions\RevokedApiKeyException;
 use App\Shared\Application\Contracts\RequestMetadataContext;
 use App\Shared\Application\Data\ApiError;
 use App\Shared\Application\Data\RequestMetadata;
@@ -77,10 +79,22 @@ final class ApiErrorResponseFactory
                     'expires_at' => $throwable->expiresAt->format(DATE_ATOM),
                 ],
             ],
+            $throwable instanceof RevokedApiKeyException => [
+                401,
+                'API_KEY_REVOKED',
+                'The presented API key has been revoked.',
+                [],
+            ],
             $throwable instanceof AuthenticationException => [
                 401,
                 'UNAUTHENTICATED',
                 'Authentication is required for this operation.',
+                [],
+            ],
+            $throwable instanceof IpAddressNotAllowedException => [
+                403,
+                'IP_ADDRESS_NOT_ALLOWED',
+                'The current IP address is outside the active tenant allowlist.',
                 [],
             ],
             $throwable instanceof AuthorizationException, $throwable instanceof AccessDeniedHttpException => [

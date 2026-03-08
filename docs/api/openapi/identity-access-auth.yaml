@@ -246,6 +246,189 @@ paths:
           description: Missing or invalid bearer token
         '404':
           description: Auth session not found or not owned by the actor
+  /api/v1/auth/api-keys:
+    post:
+      operationId: CreateApiKeyCommand
+      tags: [IdentityAccess]
+      summary: Create a managed API key for the authenticated user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreateRequest'
+      responses:
+        '201':
+          description: API key created and plaintext returned once
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyCreatedResponse'
+        '401':
+          description: Missing or invalid bearer token
+    get:
+      operationId: ListApiKeysQuery
+      tags: [IdentityAccess]
+      summary: List managed API keys owned by the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: API key list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+  /api/v1/auth/api-keys/{keyId}:
+    delete:
+      operationId: RevokeApiKeyCommand
+      tags: [IdentityAccess]
+      summary: Revoke one owned API key
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: API key revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyRevokedResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '404':
+          description: API key not found or not owned by the actor
+  /api/v1/devices:
+    get:
+      operationId: ListDevicesQuery
+      tags: [IdentityAccess]
+      summary: List registered devices for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Registered device list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+    post:
+      operationId: RegisterDeviceCommand
+      tags: [IdentityAccess]
+      summary: Register or refresh one user device installation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegisterRequest'
+      responses:
+        '200':
+          description: Device registered or refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '422':
+          description: Device payload is invalid
+  /api/v1/devices/{deviceId}:
+    delete:
+      operationId: DeregisterDeviceCommand
+      tags: [IdentityAccess]
+      summary: Remove one owned registered device
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Device deregistered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceDeregisteredResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '404':
+          description: Device not found or not owned by the actor
+  /api/v1/security/ip-allowlist:
+    get:
+      operationId: GetIpAllowlistQuery
+      tags: [IdentityAccess]
+      summary: Return the active tenant CIDR allowlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant IP allowlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantIpAllowlistGetResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+    post:
+      operationId: UpdateIpAllowlistCommand
+      tags: [IdentityAccess]
+      summary: Replace the active tenant CIDR allowlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Tenant-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantIpAllowlistUpdateRequest'
+      responses:
+        '200':
+          description: Tenant allowlist replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantIpAllowlistUpdateResponse'
+        '400':
+          description: Tenant context missing or invalid
+        '401':
+          description: Missing or invalid bearer token
+        '422':
+          description: CIDR payload is invalid
   /api/v1/security/sessions:revoke-all:
     post:
       operationId: RevokeAllSessionsCommand
@@ -268,6 +451,10 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
   schemas:
     LoginRequest:
       type: object
@@ -322,6 +509,47 @@ components:
           minLength: 8
         password_confirmation:
           type: string
+    ApiKeyCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        expires_at:
+          type: [string, 'null']
+          format: date-time
+    DeviceRegisterRequest:
+      type: object
+      required: [installation_id, name, platform]
+      properties:
+        installation_id:
+          type: string
+          maxLength: 128
+        name:
+          type: string
+          maxLength: 120
+        platform:
+          type: string
+          enum: [ios, android, web, desktop]
+        push_token:
+          type: [string, 'null']
+        app_version:
+          type: [string, 'null']
+    TenantIpAllowlistUpdateRequest:
+      type: object
+      required: [entries]
+      properties:
+        entries:
+          type: array
+          items:
+            type: object
+            required: [cidr]
+            properties:
+              cidr:
+                type: string
+              label:
+                type: [string, 'null']
     AuthSessionResponse:
       type: object
       required: [user, session, tokens]
@@ -393,6 +621,61 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuthSessionView'
+    ApiKeyCreatedResponse:
+      type: object
+      required: [status, api_key, plaintext_key]
+      properties:
+        status:
+          type: string
+          const: api_key_created
+        api_key:
+          $ref: '#/components/schemas/ApiKeySummary'
+        plaintext_key:
+          type: string
+    ApiKeyCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiKeySummary'
+    DeviceResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: device_registered
+        data:
+          $ref: '#/components/schemas/DeviceSummary'
+    DeviceCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceSummary'
+    TenantIpAllowlistGetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpAllowlistEntry'
+    TenantIpAllowlistUpdateResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          const: ip_allowlist_updated
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpAllowlistEntry'
     ApiErrorResponse:
       type: object
       required: [code, message, details, trace_id, correlation_id]
@@ -433,6 +716,20 @@ components:
         status:
           type: string
           const: session_revoked
+    ApiKeyRevokedResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: api_key_revoked
+    DeviceDeregisteredResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: device_deregistered
     RevokeAllSessionsResponse:
       type: object
       required: [status, revoked_sessions]
@@ -462,6 +759,80 @@ components:
         id:
           type: string
           format: uuid
+    ApiKeySummary:
+      type: object
+      required: [id, name, prefix, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        prefix:
+          type: string
+        last_used_at:
+          type: [string, 'null']
+          format: date-time
+        expires_at:
+          type: [string, 'null']
+          format: date-time
+        revoked_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    DeviceSummary:
+      type: object
+      required:
+        - id
+        - installation_id
+        - name
+        - platform
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        installation_id:
+          type: string
+        name:
+          type: string
+        platform:
+          type: string
+          enum: [ios, android, web, desktop]
+        push_token:
+          type: [string, 'null']
+        app_version:
+          type: [string, 'null']
+        ip_address:
+          type: [string, 'null']
+        user_agent:
+          type: [string, 'null']
+        last_seen_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    IpAllowlistEntry:
+      type: object
+      required: [id, cidr, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        cidr:
+          type: string
+        label:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
     AuthSessionView:
       type: object
       required:

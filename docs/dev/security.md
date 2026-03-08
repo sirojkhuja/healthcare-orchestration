@@ -37,8 +37,10 @@
 
 - OAuth2 or JWT for authenticated API access
 - JWT API access uses short-lived bearer tokens plus persisted rotating refresh sessions
+- managed API key access uses hashed one-time-issued credentials presented via `X-API-Key`
 - authenticator-app MFA uses encrypted TOTP secrets, hashed recovery codes, and a short-lived challenge before tokens are issued
 - MFA challenge, recovery-code use, and disable operations must emit dedicated security events in addition to audit records
+- tenant IP allowlists use explicit CIDR entries and are enforced for API-key-authenticated traffic inside tenant scope
 - password reset requests must not reveal whether an email exists, and successful resets must revoke all active sessions for that user
 - session administration endpoints may operate only on sessions owned by the authenticated actor
 - per-tenant and per-IP rate limiting

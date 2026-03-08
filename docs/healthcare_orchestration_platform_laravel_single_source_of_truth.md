@@ -533,6 +533,9 @@ Standard error:
 - TOTP-based MFA with recovery codes for accounts that enable MFA
 - MFA-enabled logins must return `MFA_REQUIRED` with a short-lived challenge until second-factor verification succeeds
 - MFA secrets encrypted at rest; recovery codes stored only as hashes
+- managed API keys may be issued for machine-to-machine access, must be stored only as hashes, and are returned only once at creation
+- tenant IP allowlists use CIDR entries and must be enforced for API-key-authenticated traffic whenever a tenant scope has active entries
+- device registration is user-owned and must support metadata refresh for an existing installation without duplicate device rows
 - Rate limiting per tenant and per IP
 - Webhook signature verification for all inbound callbacks
 - Encrypt integration secrets at rest

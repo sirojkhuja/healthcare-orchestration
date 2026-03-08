@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-08`
 
-Overall Progress: `31% (22/70 tasks completed)`
+Overall Progress: `32% (23/70 tasks completed)`
 
 Active Task: `None`
 
@@ -55,7 +55,7 @@ Active Task: `None`
 | T020 | Done | Implement authentication endpoints for login, logout, refresh, and current-user retrieval. | T011, T013, T015 | Auth flows, token issuance, auth guards. | Feature tests cover happy path and failure modes. |
 | T021 | Done | Implement password reset, session management, and revoke-all session flows. | T020 | Reset tokens, session queries, revoke operations. | Session revocation tests and password reset tests pass. |
 | T022 | Done | Implement MFA setup, verification, disable flow, and security event tracking. | T020, T014 | MFA secrets, verification handlers, audit and security events. | MFA tests cover setup, challenge, recovery, and disable. |
-| T023 | Todo | Implement API keys, device registration, and IP allowlist administration. | T020, T015 | API key lifecycle, device endpoints, IP policy storage. | Feature tests cover creation, revocation, and enforcement. |
+| T023 | Done | Implement API keys, device registration, and IP allowlist administration. | T020, T015 | API key lifecycle, device endpoints, IP policy storage. | Feature tests cover creation, revocation, and enforcement. |
 | T024 | Todo | Implement roles, permissions, permission groups, and RBAC administration APIs. | T015 | RBAC commands, queries, policies, audit integration. | Role assignment and permission propagation tests pass. |
 | T025 | Todo | Implement user lifecycle management, status transitions, and bulk user operations. | T024 | User CRUD, activate, deactivate, lock, unlock, bulk import and update. | Feature tests cover all status transitions and bulk paths. |
 | T026 | Todo | Implement profile endpoints, avatar upload, and profile update policies. | T025, T010 | Profile views, update handlers, avatar storage integration. | Storage and authorization tests pass. |

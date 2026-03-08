@@ -1,6 +1,8 @@
 <?php
 
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApiKeyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\DeviceController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,10 +29,20 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
             Route::post('/sessions', [SecurityController::class, 'listSessions'])->name('auth.sessions.list');
             Route::delete('/sessions/{sessionId}', [SecurityController::class, 'revokeSession'])->name('auth.sessions.revoke');
+            Route::post('/api-keys', [ApiKeyController::class, 'create'])->name('auth.api-keys.create');
+            Route::get('/api-keys', [ApiKeyController::class, 'list'])->name('auth.api-keys.list');
+            Route::delete('/api-keys/{keyId}', [ApiKeyController::class, 'revoke'])->name('auth.api-keys.revoke');
         });
     });
 
     Route::middleware('auth:api')->group(function (): void {
+        Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
+        Route::post('/devices', [DeviceController::class, 'register'])->name('devices.register');
+        Route::delete('/devices/{deviceId}', [DeviceController::class, 'deregister'])->name('devices.deregister');
         Route::post('/security/sessions:revoke-all', [SecurityController::class, 'revokeAllSessions'])->name('security.sessions.revoke-all');
+        Route::middleware('tenant.require')->group(function (): void {
+            Route::get('/security/ip-allowlist', [SecurityController::class, 'getIpAllowlist'])->name('security.ip-allowlist.get');
+            Route::post('/security/ip-allowlist', [SecurityController::class, 'updateIpAllowlist'])->name('security.ip-allowlist.update');
+        });
     });
 });

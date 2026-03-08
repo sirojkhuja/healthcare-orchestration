@@ -44,6 +44,10 @@ return [
             'driver' => 'medflow-jwt',
             'provider' => 'users',
         ],
+        'api-key' => [
+            'driver' => 'medflow-api-key',
+            'provider' => 'users',
+        ],
     ],
 
     /*

@@ -68,6 +68,9 @@
 - Protected tenant-owned routes use the shared `permission:<permission-name>` middleware contract.
 - Permission changes must invalidate cached permission projections for the affected user and tenant scope.
 - Login and refresh responses return `user`, `session`, and `tokens` payloads.
+- API key creation returns plaintext key material exactly once and list responses return only non-secret metadata.
+- API keys authenticate through the `X-API-Key` header on routes that opt into the dedicated API-key guard.
+- Revoked API keys fail with `401 API_KEY_REVOKED`.
 - MFA setup returns `mfa_setup_pending` plus the TOTP secret, the `otpauth://` URI, and recovery codes exactly once.
 - MFA setup verification returns `mfa_enabled`, while MFA login-challenge verification returns the normal auth session payload.
 - MFA-enabled password logins fail with `401 MFA_REQUIRED` until `/auth/mfa/verify` completes the login challenge.
@@ -76,6 +79,9 @@
 - `GET /auth/me` returns the current user plus the active auth session id.
 - `POST /auth/sessions` returns all sessions for the authenticated user with the current session first.
 - `DELETE /auth/sessions/{sessionId}` may revoke only an auth session owned by the authenticated user.
+- `POST /devices` upserts a user-owned device by `installation_id` and refreshes metadata for the existing installation when present.
+- `GET /security/ip-allowlist` and `POST /security/ip-allowlist` are tenant-scoped security endpoints and require tenant context.
+- Tenant IP allowlists use CIDR entries and only constrain API-key-authenticated traffic in the active tenant scope.
 - `POST /security/sessions:revoke-all` revokes every active session for the authenticated user, including the current session.
 - MFA setup, challenge, recovery-code use, and disable all write dedicated security events in addition to audit records.
 - Refresh rotates both the JWT `jti` and the opaque refresh token.

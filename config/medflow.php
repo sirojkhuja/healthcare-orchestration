@@ -29,6 +29,11 @@ return [
     'auth' => [
         'access_token_ttl_minutes' => (int) env('AUTH_ACCESS_TOKEN_TTL_MINUTES', 15),
         'refresh_token_ttl_days' => (int) env('AUTH_REFRESH_TOKEN_TTL_DAYS', 30),
+        'api_keys' => [
+            'header' => env('AUTH_API_KEY_HEADER', 'X-API-Key'),
+            'prefix' => env('AUTH_API_KEY_PREFIX', 'mfk'),
+            'secret_bytes' => (int) env('AUTH_API_KEY_SECRET_BYTES', 32),
+        ],
         'mfa' => [
             'issuer' => env('AUTH_MFA_ISSUER', 'MedFlow'),
             'digits' => (int) env('AUTH_MFA_DIGITS', 6),

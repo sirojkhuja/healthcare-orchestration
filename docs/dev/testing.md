@@ -59,6 +59,7 @@
 ## Required Coverage by Module
 
 - IAM: auth, MFA, token lifecycle, RBAC, rate limits
+- IAM: managed API keys, registered devices, and tenant IP allowlist enforcement
 - Tenancy: tenant scope leakage tests, settings, limits
 - Tenancy: missing tenant context, conflicting tenant context, and write-guard behavior
 - Scheduling: slot conflicts, transition guards, reminder rules
@@ -68,6 +69,7 @@
 - Shared platform: request metadata propagation, tenant context hydration, and event metadata helpers
 - Shared platform: authorization cache hits, invalidation, and tenant-aware permission checks
 - Shared platform: JWT auth login, MFA challenge flows, recovery-code handling, security-event writes, refresh rotation, logout revocation, current-user retrieval, password reset flows, and auth-session administration
+- Shared platform: API key create/list/revoke flows, revoked-key rejection, tenant allowlist enforcement, and device registration lifecycle
 - Shared platform: idempotency replay, in-flight duplicate rejection, and tenant-aware scope separation
 - Shared platform: migration freshness, UUID primary keys, and partial index presence
 - Shared platform: tenant-prefixed cache keys, item invalidation, and namespace invalidation behavior
