@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Carbon\CarbonImmutable $refresh_token_expires_at
  * @property \Carbon\CarbonImmutable|null $last_used_at
  * @property \Carbon\CarbonImmutable|null $revoked_at
+ * @property \Carbon\CarbonImmutable $created_at
  */
 final class AuthSessionRecord extends Model
 {

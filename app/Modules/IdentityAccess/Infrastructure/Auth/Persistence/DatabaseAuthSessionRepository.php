@@ -4,6 +4,7 @@ namespace App\Modules\IdentityAccess\Infrastructure\Auth\Persistence;
 
 use App\Modules\IdentityAccess\Application\Contracts\AuthSessionRepository;
 use App\Modules\IdentityAccess\Application\Data\AuthSessionData;
+use App\Modules\IdentityAccess\Application\Data\AuthSessionViewData;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,6 +60,42 @@ final class DatabaseAuthSessionRepository implements AuthSessionRepository
     }
 
     #[\Override]
+    public function listForUser(string $userId, string $currentSessionId): array
+    {
+        /** @var list<AuthSessionRecord> $records */
+        $records = AuthSessionRecord::query()
+            ->where('user_id', $userId)
+            ->orderByDesc('created_at')
+            ->get()
+            ->all();
+
+        $sessions = array_map(
+            fn (AuthSessionRecord $record): AuthSessionViewData => new AuthSessionViewData(
+                id: $record->id,
+                current: $record->id === $currentSessionId,
+                ipAddress: $record->ip_address,
+                userAgent: $record->user_agent,
+                accessTokenExpiresAt: $record->access_token_expires_at,
+                refreshTokenExpiresAt: $record->refresh_token_expires_at,
+                lastUsedAt: $record->last_used_at,
+                revokedAt: $record->revoked_at,
+                createdAt: $record->created_at,
+            ),
+            $records,
+        );
+
+        usort($sessions, function (AuthSessionViewData $left, AuthSessionViewData $right): int {
+            if ($left->current === $right->current) {
+                return strcmp($right->createdAt->format(DATE_ATOM), $left->createdAt->format(DATE_ATOM));
+            }
+
+            return $left->current ? -1 : 1;
+        });
+
+        return $sessions;
+    }
+
+    #[\Override]
     public function revoke(string $sessionId, DateTimeInterface $revokedAt): void
     {
         AuthSessionRecord::query()
@@ -68,6 +105,33 @@ final class DatabaseAuthSessionRepository implements AuthSessionRepository
                 'revoked_at' => $revokedAt,
                 'updated_at' => CarbonImmutable::now(),
             ]);
+    }
+
+    #[\Override]
+    public function revokeAllForUser(string $userId, DateTimeInterface $revokedAt): int
+    {
+        return AuthSessionRecord::query()
+            ->where('user_id', $userId)
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => $revokedAt,
+                'updated_at' => CarbonImmutable::now(),
+            ]);
+    }
+
+    #[\Override]
+    public function revokeForUser(string $sessionId, string $userId, DateTimeInterface $revokedAt): bool
+    {
+        $updated = AuthSessionRecord::query()
+            ->whereKey($sessionId)
+            ->where('user_id', $userId)
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => $revokedAt,
+                'updated_at' => CarbonImmutable::now(),
+            ]);
+
+        return $updated > 0;
     }
 
     #[\Override]

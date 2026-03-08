@@ -5,10 +5,14 @@ namespace App\Modules\IdentityAccess\Presentation\Http\Controllers;
 use App\Modules\IdentityAccess\Application\Commands\LoginCommand;
 use App\Modules\IdentityAccess\Application\Commands\LogoutCommand;
 use App\Modules\IdentityAccess\Application\Commands\RefreshTokenCommand;
+use App\Modules\IdentityAccess\Application\Commands\RequestPasswordResetCommand;
+use App\Modules\IdentityAccess\Application\Commands\ResetPasswordCommand;
 use App\Modules\IdentityAccess\Application\Handlers\GetMeQueryHandler;
 use App\Modules\IdentityAccess\Application\Handlers\LoginCommandHandler;
 use App\Modules\IdentityAccess\Application\Handlers\LogoutCommandHandler;
 use App\Modules\IdentityAccess\Application\Handlers\RefreshTokenCommandHandler;
+use App\Modules\IdentityAccess\Application\Handlers\RequestPasswordResetCommandHandler;
+use App\Modules\IdentityAccess\Application\Handlers\ResetPasswordCommandHandler;
 use App\Modules\IdentityAccess\Application\Queries\GetMeQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,6 +53,21 @@ final class AuthController
         return response()->json($handler->handle(new GetMeQuery)->toArray());
     }
 
+    public function requestPasswordReset(Request $request, RequestPasswordResetCommandHandler $handler): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $handler->handle(new RequestPasswordResetCommand(
+            email: $this->validatedString($validated, 'email'),
+        ));
+
+        return response()->json([
+            'status' => 'password_reset_requested',
+        ], 202);
+    }
+
     public function refresh(Request $request, RefreshTokenCommandHandler $handler): JsonResponse
     {
         $validated = $request->validate([
@@ -62,6 +81,25 @@ final class AuthController
         ));
 
         return response()->json($result->toArray());
+    }
+
+    public function resetPassword(Request $request, ResetPasswordCommandHandler $handler): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $handler->handle(new ResetPasswordCommand(
+            email: $this->validatedString($validated, 'email'),
+            token: $this->validatedString($validated, 'token'),
+            password: $this->validatedString($validated, 'password'),
+        ));
+
+        return response()->json([
+            'status' => 'password_reset',
+        ]);
     }
 
     /**

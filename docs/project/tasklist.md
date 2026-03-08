@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-08`
 
-Overall Progress: `28% (20/70 tasks completed)`
+Overall Progress: `30% (21/70 tasks completed)`
 
 Active Task: `None`
 
@@ -53,7 +53,7 @@ Active Task: `None`
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
 | T020 | Done | Implement authentication endpoints for login, logout, refresh, and current-user retrieval. | T011, T013, T015 | Auth flows, token issuance, auth guards. | Feature tests cover happy path and failure modes. |
-| T021 | Todo | Implement password reset, session management, and revoke-all session flows. | T020 | Reset tokens, session queries, revoke operations. | Session revocation tests and password reset tests pass. |
+| T021 | Done | Implement password reset, session management, and revoke-all session flows. | T020 | Reset tokens, session queries, revoke operations. | Session revocation tests and password reset tests pass. |
 | T022 | Todo | Implement MFA setup, verification, disable flow, and security event tracking. | T020, T014 | MFA secrets, verification handlers, audit and security events. | MFA tests cover setup, challenge, recovery, and disable. |
 | T023 | Todo | Implement API keys, device registration, and IP allowlist administration. | T020, T015 | API key lifecycle, device endpoints, IP policy storage. | Feature tests cover creation, revocation, and enforcement. |
 | T024 | Todo | Implement roles, permissions, permission groups, and RBAC administration APIs. | T015 | RBAC commands, queries, policies, audit integration. | Role assignment and permission propagation tests pass. |

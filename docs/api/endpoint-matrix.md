@@ -24,7 +24,7 @@ The original SSoT carries the full route inventory. This document is the split n
 
 | Area | Approximate endpoints |
 | --- | --- |
-| Auth and Identity | `16` |
+| Auth and Identity | `16`, including password reset and session administration |
 | Tenants | `12` |
 | Clinics and Locations | `26` |
 | Users, Roles, Permissions | `38` |

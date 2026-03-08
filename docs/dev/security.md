@@ -37,6 +37,8 @@
 
 - OAuth2 or JWT for authenticated API access
 - JWT API access uses short-lived bearer tokens plus persisted rotating refresh sessions
+- password reset requests must not reveal whether an email exists, and successful resets must revoke all active sessions for that user
+- session administration endpoints may operate only on sessions owned by the authenticated actor
 - per-tenant and per-IP rate limiting
 - idempotency keys for payment creation, appointment scheduling, and webhook processing
 - standardized error payloads with trace and correlation IDs

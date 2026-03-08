@@ -68,5 +68,10 @@
 - Protected tenant-owned routes use the shared `permission:<permission-name>` middleware contract.
 - Permission changes must invalidate cached permission projections for the affected user and tenant scope.
 - Login and refresh responses return `user`, `session`, and `tokens` payloads.
+- Password reset request responses are intentionally uniform and always acknowledge the request with `202 Accepted`.
+- Successful password resets revoke all active sessions owned by the user before new logins occur.
 - `GET /auth/me` returns the current user plus the active auth session id.
+- `POST /auth/sessions` returns all sessions for the authenticated user with the current session first.
+- `DELETE /auth/sessions/{sessionId}` may revoke only an auth session owned by the authenticated user.
+- `POST /security/sessions:revoke-all` revokes every active session for the authenticated user, including the current session.
 - Refresh rotates both the JWT `jti` and the opaque refresh token.

@@ -5,7 +5,7 @@ info:
 paths:
   /api/v1/auth/login:
     post:
-      operationId: login
+      operationId: LoginCommand
       tags: [IdentityAccess]
       summary: Authenticate a user and issue API tokens
       requestBody:
@@ -30,7 +30,7 @@ paths:
           description: Invalid credentials
   /api/v1/auth/logout:
     post:
-      operationId: logout
+      operationId: LogoutCommand
       tags: [IdentityAccess]
       summary: Revoke the current authenticated session
       security:
@@ -51,7 +51,7 @@ paths:
           description: Missing or invalid bearer token
   /api/v1/auth/refresh:
     post:
-      operationId: refreshToken
+      operationId: RefreshTokenCommand
       tags: [IdentityAccess]
       summary: Rotate the refresh token and issue a new access token
       requestBody:
@@ -71,7 +71,7 @@ paths:
           description: Refresh token is invalid or expired
   /api/v1/auth/me:
     get:
-      operationId: getMe
+      operationId: GetMeQuery
       tags: [IdentityAccess]
       summary: Return the authenticated API actor
       security:
@@ -83,6 +83,101 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthenticatedRequestResponse'
+        '401':
+          description: Missing or invalid bearer token
+  /api/v1/auth/password/forgot:
+    post:
+      operationId: RequestPasswordResetCommand
+      tags: [IdentityAccess]
+      summary: Request a password reset without disclosing account existence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '202':
+          description: Password reset request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetRequestedResponse'
+  /api/v1/auth/password/reset:
+    post:
+      operationId: ResetPasswordCommand
+      tags: [IdentityAccess]
+      summary: Reset the user password and revoke all active sessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '200':
+          description: Password reset completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetCompletedResponse'
+        '422':
+          description: Password reset token is invalid or expired
+  /api/v1/auth/sessions:
+    post:
+      operationId: ListSessionsQuery
+      tags: [IdentityAccess]
+      summary: List auth sessions for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Auth session list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+  /api/v1/auth/sessions/{sessionId}:
+    delete:
+      operationId: RevokeSessionCommand
+      tags: [IdentityAccess]
+      summary: Revoke one owned auth session
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Auth session revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionRevokedResponse'
+        '401':
+          description: Missing or invalid bearer token
+        '404':
+          description: Auth session not found or not owned by the actor
+  /api/v1/security/sessions:revoke-all:
+    post:
+      operationId: RevokeAllSessionsCommand
+      tags: [IdentityAccess]
+      summary: Revoke every active auth session owned by the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All active auth sessions revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevokeAllSessionsResponse'
         '401':
           description: Missing or invalid bearer token
 components:
@@ -107,6 +202,27 @@ components:
       properties:
         refresh_token:
           type: string
+    PasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    PasswordResetConfirmRequest:
+      type: object
+      required: [email, token, password, password_confirmation]
+      properties:
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        password_confirmation:
+          type: string
     AuthSessionResponse:
       type: object
       required: [user, session, tokens]
@@ -125,6 +241,45 @@ components:
           $ref: '#/components/schemas/UserSummary'
         session:
           $ref: '#/components/schemas/SessionSummary'
+    PasswordResetRequestedResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: password_reset_requested
+    PasswordResetCompletedResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: password_reset
+    AuthSessionCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthSessionView'
+    SessionRevokedResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: session_revoked
+    RevokeAllSessionsResponse:
+      type: object
+      required: [status, revoked_sessions]
+      properties:
+        status:
+          type: string
+          const: all_sessions_revoked
+        revoked_sessions:
+          type: integer
+          minimum: 0
     UserSummary:
       type: object
       required: [id, name, email]
@@ -144,6 +299,39 @@ components:
         id:
           type: string
           format: uuid
+    AuthSessionView:
+      type: object
+      required:
+        - id
+        - current
+        - access_token_expires_at
+        - refresh_token_expires_at
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        current:
+          type: boolean
+        ip_address:
+          type: [string, 'null']
+        user_agent:
+          type: [string, 'null']
+        access_token_expires_at:
+          type: string
+          format: date-time
+        refresh_token_expires_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: [string, 'null']
+          format: date-time
+        revoked_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
     Tokens:
       type: object
       required:
