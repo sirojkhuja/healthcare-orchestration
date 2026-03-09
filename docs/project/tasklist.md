@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `50% (35/70 tasks completed)`
+Overall Progress: `51% (36/70 tasks completed)`
 
 Active Task: `None`
 
@@ -73,7 +73,7 @@ Active Task: `None`
 | T033 | Done | Implement the provider aggregate and provider CRUD APIs. | T028 | Provider model, repository, commands, queries, routes. | CRUD and authorization tests pass. |
 | T034 | Done | Implement provider profile, specialties, licenses, and provider groups. | T033 | Specialty catalog, license handling, grouping endpoints. | Validation and policy tests pass. |
 | T035 | Done | Implement availability rules, slot generation, and cache rebuild operations. | T033, T018 | Availability domain, slot service, rebuild command. | Conflict and availability tests pass. |
-| T036 | Todo | Implement provider calendar, work hours, time-off, and calendar export. | T035, T010 | Calendar queries, time-off management, export endpoints. | Calendar correctness and export tests pass. |
+| T036 | Done | Implement provider calendar, work hours, time-off, and calendar export. | T035, T010 | Calendar queries, time-off management, export endpoints. | Calendar correctness and export tests pass. |
 
 ## Phase 5: Scheduling and Clinical Care
 

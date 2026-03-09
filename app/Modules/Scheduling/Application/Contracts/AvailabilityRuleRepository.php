@@ -24,6 +24,12 @@ interface AvailabilityRuleRepository
 
     public function findForProvider(string $tenantId, string $providerId, string $ruleId): ?AvailabilityRuleData;
 
+    /**
+     * @param  array<string, list<array{start_time: string, end_time: string}>>  $days
+     * @return list<AvailabilityRuleData>
+     */
+    public function replaceWeeklyRules(string $tenantId, string $providerId, array $days): array;
+
     public function hasConflict(
         string $tenantId,
         string $providerId,

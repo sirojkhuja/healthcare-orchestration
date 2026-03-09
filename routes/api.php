@@ -22,8 +22,11 @@ use App\Modules\Provider\Presentation\Http\Controllers\ProviderGroupController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderLicenseController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderProfileController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderSpecialtyController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderTimeOffController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderWorkHoursController;
 use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AvailabilityController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\ProviderCalendarController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -178,9 +181,13 @@ Route::prefix('v1')->group(function (): void {
             Route::middleware('permission:providers.view')->group(function (): void {
                 Route::get('/providers', [ProviderController::class, 'list'])->name('providers.list');
                 Route::get('/providers/{providerId}', [ProviderController::class, 'show'])->name('providers.show');
+                Route::get('/providers/{providerId}/calendar', [ProviderCalendarController::class, 'show'])->name('providers.calendar.show');
+                Route::get('/providers/{providerId}/calendar/export', [ProviderCalendarController::class, 'export'])->name('providers.calendar.export');
                 Route::get('/providers/{providerId}/profile', [ProviderProfileController::class, 'show'])->name('providers.profile.show');
                 Route::get('/providers/{providerId}/specialties', [ProviderSpecialtyController::class, 'list'])->name('providers.specialties.list');
                 Route::get('/providers/{providerId}/licenses', [ProviderLicenseController::class, 'list'])->name('providers.licenses.list');
+                Route::get('/providers/{providerId}/work-hours', [ProviderWorkHoursController::class, 'show'])->name('providers.work-hours.show');
+                Route::get('/providers/{providerId}/time-off', [ProviderTimeOffController::class, 'list'])->name('providers.time-off.list');
                 Route::get('/providers/{providerId}/availability/rules', [AvailabilityController::class, 'list'])->name('providers.availability.rules.list');
                 Route::get('/providers/{providerId}/availability/slots', [AvailabilityController::class, 'slots'])->name('providers.availability.slots');
                 Route::get('/specialties', [SpecialtyController::class, 'list'])->name('specialties.list');
@@ -194,6 +201,18 @@ Route::prefix('v1')->group(function (): void {
                 Route::put('/providers/{providerId}/specialties', [ProviderSpecialtyController::class, 'update'])->name('providers.specialties.update');
                 Route::post('/providers/{providerId}/licenses', [ProviderLicenseController::class, 'create'])->name('providers.licenses.create');
                 Route::delete('/providers/{providerId}/licenses/{licenseId}', [ProviderLicenseController::class, 'delete'])->name('providers.licenses.delete');
+                Route::put('/providers/{providerId}/work-hours', [ProviderWorkHoursController::class, 'update'])
+                    ->middleware('idempotency:providers.work-hours.update')
+                    ->name('providers.work-hours.update');
+                Route::post('/providers/{providerId}/time-off', [ProviderTimeOffController::class, 'create'])
+                    ->middleware('idempotency:providers.time-off.create')
+                    ->name('providers.time-off.create');
+                Route::patch('/providers/{providerId}/time-off/{timeOffId}', [ProviderTimeOffController::class, 'update'])
+                    ->middleware('idempotency:providers.time-off.update')
+                    ->name('providers.time-off.update');
+                Route::delete('/providers/{providerId}/time-off/{timeOffId}', [ProviderTimeOffController::class, 'delete'])
+                    ->middleware('idempotency:providers.time-off.delete')
+                    ->name('providers.time-off.delete');
                 Route::post('/providers/{providerId}/availability/rules', [AvailabilityController::class, 'create'])
                     ->middleware('idempotency:availability.rules.create')
                     ->name('providers.availability.rules.create');

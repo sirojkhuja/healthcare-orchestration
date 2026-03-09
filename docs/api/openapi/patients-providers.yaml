@@ -1962,6 +1962,362 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/work-hours:
+    get:
+      operationId: GetProviderWorkHoursQuery
+      tags: [Providers]
+      summary: Read the provider-owned weekly work-hours template
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider work-hours projection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkHoursResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: UpdateProviderWorkHoursCommand
+      tags: [Providers]
+      summary: Replace the full provider weekly work-hours template
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderWorkHoursRequest'
+      responses:
+        '200':
+          description: Provider work-hours replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderWorkHoursMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid work-hours payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/time-off:
+    get:
+      operationId: ListTimeOffQuery
+      tags: [Providers]
+      summary: List provider time-off intervals
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider time-off intervals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderTimeOffCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateTimeOffCommand
+      tags: [Providers]
+      summary: Create one provider time-off interval
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProviderTimeOffRequest'
+      responses:
+        '201':
+          description: Provider time-off created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderTimeOffMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Overlapping provider time-off interval on the same date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid time-off payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/time-off/{timeOffId}:
+    patch:
+      operationId: UpdateTimeOffCommand
+      tags: [Providers]
+      summary: Update one provider time-off interval
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/ProviderTimeOffIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderTimeOffRequest'
+      responses:
+        '200':
+          description: Provider time-off updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderTimeOffMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider or time-off record not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Overlapping provider time-off interval on the same date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid time-off patch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteTimeOffCommand
+      tags: [Providers]
+      summary: Delete one provider time-off interval
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/ProviderTimeOffIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Provider time-off deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderTimeOffMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider or time-off record not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/calendar:
+    get:
+      operationId: GetProviderCalendarQuery
+      tags: [Providers]
+      summary: Read the provider calendar day view
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/AvailabilityDateFromQuery'
+        - $ref: '#/components/parameters/AvailabilityDateToQuery'
+        - $ref: '#/components/parameters/AvailabilityLimitQuery'
+      responses:
+        '200':
+          description: Provider calendar day view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCalendarResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid calendar window
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/calendar/export:
+    get:
+      operationId: ExportProviderCalendarQuery
+      tags: [Providers]
+      summary: Export the provider calendar day view as CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/AvailabilityDateFromQuery'
+        - $ref: '#/components/parameters/AvailabilityDateToQuery'
+        - $ref: '#/components/parameters/AvailabilityLimitQuery'
+        - $ref: '#/components/parameters/CalendarExportFormatQuery'
+      responses:
+        '200':
+          description: Provider calendar export created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCalendarExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid calendar window or export format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/specialties:
     get:
       operationId: ListSpecialtiesQuery
@@ -2290,6 +2646,13 @@ components:
       schema:
         type: string
         format: uuid
+    ProviderTimeOffIdPath:
+      name: timeOffId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     ProviderGroupIdPath:
       name: groupId
       in: path
@@ -2371,6 +2734,14 @@ components:
         minimum: 1
         maximum: 1000
         default: 200
+    CalendarExportFormatQuery:
+      name: format
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [csv]
+        default: csv
     PatientSearchQuery:
       name: q
       in: query
@@ -3899,6 +4270,301 @@ components:
           examples: [availability_cache_rebuilt]
         data:
           $ref: '#/components/schemas/AvailabilitySlotResult'
+    ProviderWorkHoursInterval:
+      type: object
+      required: [start_time, end_time]
+      properties:
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+    ProviderWorkHoursDays:
+      type: object
+      properties:
+        monday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        tuesday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        wednesday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        thursday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        friday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        saturday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        sunday:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+    ProviderWorkHours:
+      type: object
+      required: [provider_id, timezone, days]
+      properties:
+        provider_id:
+          type: string
+          format: uuid
+        timezone:
+          type: string
+          nullable: true
+        days:
+          $ref: '#/components/schemas/ProviderWorkHoursDays'
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+    UpdateProviderWorkHoursRequest:
+      type: object
+      required: [days]
+      properties:
+        days:
+          $ref: '#/components/schemas/ProviderWorkHoursDays'
+    ProviderWorkHoursResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProviderWorkHours'
+    ProviderWorkHoursMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_work_hours_updated]
+        data:
+          $ref: '#/components/schemas/ProviderWorkHours'
+    ProviderTimeOff:
+      type: object
+      required:
+        - id
+        - provider_id
+        - specific_date
+        - start_time
+        - end_time
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        specific_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateProviderTimeOffRequest:
+      type: object
+      required: [specific_date, start_time, end_time]
+      properties:
+        specific_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    UpdateProviderTimeOffRequest:
+      type: object
+      properties:
+        specific_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    ProviderTimeOffCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderTimeOff'
+    ProviderTimeOffMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_time_off_created]
+        data:
+          $ref: '#/components/schemas/ProviderTimeOff'
+    ProviderCalendarDay:
+      type: object
+      required: [date, weekday, is_clinic_closed, work_hours, time_off, slot_count, slots]
+      properties:
+        date:
+          type: string
+          format: date
+        weekday:
+          type: string
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        is_clinic_closed:
+          type: boolean
+        work_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderWorkHoursInterval'
+        time_off:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderTimeOff'
+        slot_count:
+          type: integer
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilitySlot'
+    ProviderCalendar:
+      type: object
+      required:
+        - provider_id
+        - timezone
+        - date_from
+        - date_to
+        - slot_duration_minutes
+        - slot_interval_minutes
+        - generated_at
+        - days
+      properties:
+        provider_id:
+          type: string
+          format: uuid
+        timezone:
+          type: string
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+        slot_duration_minutes:
+          type: integer
+        slot_interval_minutes:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCalendarDay'
+    ProviderCalendarResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProviderCalendar'
+    ProviderCalendarWindowFilters:
+      type: object
+      required: [date_from, date_to, limit]
+      properties:
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 200
+    ProviderCalendarExport:
+      type: object
+      required:
+        - export_id
+        - provider_id
+        - format
+        - file_name
+        - row_count
+        - generated_at
+        - filters
+        - storage
+      properties:
+        export_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        format:
+          type: string
+          enum: [csv]
+        file_name:
+          type: string
+        row_count:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+        filters:
+          $ref: '#/components/schemas/ProviderCalendarWindowFilters'
+        storage:
+          type: object
+          required: [disk, path, visibility]
+          properties:
+            disk:
+              type: string
+            path:
+              type: string
+            visibility:
+              type: string
+              enum: [private]
+    ProviderCalendarExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_calendar_export_created]
+        data:
+          $ref: '#/components/schemas/ProviderCalendarExport'
     ProviderGroupMember:
       type: object
       required:

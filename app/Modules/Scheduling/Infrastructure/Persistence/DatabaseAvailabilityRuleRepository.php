@@ -5,6 +5,7 @@ namespace App\Modules\Scheduling\Infrastructure\Persistence;
 use App\Modules\Scheduling\Application\Contracts\AvailabilityRuleRepository;
 use App\Modules\Scheduling\Application\Data\AvailabilityRuleData;
 use App\Modules\Scheduling\Domain\Availability\AvailabilityScopeType;
+use App\Modules\Scheduling\Domain\Availability\AvailabilityType;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
@@ -60,6 +61,44 @@ final class DatabaseAvailabilityRuleRepository implements AvailabilityRuleReposi
             ->first();
 
         return $row instanceof stdClass ? $this->toData($row) : null;
+    }
+
+    #[\Override]
+    public function replaceWeeklyRules(string $tenantId, string $providerId, array $days): array
+    {
+        DB::transaction(function () use ($tenantId, $providerId, $days): void {
+            DB::table('provider_availability_rules')
+                ->where('tenant_id', $tenantId)
+                ->where('provider_id', $providerId)
+                ->where('scope_type', AvailabilityScopeType::WEEKLY)
+                ->delete();
+
+            foreach ($days as $weekday => $intervals) {
+                foreach ($intervals as $interval) {
+                    $timestamp = CarbonImmutable::now();
+
+                    DB::table('provider_availability_rules')->insert([
+                        'id' => (string) Str::uuid(),
+                        'tenant_id' => $tenantId,
+                        'provider_id' => $providerId,
+                        'scope_type' => AvailabilityScopeType::WEEKLY,
+                        'availability_type' => AvailabilityType::AVAILABLE,
+                        'weekday' => $weekday,
+                        'specific_date' => null,
+                        'start_time' => $interval['start_time'],
+                        'end_time' => $interval['end_time'],
+                        'notes' => null,
+                        'created_at' => $timestamp,
+                        'updated_at' => $timestamp,
+                    ]);
+                }
+            }
+        });
+
+        return array_values(array_filter(
+            $this->listForProvider($tenantId, $providerId),
+            static fn (AvailabilityRuleData $rule): bool => $rule->scopeType === AvailabilityScopeType::WEEKLY,
+        ));
     }
 
     #[\Override]
