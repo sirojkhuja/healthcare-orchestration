@@ -56,12 +56,16 @@ use App\Modules\IdentityAccess\Infrastructure\Profiles\Storage\AttachmentBackedP
 use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
+use App\Modules\TenantManagement\Application\Contracts\ClinicRepository;
+use App\Modules\TenantManagement\Application\Contracts\LocationReferenceRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantConfigurationRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantMetricsRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantRepository;
+use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseClinicRepository;
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantConfigurationRepository;
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantMetricsRepository;
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantRepository;
+use App\Modules\TenantManagement\Infrastructure\Reference\ConfigLocationReferenceRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
 use App\Shared\Application\Contracts\ConsumerReceiptStore;
 use App\Shared\Application\Contracts\EventContextFactory;
@@ -124,6 +128,8 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(AuditActorResolver::class, AuthAuditActorResolver::class);
         $this->app->bind(AuditEventRepository::class, DatabaseAuditEventRepository::class);
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
+        $this->app->bind(ClinicRepository::class, DatabaseClinicRepository::class);
+        $this->app->bind(LocationReferenceRepository::class, ConfigLocationReferenceRepository::class);
         $this->app->bind(SecurityEventRepository::class, DatabaseSecurityEventRepository::class);
         $this->app->bind(SecurityEventWriter::class, ContextualSecurityEventWriter::class);
         $this->app->singleton(PermissionCatalog::class, ConfigPermissionCatalog::class);

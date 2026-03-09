@@ -54,5 +54,17 @@
 - Tenant settings currently contain `locale`, `timezone`, and `currency`.
 - Tenant limits currently contain `users`, `clinics`, `providers`, `patients`, `storage_gb`, and `monthly_notifications`.
 - Tenant usage returns `used`, `limit`, and `remaining` for each documented limit key. Not-yet-implemented resources report `0` usage until their modules exist.
-- Clinic settings, schedules, and room inventories remain tenant-owned data.
-- Location endpoints may expose approved global reference data.
+- Clinics are tenant-owned records with `code`, `name`, lifecycle status, contact details, address fields, and free-form notes.
+- Clinic lifecycle states are `active` and `inactive`. Clinics are created active, may be deactivated and reactivated, and may be deleted only while inactive.
+- `Clinic.code` is unique per tenant.
+- Clinic settings are tenant-owned data and currently contain `timezone`, `default_appointment_duration_minutes`, `slot_interval_minutes`, `allow_walk_ins`, `require_appointment_confirmation`, and `telemedicine_enabled`.
+- `timezone` in clinic settings is nullable and overrides the tenant timezone only when present.
+- Departments are clinic-owned records with `code`, `name`, `description`, and `phone_extension`. `Department.code` is unique per clinic.
+- Rooms are clinic-owned records with `department_id`, `code`, `name`, `type`, `floor`, `capacity`, and `notes`. `Room.code` is unique per clinic, `capacity` must be at least `1`, and `department_id` must reference a department in the same clinic when present.
+- Clinic work hours are a weekly schedule replacement keyed by `monday` through `sunday`, each with zero or more non-overlapping `HH:MM` intervals.
+- Clinic holidays are inclusive date ranges with `name`, `start_date`, `end_date`, `is_closed`, and `notes`. Holiday ranges must not overlap inside the same clinic.
+- Location endpoints expose approved global reference data and are not tenant-owned records.
+- The first approved location catalog is a read-only Uzbekistan city and district set sourced from application configuration.
+- `GET /locations/cities` supports an optional `q` filter.
+- `GET /locations/districts` requires `city_code`.
+- `GET /locations/search` requires `q` and returns mixed city and district matches with a `type` discriminator.

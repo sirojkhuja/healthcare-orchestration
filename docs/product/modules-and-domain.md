@@ -89,6 +89,9 @@ The system is split into independently understandable modules. Each module owns 
 ### Tenant and Clinic Management
 
 - tenant lifecycle, limits, settings, clinics, departments, rooms, holidays, and location references
+- clinic settings define local schedule defaults, appointment cadence, confirmation behavior, and telemedicine enablement
+- clinic weekly work hours and holiday ranges are the source of truth for future provider and scheduling constraints
+- location references are global approved data, while clinics, departments, rooms, work hours, and holidays remain tenant-owned
 
 ### Patient
 

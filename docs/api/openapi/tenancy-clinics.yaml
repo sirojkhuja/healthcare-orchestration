@@ -397,6 +397,617 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics:
+    get:
+      operationId: ListClinicsQuery
+      tags: [Clinics]
+      summary: List clinics in the active tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive]
+      responses:
+        '200':
+          description: Clinics in the active tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicCollectionResponse'
+        '403':
+          description: Missing permission for the active tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateClinicCommand
+      tags: [Clinics]
+      summary: Create a clinic in the active tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClinicRequest'
+      responses:
+        '201':
+          description: Clinic created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicMutationResponse'
+        '409':
+          description: Duplicate clinic code in the active tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid clinic payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}:
+    get:
+      operationId: GetClinicQuery
+      tags: [Clinics]
+      summary: Get one clinic in the active tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicResponse'
+        '404':
+          description: Clinic not found in the active tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateClinicCommand
+      tags: [Clinics]
+      summary: Update a clinic in the active tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClinicRequest'
+      responses:
+        '200':
+          description: Clinic updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicMutationResponse'
+        '409':
+          description: Duplicate clinic code in the active tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid clinic payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteClinicCommand
+      tags: [Clinics]
+      summary: Delete an inactive clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicMutationResponse'
+        '409':
+          description: Clinic is still active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}:activate:
+    post:
+      operationId: ActivateClinicCommand
+      tags: [Clinics]
+      summary: Activate an inactive clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicMutationResponse'
+        '409':
+          description: Invalid clinic lifecycle transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}:deactivate:
+    post:
+      operationId: DeactivateClinicCommand
+      tags: [Clinics]
+      summary: Deactivate an active clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicMutationResponse'
+        '409':
+          description: Invalid clinic lifecycle transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}/settings:
+    get:
+      operationId: GetClinicSettingsQuery
+      tags: [Clinics]
+      summary: Get clinic settings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicSettingsResponse'
+    put:
+      operationId: UpdateClinicSettingsCommand
+      tags: [Clinics]
+      summary: Replace clinic settings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClinicSettingsRequest'
+      responses:
+        '200':
+          description: Clinic settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicSettingsMutationResponse'
+        '422':
+          description: Invalid clinic settings payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}/departments:
+    get:
+      operationId: ListDepartmentsQuery
+      tags: [Clinics]
+      summary: List departments for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic departments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentCollectionResponse'
+    post:
+      operationId: CreateDepartmentCommand
+      tags: [Clinics]
+      summary: Create a department for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDepartmentRequest'
+      responses:
+        '201':
+          description: Department created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentMutationResponse'
+        '409':
+          description: Duplicate department code in the clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}/departments/{departmentId}:
+    get:
+      operationId: GetDepartmentQuery
+      tags: [Clinics]
+      summary: Get one department in a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+        - $ref: '#/components/parameters/DepartmentIdPath'
+      responses:
+        '200':
+          description: Department detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentResponse'
+    patch:
+      operationId: UpdateDepartmentCommand
+      tags: [Clinics]
+      summary: Update one department in a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+        - $ref: '#/components/parameters/DepartmentIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDepartmentRequest'
+      responses:
+        '200':
+          description: Department updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentMutationResponse'
+        '409':
+          description: Duplicate department code in the clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteDepartmentCommand
+      tags: [Clinics]
+      summary: Delete one department in a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+        - $ref: '#/components/parameters/DepartmentIdPath'
+      responses:
+        '200':
+          description: Department deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentMutationResponse'
+  /api/v1/clinics/{clinicId}/rooms:
+    get:
+      operationId: ListRoomsQuery
+      tags: [Clinics]
+      summary: List rooms for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic rooms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomCollectionResponse'
+    post:
+      operationId: CreateRoomCommand
+      tags: [Clinics]
+      summary: Create a room for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+      responses:
+        '201':
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomMutationResponse'
+        '409':
+          description: Duplicate room code in the clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}/rooms/{roomId}:
+    patch:
+      operationId: UpdateRoomCommand
+      tags: [Clinics]
+      summary: Update a room in a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+        - $ref: '#/components/parameters/RoomIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomRequest'
+      responses:
+        '200':
+          description: Room updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomMutationResponse'
+        '409':
+          description: Duplicate room code in the clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteRoomCommand
+      tags: [Clinics]
+      summary: Delete a room in a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+        - $ref: '#/components/parameters/RoomIdPath'
+      responses:
+        '200':
+          description: Room deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomMutationResponse'
+  /api/v1/clinics/{clinicId}/work-hours:
+    get:
+      operationId: GetClinicWorkHoursQuery
+      tags: [Clinics]
+      summary: Get the weekly work hours for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic work hours
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicWorkHoursResponse'
+    put:
+      operationId: UpdateClinicWorkHoursCommand
+      tags: [Clinics]
+      summary: Replace the weekly work hours for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClinicWorkHoursRequest'
+      responses:
+        '200':
+          description: Clinic work hours updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicWorkHoursMutationResponse'
+        '422':
+          description: Invalid work-hour payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}/holidays:
+    get:
+      operationId: ListClinicHolidaysQuery
+      tags: [Clinics]
+      summary: List holiday ranges for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      responses:
+        '200':
+          description: Clinic holidays
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicHolidayCollectionResponse'
+    post:
+      operationId: CreateClinicHolidayCommand
+      tags: [Clinics]
+      summary: Create a holiday range for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClinicHolidayRequest'
+      responses:
+        '201':
+          description: Holiday created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicHolidayMutationResponse'
+        '409':
+          description: Holiday range overlaps another clinic holiday
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/clinics/{clinicId}/holidays/{holidayId}:
+    delete:
+      operationId: DeleteClinicHolidayCommand
+      tags: [Clinics]
+      summary: Delete a holiday range for a clinic
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClinicIdPath'
+        - $ref: '#/components/parameters/HolidayIdPath'
+      responses:
+        '200':
+          description: Holiday deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicHolidayMutationResponse'
+  /api/v1/locations/cities:
+    get:
+      operationId: ListCitiesQuery
+      tags: [Locations]
+      summary: List approved cities from the global location catalog
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Approved cities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CityCollectionResponse'
+  /api/v1/locations/districts:
+    get:
+      operationId: ListDistrictsQuery
+      tags: [Locations]
+      summary: List approved districts for one city
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: city_code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Approved districts for the city
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictCollectionResponse'
+        '404':
+          description: Requested city code is not in the approved catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/locations/search:
+    get:
+      operationId: SearchLocationsQuery
+      tags: [Locations]
+      summary: Search approved cities and districts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mixed location matches
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSearchResponse'
 components:
   parameters:
     TenantIdHeader:
@@ -409,6 +1020,34 @@ components:
         format: uuid
     TenantIdPath:
       name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ClinicIdPath:
+      name: clinicId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DepartmentIdPath:
+      name: departmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoomIdPath:
+      name: roomId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    HolidayIdPath:
+      name: holidayId
       in: path
       required: true
       schema:
@@ -656,6 +1295,575 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/TenantUsage'
+    Clinic:
+      type: object
+      required: [id, tenant_id, code, name, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        status:
+          type: string
+          enum: [active, inactive]
+        contact_email:
+          type: [string, 'null']
+          format: email
+        contact_phone:
+          type: [string, 'null']
+        city_code:
+          type: [string, 'null']
+        district_code:
+          type: [string, 'null']
+        address_line_1:
+          type: [string, 'null']
+        address_line_2:
+          type: [string, 'null']
+        postal_code:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        activated_at:
+          type: [string, 'null']
+          format: date-time
+        deactivated_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ClinicCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Clinic'
+    ClinicResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Clinic'
+    ClinicMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: clinic_created
+        data:
+          $ref: '#/components/schemas/Clinic'
+    CreateClinicRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        contact_email:
+          type: [string, 'null']
+          format: email
+        contact_phone:
+          type: [string, 'null']
+          maxLength: 32
+        city_code:
+          type: [string, 'null']
+        district_code:
+          type: [string, 'null']
+        address_line_1:
+          type: [string, 'null']
+          maxLength: 255
+        address_line_2:
+          type: [string, 'null']
+          maxLength: 255
+        postal_code:
+          type: [string, 'null']
+          maxLength: 32
+        notes:
+          type: [string, 'null']
+    UpdateClinicRequest:
+      type: object
+      minProperties: 1
+      properties:
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        contact_email:
+          type: [string, 'null']
+          format: email
+        contact_phone:
+          type: [string, 'null']
+          maxLength: 32
+        city_code:
+          type: [string, 'null']
+        district_code:
+          type: [string, 'null']
+        address_line_1:
+          type: [string, 'null']
+          maxLength: 255
+        address_line_2:
+          type: [string, 'null']
+          maxLength: 255
+        postal_code:
+          type: [string, 'null']
+          maxLength: 32
+        notes:
+          type: [string, 'null']
+    ClinicSettings:
+      type: object
+      required:
+        - timezone
+        - default_appointment_duration_minutes
+        - slot_interval_minutes
+        - allow_walk_ins
+        - require_appointment_confirmation
+        - telemedicine_enabled
+        - updated_at
+      properties:
+        timezone:
+          type: [string, 'null']
+        default_appointment_duration_minutes:
+          type: integer
+        slot_interval_minutes:
+          type: integer
+        allow_walk_ins:
+          type: boolean
+        require_appointment_confirmation:
+          type: boolean
+        telemedicine_enabled:
+          type: boolean
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    ClinicSettingsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ClinicSettings'
+    ClinicSettingsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: clinic_settings_updated
+        data:
+          $ref: '#/components/schemas/ClinicSettings'
+    UpdateClinicSettingsRequest:
+      type: object
+      required:
+        - timezone
+        - default_appointment_duration_minutes
+        - slot_interval_minutes
+        - allow_walk_ins
+        - require_appointment_confirmation
+        - telemedicine_enabled
+      properties:
+        timezone:
+          type: [string, 'null']
+        default_appointment_duration_minutes:
+          type: integer
+          minimum: 5
+          maximum: 480
+        slot_interval_minutes:
+          type: integer
+          minimum: 5
+          maximum: 240
+        allow_walk_ins:
+          type: boolean
+        require_appointment_confirmation:
+          type: boolean
+        telemedicine_enabled:
+          type: boolean
+    Department:
+      type: object
+      required: [id, clinic_id, code, name, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        phone_extension:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    DepartmentCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Department'
+    DepartmentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Department'
+    DepartmentMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: department_created
+        data:
+          $ref: '#/components/schemas/Department'
+    CreateDepartmentRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: [string, 'null']
+        phone_extension:
+          type: [string, 'null']
+          maxLength: 16
+    UpdateDepartmentRequest:
+      type: object
+      minProperties: 1
+      properties:
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: [string, 'null']
+        phone_extension:
+          type: [string, 'null']
+          maxLength: 16
+    Room:
+      type: object
+      required: [id, clinic_id, code, name, type, capacity, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+        department_id:
+          type: [string, 'null']
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [consultation, treatment, imaging, laboratory, operating, administrative, virtual, other]
+        floor:
+          type: [string, 'null']
+        capacity:
+          type: integer
+          minimum: 1
+        notes:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    RoomCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+    RoomMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: room_created
+        data:
+          $ref: '#/components/schemas/Room'
+    CreateRoomRequest:
+      type: object
+      required: [code, name, type, capacity]
+      properties:
+        department_id:
+          type: [string, 'null']
+          format: uuid
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        type:
+          type: string
+          enum: [consultation, treatment, imaging, laboratory, operating, administrative, virtual, other]
+        floor:
+          type: [string, 'null']
+          maxLength: 32
+        capacity:
+          type: integer
+          minimum: 1
+        notes:
+          type: [string, 'null']
+    UpdateRoomRequest:
+      type: object
+      minProperties: 1
+      properties:
+        department_id:
+          type: [string, 'null']
+          format: uuid
+        code:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 160
+        type:
+          type: string
+          enum: [consultation, treatment, imaging, laboratory, operating, administrative, virtual, other]
+        floor:
+          type: [string, 'null']
+          maxLength: 32
+        capacity:
+          type: integer
+          minimum: 1
+        notes:
+          type: [string, 'null']
+    WorkInterval:
+      type: object
+      required: [start_time, end_time]
+      properties:
+        start_time:
+          type: string
+          pattern: '^(2[0-3]|[01][0-9]):[0-5][0-9]$'
+        end_time:
+          type: string
+          pattern: '^(2[0-3]|[01][0-9]):[0-5][0-9]$'
+    WorkWeek:
+      type: object
+      properties:
+        monday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+        tuesday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+        wednesday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+        thursday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+        friday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+        saturday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+        sunday:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkInterval'
+    ClinicWorkHours:
+      type: object
+      required: [clinic_id, days, updated_at]
+      properties:
+        clinic_id:
+          type: string
+          format: uuid
+        days:
+          $ref: '#/components/schemas/WorkWeek'
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    ClinicWorkHoursResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ClinicWorkHours'
+    ClinicWorkHoursMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: clinic_work_hours_updated
+        data:
+          $ref: '#/components/schemas/ClinicWorkHours'
+    UpdateClinicWorkHoursRequest:
+      type: object
+      required: [days]
+      properties:
+        days:
+          $ref: '#/components/schemas/WorkWeek'
+    ClinicHoliday:
+      type: object
+      required: [id, clinic_id, name, start_date, end_date, is_closed, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_closed:
+          type: boolean
+        notes:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ClinicHolidayCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClinicHoliday'
+    ClinicHolidayMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: clinic_holiday_created
+        data:
+          $ref: '#/components/schemas/ClinicHoliday'
+    CreateClinicHolidayRequest:
+      type: object
+      required: [name, start_date, end_date]
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_closed:
+          type: boolean
+          default: true
+        notes:
+          type: [string, 'null']
+    City:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+    District:
+      type: object
+      required: [code, city_code, name]
+      properties:
+        code:
+          type: string
+        city_code:
+          type: string
+        name:
+          type: string
+    LocationSearchResult:
+      type: object
+      required: [type, code, name, city_code, city_name]
+      properties:
+        type:
+          type: string
+          enum: [city, district]
+        code:
+          type: string
+        name:
+          type: string
+        city_code:
+          type: [string, 'null']
+        city_name:
+          type: [string, 'null']
+    CityCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/City'
+    DistrictCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/District'
+    LocationSearchResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationSearchResult'
   securitySchemes:
     bearerAuth:
       type: http

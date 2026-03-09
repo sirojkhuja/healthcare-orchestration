@@ -425,6 +425,13 @@ Standard error:
 - tenant settings: locale, timezone, currency
 - tenant limits: users, clinics, providers, patients, storage_gb, monthly_notifications
 - tenant usage reports used, limit, and remaining values for each documented limit key
+- clinic records: code, name, status, contact details, location codes, address fields, notes
+- clinic lifecycle states: active, inactive; delete only while inactive
+- clinic settings: timezone override, default appointment duration, slot interval, walk-in flag, confirmation flag, telemedicine flag
+- departments and rooms are clinic-owned nested resources with unique per-clinic codes
+- clinic work hours are weekly schedules with non-overlapping daily time intervals
+- clinic holidays are inclusive non-overlapping date ranges
+- location endpoints expose approved global reference data and are not tenant-owned
 
 ### 12.3 Users & RBAC
 - CRUD users
@@ -741,6 +748,11 @@ Tenant route notes:
 - GET `/locations/cities` → `ListCitiesQuery` → Clinics
 - GET `/locations/districts` → `ListDistrictsQuery` → Clinics
 - GET `/locations/search` → `SearchLocationsQuery` → Clinics
+- Clinic codes are unique within a tenant. Department and room codes are unique within a clinic.
+- Clinic settings currently contain `timezone`, `default_appointment_duration_minutes`, `slot_interval_minutes`, `allow_walk_ins`, `require_appointment_confirmation`, and `telemedicine_enabled`.
+- Clinic work hours are a weekly schedule keyed by `monday` through `sunday`, with zero or more non-overlapping `HH:MM` intervals per day.
+- Clinic holidays are inclusive date ranges with `name`, `start_date`, `end_date`, `is_closed`, and `notes`.
+- Location endpoints return approved read-only global reference data.
 
 ---
 
