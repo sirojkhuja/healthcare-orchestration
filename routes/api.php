@@ -10,7 +10,10 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
+use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
+use App\Modules\Patient\Presentation\Http\Controllers\PatientDocumentController;
+use App\Modules\Patient\Presentation\Http\Controllers\PatientTagController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -137,11 +140,21 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/patients/{patientId}', [PatientController::class, 'show'])->name('patients.show');
                 Route::get('/patients/{patientId}/summary', [PatientController::class, 'summary'])->name('patients.summary');
                 Route::get('/patients/{patientId}/timeline', [PatientController::class, 'timeline'])->name('patients.timeline');
+                Route::get('/patients/{patientId}/contacts', [PatientContactController::class, 'list'])->name('patients.contacts.list');
+                Route::get('/patients/{patientId}/tags', [PatientTagController::class, 'list'])->name('patients.tags.list');
+                Route::get('/patients/{patientId}/documents', [PatientDocumentController::class, 'list'])->name('patients.documents.list');
+                Route::get('/patients/{patientId}/documents/{docId}', [PatientDocumentController::class, 'show'])->name('patients.documents.show');
             });
             Route::middleware('permission:patients.manage')->group(function (): void {
                 Route::post('/patients', [PatientController::class, 'create'])->name('patients.create');
                 Route::patch('/patients/{patientId}', [PatientController::class, 'update'])->name('patients.update');
                 Route::delete('/patients/{patientId}', [PatientController::class, 'delete'])->name('patients.delete');
+                Route::post('/patients/{patientId}/contacts', [PatientContactController::class, 'create'])->name('patients.contacts.create');
+                Route::patch('/patients/{patientId}/contacts/{contactId}', [PatientContactController::class, 'update'])->name('patients.contacts.update');
+                Route::delete('/patients/{patientId}/contacts/{contactId}', [PatientContactController::class, 'delete'])->name('patients.contacts.delete');
+                Route::put('/patients/{patientId}/tags', [PatientTagController::class, 'update'])->name('patients.tags.update');
+                Route::post('/patients/{patientId}/documents', [PatientDocumentController::class, 'upload'])->name('patients.documents.create');
+                Route::delete('/patients/{patientId}/documents/{docId}', [PatientDocumentController::class, 'delete'])->name('patients.documents.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

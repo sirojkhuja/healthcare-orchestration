@@ -51,7 +51,15 @@
 - Export responses return an export reference containing `export_id`, `format`, `file_name`, `row_count`, `generated_at`, the applied filters, and the private storage `disk` and `path`.
 - The CSV export columns are `id`, `tenant_id`, `display_name`, `first_name`, `last_name`, `middle_name`, `preferred_name`, `sex`, `birth_date`, `age_years`, `national_id`, `email`, `phone`, `city_code`, `district_code`, `address_line_1`, `address_line_2`, `postal_code`, `notes`, `created_at`, `updated_at`, and `exported_at`.
 - Export creation writes audit action `patients.exported` with object type `patient_export`.
-- `T029` implemented the base CRUD surface. `T030` adds search, summary, timeline, and export. Contacts, documents, consents, insurance links, tags, bulk flows, and external references remain in later tasks.
+- Patient contacts use `name`, `relationship`, `phone`, `email`, `is_primary`, `is_emergency`, and `notes`. `name` is required and at least one of `phone` or `email` must be present after create or update.
+- Only one active primary contact may exist per patient. Contacts list ordered by `is_primary desc`, `is_emergency desc`, `name asc`, and `created_at asc`.
+- `GET /patients/{patientId}/tags` returns the full normalized active tag set. `PUT /patients/{patientId}/tags` replaces the entire set.
+- Tags are normalized by trimming, collapsing repeated internal whitespace, lowercasing, discarding empty values, deduplicating case-insensitively, and sorting alphabetically.
+- `GET /patients/{patientId}/documents` returns document metadata newest first. `GET /patients/{patientId}/documents/{docId}` returns metadata only and never exposes storage disk, storage path, or a public URL.
+- `POST /patients/{patientId}/documents` accepts multipart uploads with `document`, optional `title`, and optional `document_type`. Allowed upload types are `pdf`, `jpg`, `jpeg`, `png`, and `webp` with a maximum size of `10 MiB`.
+- Patient documents are stored on the private shared attachments disk. If `title` is omitted it defaults to the uploaded filename.
+- Contact, tag, and document mutations emit patient audit actions and appear in the patient timeline through patient-scoped audit metadata.
+- `T029` implemented the base CRUD surface. `T030` adds search, summary, timeline, and export. `T031` adds contacts, tags, and document management. Consents, insurance links, bulk flows, and external references remain in later tasks.
 
 ## Providers and Availability
 

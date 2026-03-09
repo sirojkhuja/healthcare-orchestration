@@ -840,6 +840,11 @@ Patient search, summary, timeline, and export operate on the active tenant-owned
 - patient timeline returns patient audit events newest first
 - patient export writes CSV only through the private shared exports storage and returns an export reference rather than a public file URL
 - export creation writes audit action `patients.exported` with object type `patient_export`
+- patient contacts require `name` plus at least one of `phone` or `email`; only one active primary contact may exist per patient
+- patient contacts list ordered by `is_primary desc`, `is_emergency desc`, `name asc`, and `created_at asc`
+- patient tags are replaced as a full normalized set; normalization trims, collapses repeated internal whitespace, lowercases, discards empty values, and sorts alphabetically
+- patient document routes expose metadata only, store files on the private shared attachments disk, and accept only `pdf`, `jpg`, `jpeg`, `png`, and `webp` uploads up to `10 MiB`
+- patient contact, tag, and document mutations emit patient audit actions so they can appear in patient timelines
 
 ---
 

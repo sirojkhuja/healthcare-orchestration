@@ -399,6 +399,417 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/contacts:
+    get:
+      operationId: ListPatientContactsQuery
+      tags: [Patients]
+      summary: List patient contacts
+      description: Returns tenant-scoped patient contacts ordered by primary flag, emergency flag, name, and creation time.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient contacts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientContactCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreatePatientContactCommand
+      tags: [Patients]
+      summary: Create a patient contact
+      description: Creates a tenant-scoped patient contact. At least one of `phone` or `email` is required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientContactRequest'
+      responses:
+        '201':
+          description: Patient contact created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientContactMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid contact payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/contacts/{contactId}:
+    patch:
+      operationId: UpdatePatientContactCommand
+      tags: [Patients]
+      summary: Update a patient contact
+      description: Updates a tenant-scoped patient contact while preserving the single-primary-contact invariant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientContactIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePatientContactRequest'
+      responses:
+        '200':
+          description: Patient contact updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientContactMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or contact not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid contact payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeletePatientContactCommand
+      tags: [Patients]
+      summary: Delete a patient contact
+      description: Hard deletes a tenant-scoped patient contact and records a patient audit event.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientContactIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient contact deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientContactMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or contact not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/tags:
+    get:
+      operationId: ListPatientTagsQuery
+      tags: [Patients]
+      summary: List normalized patient tags
+      description: Returns the full active normalized tag set for the patient.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientTagsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: SetPatientTagsCommand
+      tags: [Patients]
+      summary: Replace the patient tag set
+      description: >
+        Replaces the entire patient tag set. Tags are trimmed, lowercased, deduplicated,
+        empty values are discarded, and the response is alphabetically sorted.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPatientTagsRequest'
+      responses:
+        '200':
+          description: Patient tags replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientTagsMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid tags payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/documents:
+    get:
+      operationId: ListPatientDocumentsQuery
+      tags: [Patients]
+      summary: List patient document metadata
+      description: Returns patient document metadata newest first. Responses never include public file URLs or storage-internal paths.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient document metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDocumentCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: UploadPatientDocumentCommand
+      tags: [Patients]
+      summary: Upload a patient document
+      description: >
+        Uploads a patient document to the private attachments disk and returns metadata only.
+        If `title` is omitted it defaults to the uploaded filename.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadPatientDocumentRequest'
+      responses:
+        '201':
+          description: Patient document uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDocumentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid document upload payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/documents/{docId}:
+    get:
+      operationId: GetPatientDocumentQuery
+      tags: [Patients]
+      summary: Get patient document metadata
+      description: Returns document metadata only for one patient document in tenant scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientDocumentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient document metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDocumentResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or document not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeletePatientDocumentCommand
+      tags: [Patients]
+      summary: Delete a patient document
+      description: Deletes patient document metadata and performs best-effort deletion of the private attachment file.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientDocumentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient document deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDocumentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or document not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -408,6 +819,20 @@ components:
   parameters:
     PatientIdPath:
       name: patientId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PatientContactIdPath:
+      name: contactId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PatientDocumentIdPath:
+      name: docId
       in: path
       required: true
       schema:
@@ -674,6 +1099,242 @@ components:
           examples: [patient_created]
         data:
           $ref: '#/components/schemas/Patient'
+    PatientContact:
+      type: object
+      required:
+        - id
+        - patient_id
+        - name
+        - is_primary
+        - is_emergency
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        relationship:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        is_primary:
+          type: boolean
+        is_emergency:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreatePatientContactRequest:
+      type: object
+      required: [name]
+      description: At least one of `phone` or `email` is required.
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        relationship:
+          type: string
+          nullable: true
+          maxLength: 120
+        phone:
+          type: string
+          nullable: true
+          maxLength: 32
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        is_primary:
+          type: boolean
+        is_emergency:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    UpdatePatientContactRequest:
+      type: object
+      description: At least one field is required. The resulting contact must still contain `phone` or `email`.
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        relationship:
+          type: string
+          nullable: true
+          maxLength: 120
+        phone:
+          type: string
+          nullable: true
+          maxLength: 32
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        is_primary:
+          type: boolean
+        is_emergency:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    PatientContactResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PatientContact'
+    PatientContactCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientContact'
+    PatientContactMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_contact_created]
+        data:
+          $ref: '#/components/schemas/PatientContact'
+    PatientTags:
+      type: object
+      required: [patient_id, tags]
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+    PatientTagsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PatientTags'
+    PatientTagsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_tags_updated]
+        data:
+          $ref: '#/components/schemas/PatientTags'
+    SetPatientTagsRequest:
+      type: object
+      required: [tags]
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+            nullable: true
+            maxLength: 120
+    PatientDocument:
+      type: object
+      required:
+        - id
+        - patient_id
+        - title
+        - file_name
+        - mime_type
+        - size_bytes
+        - uploaded_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        document_type:
+          type: string
+          nullable: true
+        file_name:
+          type: string
+        mime_type:
+          type: string
+        size_bytes:
+          type: integer
+        uploaded_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UploadPatientDocumentRequest:
+      type: object
+      required: [document]
+      properties:
+        document:
+          type: string
+          format: binary
+          description: Allowed file types are `pdf`, `jpg`, `jpeg`, `png`, and `webp` up to `10 MiB`.
+        title:
+          type: string
+          nullable: true
+          maxLength: 255
+        document_type:
+          type: string
+          nullable: true
+          maxLength: 64
+    PatientDocumentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PatientDocument'
+    PatientDocumentCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientDocument'
+    PatientDocumentMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_document_uploaded]
+        data:
+          $ref: '#/components/schemas/PatientDocument'
     PatientSummary:
       type: object
       required:

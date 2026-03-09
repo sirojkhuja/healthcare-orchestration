@@ -95,7 +95,7 @@ The system is split into independently understandable modules. Each module owns 
 
 ### Patient
 
-- patient master records, demographics, directory contact points, documents, consent references, and patient summaries
+- patient master records, demographics, directory contact points, patient contacts, normalized tags, private document metadata, consent references, and patient summaries
 - patient master records are tenant-owned and support soft delete so removed patients leave the active directory without losing auditability
 - patient search and CSV export operate on the active tenant-scoped master-record directory
 - first-pass patient summaries and patient timelines are derived from the patient master record plus immutable patient audit events

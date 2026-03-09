@@ -56,8 +56,16 @@ use App\Modules\IdentityAccess\Infrastructure\Profiles\Storage\AttachmentBackedP
 use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
+use App\Modules\Patient\Application\Contracts\PatientContactRepository;
+use App\Modules\Patient\Application\Contracts\PatientDocumentRepository;
+use App\Modules\Patient\Application\Contracts\PatientDocumentStore;
 use App\Modules\Patient\Application\Contracts\PatientRepository;
+use App\Modules\Patient\Application\Contracts\PatientTagRepository;
+use App\Modules\Patient\Infrastructure\Documents\Storage\AttachmentBackedPatientDocumentStore;
+use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientContactRepository;
+use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientDocumentRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientRepository;
+use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientTagRepository;
 use App\Modules\TenantManagement\Application\Contracts\ClinicRepository;
 use App\Modules\TenantManagement\Application\Contracts\LocationReferenceRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantConfigurationRepository;
@@ -133,6 +141,10 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(ClinicRepository::class, DatabaseClinicRepository::class);
         $this->app->bind(LocationReferenceRepository::class, ConfigLocationReferenceRepository::class);
         $this->app->bind(PatientRepository::class, DatabasePatientRepository::class);
+        $this->app->bind(PatientContactRepository::class, DatabasePatientContactRepository::class);
+        $this->app->bind(PatientDocumentRepository::class, DatabasePatientDocumentRepository::class);
+        $this->app->bind(PatientDocumentStore::class, AttachmentBackedPatientDocumentStore::class);
+        $this->app->bind(PatientTagRepository::class, DatabasePatientTagRepository::class);
         $this->app->bind(SecurityEventRepository::class, DatabaseSecurityEventRepository::class);
         $this->app->bind(SecurityEventWriter::class, ContextualSecurityEventWriter::class);
         $this->app->singleton(PermissionCatalog::class, ConfigPermissionCatalog::class);
