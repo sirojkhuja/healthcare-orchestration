@@ -832,6 +832,15 @@ Tenant route notes:
 - POST `/patients/{patientId}/external-refs` → `AttachPatientExternalRefCommand` → Integrations
 - DELETE `/patients/{patientId}/external-refs/{refId}` → `DetachPatientExternalRefCommand` → Integrations
 
+Patient search, summary, timeline, and export operate on the active tenant-owned patient directory:
+
+- patient search supports `q`, `sex`, `city_code`, `district_code`, `birth_date_from`, `birth_date_to`, `created_from`, `created_to`, `has_email`, `has_phone`, and `limit`
+- search token matching uses AND semantics across patient names, `national_id`, `email`, and `phone`
+- patient summary is derived from the active patient master record plus immutable patient audit events
+- patient timeline returns patient audit events newest first
+- patient export writes CSV only through the private shared exports storage and returns an export reference rather than a public file URL
+- export creation writes audit action `patients.exported` with object type `patient_export`
+
 ---
 
 ## A.6 Providers (Doctors/Nurses) & Availability (34)

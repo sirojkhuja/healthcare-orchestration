@@ -3,6 +3,7 @@
 namespace App\Modules\Patient\Application\Contracts;
 
 use App\Modules\Patient\Application\Data\PatientData;
+use App\Modules\Patient\Application\Data\PatientSearchCriteria;
 use Carbon\CarbonImmutable;
 
 interface PatientRepository
@@ -36,6 +37,11 @@ interface PatientRepository
      * @return list<PatientData>
      */
     public function listForTenant(string $tenantId): array;
+
+    /**
+     * @return list<PatientData>
+     */
+    public function search(string $tenantId, PatientSearchCriteria $criteria): array;
 
     public function softDelete(string $tenantId, string $patientId, CarbonImmutable $deletedAt): bool;
 

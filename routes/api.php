@@ -132,7 +132,11 @@ Route::prefix('v1')->group(function (): void {
             });
             Route::middleware('permission:patients.view')->group(function (): void {
                 Route::get('/patients', [PatientController::class, 'list'])->name('patients.list');
+                Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
+                Route::get('/patients/export', [PatientController::class, 'export'])->name('patients.export');
                 Route::get('/patients/{patientId}', [PatientController::class, 'show'])->name('patients.show');
+                Route::get('/patients/{patientId}/summary', [PatientController::class, 'summary'])->name('patients.summary');
+                Route::get('/patients/{patientId}/timeline', [PatientController::class, 'timeline'])->name('patients.timeline');
             });
             Route::middleware('permission:patients.manage')->group(function (): void {
                 Route::post('/patients', [PatientController::class, 'create'])->name('patients.create');

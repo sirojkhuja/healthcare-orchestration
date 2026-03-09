@@ -42,7 +42,16 @@
 - `sex` uses the enum values `female`, `male`, `other`, and `unknown`.
 - Optional location codes reuse the approved global location catalog. If `district_code` is provided, `city_code` must also be present and the district must belong to that city.
 - `DELETE /patients/{patientId}` is a soft delete. Deleted patients are excluded from active directory reads but retained for auditability.
-- `T029` implements the base CRUD surface. Search, summary, timeline, contacts, documents, consents, insurance links, tags, bulk flows, exports, and external references are tracked in later tasks.
+- `GET /patients/search` returns active patient records ordered by tenant-scoped relevance. It supports `q`, `sex`, `city_code`, `district_code`, `birth_date_from`, `birth_date_to`, `created_from`, `created_to`, `has_email`, `has_phone`, and `limit`.
+- Search token matching uses AND semantics across `first_name`, `last_name`, `middle_name`, `preferred_name`, `national_id`, `email`, and `phone`. Exact identifier matches sort ahead of prefix matches and substring matches.
+- `GET /patients/{patientId}/summary` returns the active patient record plus derived summary fields: `display_name`, `initials`, `age_years`, `directory_status`, contact summary, location summary, `timeline_event_count`, and `last_activity_at`.
+- `display_name` uses `preferred_name + last_name` when `preferred_name` exists; otherwise it uses `first_name + last_name`. `initials` use the first and last words of that display name.
+- `GET /patients/{patientId}/timeline` returns immutable patient audit events newest first and supports `limit` up to `100`.
+- `GET /patients/export` exports the active patient search result set to CSV on the private shared exports disk. It accepts the same filters as patient search plus `format=csv` and an export `limit` with a maximum of `1000`.
+- Export responses return an export reference containing `export_id`, `format`, `file_name`, `row_count`, `generated_at`, the applied filters, and the private storage `disk` and `path`.
+- The CSV export columns are `id`, `tenant_id`, `display_name`, `first_name`, `last_name`, `middle_name`, `preferred_name`, `sex`, `birth_date`, `age_years`, `national_id`, `email`, `phone`, `city_code`, `district_code`, `address_line_1`, `address_line_2`, `postal_code`, `notes`, `created_at`, `updated_at`, and `exported_at`.
+- Export creation writes audit action `patients.exported` with object type `patient_export`.
+- `T029` implemented the base CRUD surface. `T030` adds search, summary, timeline, and export. Contacts, documents, consents, insurance links, tags, bulk flows, and external references remain in later tasks.
 
 ## Providers and Availability
 

@@ -95,6 +95,103 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/search:
+    get:
+      operationId: SearchPatientsQuery
+      tags: [Patients]
+      summary: Search active patients in the current tenant
+      description: >
+        Searches the active tenant-owned patient directory. Relevance prefers exact identifier matches,
+        then prefix matches, then substring matches across patient names, `national_id`, `email`, and `phone`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PatientSearchQuery'
+        - $ref: '#/components/parameters/PatientSexFilter'
+        - $ref: '#/components/parameters/PatientCityCodeFilter'
+        - $ref: '#/components/parameters/PatientDistrictCodeFilter'
+        - $ref: '#/components/parameters/PatientBirthDateFromFilter'
+        - $ref: '#/components/parameters/PatientBirthDateToFilter'
+        - $ref: '#/components/parameters/PatientCreatedFromFilter'
+        - $ref: '#/components/parameters/PatientCreatedToFilter'
+        - $ref: '#/components/parameters/PatientHasEmailFilter'
+        - $ref: '#/components/parameters/PatientHasPhoneFilter'
+        - $ref: '#/components/parameters/PatientSearchLimit'
+      responses:
+        '200':
+          description: Matching active patients ordered by relevance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientSearchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid search filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/export:
+    get:
+      operationId: ExportPatientsQuery
+      tags: [Patients]
+      summary: Export the active patient search result set
+      description: >
+        Generates a CSV snapshot of the active patient search result set, stores it on the private
+        exports disk, and returns a private export reference.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PatientSearchQuery'
+        - $ref: '#/components/parameters/PatientSexFilter'
+        - $ref: '#/components/parameters/PatientCityCodeFilter'
+        - $ref: '#/components/parameters/PatientDistrictCodeFilter'
+        - $ref: '#/components/parameters/PatientBirthDateFromFilter'
+        - $ref: '#/components/parameters/PatientBirthDateToFilter'
+        - $ref: '#/components/parameters/PatientCreatedFromFilter'
+        - $ref: '#/components/parameters/PatientCreatedToFilter'
+        - $ref: '#/components/parameters/PatientHasEmailFilter'
+        - $ref: '#/components/parameters/PatientHasPhoneFilter'
+        - $ref: '#/components/parameters/PatientExportLimit'
+        - $ref: '#/components/parameters/PatientExportFormat'
+      responses:
+        '200':
+          description: Export generated and persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid export filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/patients/{patientId}:
     get:
       operationId: GetPatientQuery
@@ -223,6 +320,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/summary:
+    get:
+      operationId: GetPatientSummaryQuery
+      tags: [Patients]
+      summary: Get a derived patient summary
+      description: Returns the active patient master record plus derived directory and audit summary fields.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientSummaryResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/timeline:
+    get:
+      operationId: GetPatientTimelineQuery
+      tags: [Patients]
+      summary: Get the patient audit timeline
+      description: Returns immutable patient audit events newest first for the active patient in tenant scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PatientTimelineLimit'
+      responses:
+        '200':
+          description: Patient timeline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientTimelineResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid timeline limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -245,6 +421,108 @@ components:
       schema:
         type: string
         format: uuid
+    PatientSearchQuery:
+      name: q
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+      description: Free-text search query applied across patient names, identifiers, email, and phone.
+    PatientSexFilter:
+      name: sex
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [female, male, other, unknown]
+    PatientCityCodeFilter:
+      name: city_code
+      in: query
+      required: false
+      schema:
+        type: string
+    PatientDistrictCodeFilter:
+      name: district_code
+      in: query
+      required: false
+      schema:
+        type: string
+    PatientBirthDateFromFilter:
+      name: birth_date_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    PatientBirthDateToFilter:
+      name: birth_date_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    PatientCreatedFromFilter:
+      name: created_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    PatientCreatedToFilter:
+      name: created_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    PatientHasEmailFilter:
+      name: has_email
+      in: query
+      required: false
+      schema:
+        type: boolean
+    PatientHasPhoneFilter:
+      name: has_phone
+      in: query
+      required: false
+      schema:
+        type: boolean
+    PatientSearchLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    PatientExportLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 1000
+    PatientExportFormat:
+      name: format
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [csv]
+        default: csv
+    PatientTimelineLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
   schemas:
     Patient:
       type: object
@@ -318,6 +596,47 @@ components:
         updated_at:
           type: string
           format: date-time
+    PatientSearchFilters:
+      type: object
+      required: [limit]
+      properties:
+        q:
+          type: string
+          nullable: true
+        sex:
+          type: string
+          enum: [female, male, other, unknown]
+          nullable: true
+        city_code:
+          type: string
+          nullable: true
+        district_code:
+          type: string
+          nullable: true
+        birth_date_from:
+          type: string
+          format: date
+          nullable: true
+        birth_date_to:
+          type: string
+          format: date
+          nullable: true
+        created_from:
+          type: string
+          format: date
+          nullable: true
+        created_to:
+          type: string
+          format: date
+          nullable: true
+        has_email:
+          type: boolean
+          nullable: true
+        has_phone:
+          type: boolean
+          nullable: true
+        limit:
+          type: integer
     PatientResponse:
       type: object
       required: [data]
@@ -332,6 +651,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Patient'
+    PatientSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/PatientSearchFilters'
     PatientMutationResponse:
       type: object
       required: [status, data]
@@ -341,6 +674,202 @@ components:
           examples: [patient_created]
         data:
           $ref: '#/components/schemas/Patient'
+    PatientSummary:
+      type: object
+      required:
+        - patient
+        - display_name
+        - initials
+        - age_years
+        - directory_status
+        - contact
+        - location
+        - timeline_event_count
+        - last_activity_at
+      properties:
+        patient:
+          $ref: '#/components/schemas/Patient'
+        display_name:
+          type: string
+        initials:
+          type: string
+        age_years:
+          type: integer
+        directory_status:
+          type: string
+          enum: [active]
+        contact:
+          type: object
+          required: [email, phone, has_email, has_phone]
+          properties:
+            email:
+              type: string
+              format: email
+              nullable: true
+            phone:
+              type: string
+              nullable: true
+            has_email:
+              type: boolean
+            has_phone:
+              type: boolean
+        location:
+          type: object
+          required: [city_code, district_code, address_line_1, address_line_2, postal_code]
+          properties:
+            city_code:
+              type: string
+              nullable: true
+            district_code:
+              type: string
+              nullable: true
+            address_line_1:
+              type: string
+              nullable: true
+            address_line_2:
+              type: string
+              nullable: true
+            postal_code:
+              type: string
+              nullable: true
+        timeline_event_count:
+          type: integer
+        last_activity_at:
+          type: string
+          format: date-time
+    PatientSummaryResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PatientSummary'
+    AuditActor:
+      type: object
+      required: [type, id, name]
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          nullable: true
+    PatientTimelineEvent:
+      type: object
+      required:
+        - event_id
+        - tenant_id
+        - action
+        - object_type
+        - object_id
+        - actor
+        - request_id
+        - correlation_id
+        - before
+        - after
+        - metadata
+        - occurred_at
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+          nullable: true
+        action:
+          type: string
+        object_type:
+          type: string
+          enum: [patient]
+        object_id:
+          type: string
+          format: uuid
+        actor:
+          $ref: '#/components/schemas/AuditActor'
+        request_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        occurred_at:
+          type: string
+          format: date-time
+    PatientTimelineResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientTimelineEvent'
+        meta:
+          type: object
+          required: [limit]
+          properties:
+            limit:
+              type: integer
+    PatientExportStorage:
+      type: object
+      required: [disk, path, visibility]
+      properties:
+        disk:
+          type: string
+          examples: [exports]
+        path:
+          type: string
+        visibility:
+          type: string
+          enum: [private]
+    PatientExport:
+      type: object
+      required:
+        - export_id
+        - format
+        - file_name
+        - row_count
+        - generated_at
+        - filters
+        - storage
+      properties:
+        export_id:
+          type: string
+          format: uuid
+        format:
+          type: string
+          enum: [csv]
+        file_name:
+          type: string
+        row_count:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+        filters:
+          $ref: '#/components/schemas/PatientSearchFilters'
+        storage:
+          $ref: '#/components/schemas/PatientExportStorage'
+    PatientExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [patient_export_created]
+        data:
+          $ref: '#/components/schemas/PatientExport'
     CreatePatientRequest:
       type: object
       required: [first_name, last_name, sex, birth_date]

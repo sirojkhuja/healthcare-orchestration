@@ -4,6 +4,7 @@ namespace App\Modules\Patient\Infrastructure\Persistence;
 
 use App\Modules\Patient\Application\Contracts\PatientRepository;
 use App\Modules\Patient\Application\Data\PatientData;
+use App\Modules\Patient\Application\Data\PatientSearchCriteria;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
@@ -68,6 +69,24 @@ final class DatabasePatientRepository implements PatientRepository
     }
 
     #[\Override]
+    public function search(string $tenantId, PatientSearchCriteria $criteria): array
+    {
+        $query = $this->baseQuery($tenantId);
+        $this->applyStructuredFilters($query, $criteria);
+        $this->applySearchTokens($query, $criteria);
+
+        /** @var list<stdClass> $rows */
+        $rows = $query
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->orderBy('created_at')
+            ->get()
+            ->all();
+
+        return array_map($this->toData(...), $rows);
+    }
+
+    #[\Override]
     public function nationalIdExists(string $tenantId, string $nationalId, ?string $ignorePatientId = null): bool
     {
         $query = DB::table('patients')
@@ -115,6 +134,67 @@ final class DatabasePatientRepository implements PatientRepository
         }
 
         return $this->findInTenant($tenantId, $patientId);
+    }
+
+    private function applyStructuredFilters(Builder $query, PatientSearchCriteria $criteria): void
+    {
+        if ($criteria->sex !== null) {
+            $query->where('sex', $criteria->sex);
+        }
+
+        if ($criteria->cityCode !== null) {
+            $query->where('city_code', $criteria->cityCode);
+        }
+
+        if ($criteria->districtCode !== null) {
+            $query->where('district_code', $criteria->districtCode);
+        }
+
+        if ($criteria->birthDateFrom !== null) {
+            $query->whereDate('birth_date', '>=', $criteria->birthDateFrom);
+        }
+
+        if ($criteria->birthDateTo !== null) {
+            $query->whereDate('birth_date', '<=', $criteria->birthDateTo);
+        }
+
+        if ($criteria->createdFrom !== null) {
+            $query->where('created_at', '>=', CarbonImmutable::parse($criteria->createdFrom)->startOfDay());
+        }
+
+        if ($criteria->createdTo !== null) {
+            $query->where('created_at', '<=', CarbonImmutable::parse($criteria->createdTo)->endOfDay());
+        }
+
+        if ($criteria->hasEmail !== null) {
+            $criteria->hasEmail
+                ? $query->whereNotNull('email')
+                : $query->whereNull('email');
+        }
+
+        if ($criteria->hasPhone !== null) {
+            $criteria->hasPhone
+                ? $query->whereNotNull('phone')
+                : $query->whereNull('phone');
+        }
+    }
+
+    private function applySearchTokens(Builder $query, PatientSearchCriteria $criteria): void
+    {
+        foreach ($criteria->tokens() as $token) {
+            $pattern = '%'.$token.'%';
+
+            $query->where(function (Builder $nested) use ($pattern): void {
+                $nested
+                    ->whereRaw('LOWER(first_name) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(last_name) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(middle_name, \'\')) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(preferred_name, \'\')) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(national_id, \'\')) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(email, \'\')) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(phone, \'\')) LIKE ?', [$pattern]);
+            });
+        }
     }
 
     private function baseQuery(string $tenantId, bool $withDeleted = false): Builder
