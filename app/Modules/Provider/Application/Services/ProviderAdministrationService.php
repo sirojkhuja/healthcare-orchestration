@@ -7,6 +7,7 @@ use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
 use App\Modules\Provider\Application\Contracts\ProviderProfileRepository;
 use App\Modules\Provider\Application\Contracts\ProviderRepository;
 use App\Modules\Provider\Application\Data\ProviderData;
+use App\Modules\Scheduling\Application\Contracts\AvailabilityCacheInvalidator;
 use App\Shared\Application\Contracts\TenantContext;
 use Carbon\CarbonImmutable;
 use LogicException;
@@ -19,6 +20,7 @@ final class ProviderAdministrationService
         private readonly ProviderRepository $providerRepository,
         private readonly ProviderProfileRepository $providerProfileRepository,
         private readonly ProviderAttributeNormalizer $providerAttributeNormalizer,
+        private readonly AvailabilityCacheInvalidator $availabilityCacheInvalidator,
         private readonly AuditTrailWriter $auditTrailWriter,
     ) {}
 
@@ -64,6 +66,7 @@ final class ProviderAdministrationService
             before: $provider->toArray(),
             after: $deleted->toArray(),
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $deleted;
     }
@@ -116,6 +119,13 @@ final class ProviderAdministrationService
             before: $provider->toArray(),
             after: $updated->toArray(),
         ));
+
+        if (
+            array_key_exists('clinic_id', $updates)
+            && $updates['clinic_id'] !== $provider->clinicId
+        ) {
+            $this->availabilityCacheInvalidator->invalidate($tenantId);
+        }
 
         return $updated;
     }

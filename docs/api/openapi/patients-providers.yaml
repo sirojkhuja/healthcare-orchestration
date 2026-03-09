@@ -1676,6 +1676,292 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid request state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/availability/rules:
+    get:
+      operationId: ListAvailabilityRulesQuery
+      tags: [Providers]
+      summary: List scheduling-owned availability rules for a provider
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Ordered availability rules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityRuleCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateAvailabilityRuleCommand
+      tags: [Providers]
+      summary: Create one availability rule for a provider
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAvailabilityRuleRequest'
+      responses:
+        '201':
+          description: Availability rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityRuleMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Overlapping availability rule of the same scope and type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid availability payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/availability/rules/{ruleId}:
+    patch:
+      operationId: UpdateAvailabilityRuleCommand
+      tags: [Providers]
+      summary: Update one availability rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/AvailabilityRuleIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAvailabilityRuleRequest'
+      responses:
+        '200':
+          description: Availability rule updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityRuleMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider or availability rule not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Overlapping availability rule of the same scope and type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid availability patch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteAvailabilityRuleCommand
+      tags: [Providers]
+      summary: Delete one availability rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/AvailabilityRuleIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Availability rule deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityRuleMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider or availability rule not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/availability/slots:
+    get:
+      operationId: GetAvailabilitySlotsQuery
+      tags: [Providers]
+      summary: Generate or read cached availability slots for a provider
+      description: >
+        Returns a scheduling availability view only. Slot generation reflects availability rules,
+        clinic work hours, clinic holidays, and timezone fallbacks, but does not subtract booked appointments yet.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/AvailabilityDateFromQuery'
+        - $ref: '#/components/parameters/AvailabilityDateToQuery'
+        - $ref: '#/components/parameters/AvailabilityLimitQuery'
+      responses:
+        '200':
+          description: Provider availability slots
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilitySlotResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid slot window
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/availability:rebuild-cache:
+    post:
+      operationId: RebuildAvailabilityCacheCommand
+      tags: [Providers]
+      summary: Invalidate and warm the provider availability cache for a date window
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RebuildAvailabilityCacheRequest'
+      responses:
+        '200':
+          description: Availability cache invalidated and warmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityCacheRebuildResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing idempotency header or invalid slot window
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/specialties:
     get:
       operationId: ListSpecialtiesQuery
@@ -1997,6 +2283,13 @@ components:
       schema:
         type: string
         format: uuid
+    AvailabilityRuleIdPath:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     ProviderGroupIdPath:
       name: groupId
       in: path
@@ -2047,6 +2340,37 @@ components:
       schema:
         type: string
         format: uuid
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Required idempotency token for scheduling mutations and cache rebuild operations.
+      schema:
+        type: string
+        maxLength: 255
+    AvailabilityDateFromQuery:
+      name: date_from
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    AvailabilityDateToQuery:
+      name: date_to
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    AvailabilityLimitQuery:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 200
     PatientSearchQuery:
       name: q
       in: query
@@ -3369,6 +3693,212 @@ components:
           examples: [provider_license_added]
         data:
           $ref: '#/components/schemas/ProviderLicense'
+    AvailabilityRule:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - provider_id
+        - scope_type
+        - availability_type
+        - start_time
+        - end_time
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        scope_type:
+          type: string
+          enum: [weekly, date]
+        availability_type:
+          type: string
+          enum: [available, unavailable]
+        weekday:
+          type: string
+          nullable: true
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        specific_date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateAvailabilityRuleRequest:
+      type: object
+      required: [scope_type, availability_type, start_time, end_time]
+      properties:
+        scope_type:
+          type: string
+          enum: [weekly, date]
+        availability_type:
+          type: string
+          enum: [available, unavailable]
+        weekday:
+          type: string
+          nullable: true
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        specific_date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    UpdateAvailabilityRuleRequest:
+      type: object
+      properties:
+        scope_type:
+          type: string
+          enum: [weekly, date]
+        availability_type:
+          type: string
+          enum: [available, unavailable]
+        weekday:
+          type: string
+          nullable: true
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        specific_date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        end_time:
+          type: string
+          pattern: '^(?:[01]\d|2[0-3]):[0-5]\d$'
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    AvailabilityRuleCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilityRule'
+    AvailabilityRuleMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [availability_rule_created]
+        data:
+          $ref: '#/components/schemas/AvailabilityRule'
+    AvailabilitySlot:
+      type: object
+      required: [start_at, end_at, date, source_rule_ids]
+      properties:
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        date:
+          type: string
+          format: date
+        source_rule_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    AvailabilitySlotResult:
+      type: object
+      required:
+        - provider_id
+        - timezone
+        - date_from
+        - date_to
+        - slot_duration_minutes
+        - slot_interval_minutes
+        - generated_at
+        - slots
+      properties:
+        provider_id:
+          type: string
+          format: uuid
+        timezone:
+          type: string
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+        slot_duration_minutes:
+          type: integer
+        slot_interval_minutes:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilitySlot'
+    AvailabilitySlotResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AvailabilitySlotResult'
+    RebuildAvailabilityCacheRequest:
+      type: object
+      required: [date_from, date_to]
+      properties:
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 200
+    AvailabilityCacheRebuildResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [availability_cache_rebuilt]
+        data:
+          $ref: '#/components/schemas/AvailabilitySlotResult'
     ProviderGroupMember:
       type: object
       required:

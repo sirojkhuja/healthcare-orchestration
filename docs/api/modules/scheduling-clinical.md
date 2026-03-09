@@ -122,5 +122,7 @@
 ## API Notes
 
 - Scheduling owns availability and slot decisions.
+- Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
+- Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Notifications may be invoked from appointment actions but remain in the Notifications module.
 - Lab provider traffic must still pass through integration contracts.

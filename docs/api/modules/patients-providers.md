@@ -136,10 +136,20 @@
 - Provider licenses use `license_type`, `license_number`, `issuing_authority`, optional `jurisdiction`, optional `issued_on`, optional `expires_on`, and optional `notes`.
 - `license_type` is normalized to lowercase snake case. The tuple `{provider_id, license_type, license_number}` must be unique. License status is derived as `active` or `expired`.
 - `GET /providers/{providerId}/licenses` returns licenses ordered by active first, then `expires_on asc nulls last`, then `created_at asc`.
+- Availability rules are scheduling-owned records with `scope_type`, `availability_type`, optional `weekday`, optional `specific_date`, `start_time`, `end_time`, and optional `notes`.
+- `scope_type` uses `weekly` and `date`. `availability_type` uses `available` and `unavailable`. Weekly rules require `weekday` and forbid `specific_date`. Date rules require `specific_date` and forbid `weekday`.
+- Availability rule conflicts are checked only within the same provider and tenant. Rules conflict only when they share the same `scope_type`, the same `availability_type`, the same weekday or specific date, and overlapping time ranges.
+- Cross-scope overlaps such as `weekly available` with `date unavailable` are allowed because date-scoped rules intentionally subtract from or extend the weekly template for a specific day.
+- `GET /providers/{providerId}/availability/rules` returns rules ordered by `scope_type asc`, `weekday asc nulls last`, `specific_date asc nulls last`, `start_time asc`, and `created_at asc`.
+- Availability writes and cache rebuild require `Idempotency-Key`. Audit actions are `availability.rules.created`, `availability.rules.updated`, `availability.rules.deleted`, and `availability.cache_rebuilt`.
+- `GET /providers/{providerId}/availability/slots` accepts `date_from`, `date_to`, and optional `limit`. The date window is limited to `31` calendar days, `limit` defaults to `200`, and `limit` may not exceed `1000`.
+- Slot generation is a scheduling availability view, not an appointment-booking view. It unions matching available rules, subtracts matching unavailable rules, intersects provider clinic work hours when a clinic is assigned, suppresses slots for closed clinic holidays, and then emits slots where `start_at + slot_duration <= interval_end`.
+- Effective slot timezone resolves in this order: clinic settings timezone override, then tenant settings timezone, then application timezone. Effective slot duration comes from clinic settings `default_appointment_duration_minutes` or defaults to `30`. Effective slot interval comes from clinic settings `slot_interval_minutes` or defaults to `15`.
+- Slot results are cached in the tenant-scoped `availability` cache domain using the provider/date-range/limit view as the cache key. Availability rule mutations, rebuild-cache, clinic settings/work-hours/holiday/lifecycle changes, provider clinic assignment changes, provider soft delete, and tenant timezone changes invalidate that namespace.
 - Provider groups are tenant-owned records with `name`, optional `description`, optional `clinic_id`, and replacement-based member management through `provider_ids`.
 - `GET /provider-groups` returns groups ordered by `name asc`, `created_at asc`, including `member_count`, `member_ids`, and ordered `members` summaries.
 - Provider extension audit actions include `providers.profile_updated`, `providers.specialties_set`, `providers.license_added`, `providers.license_removed`, `provider_specialties.created`, `provider_specialties.updated`, `provider_specialties.deleted`, `provider_groups.created`, and `provider_groups.members_updated`.
-- `T033` implemented the base provider CRUD surface. `T034` adds provider profile, specialties, licenses, and provider groups. Availability, work hours, time-off, calendar, and search remain in later tasks.
+- `T033` implemented the base provider CRUD surface. `T034` added provider profile, specialties, licenses, and provider groups. `T035` adds scheduling-owned availability rules, slot generation, and cache rebuild operations. Work hours, time-off, calendar, and provider search remain in later tasks.
 
 ## API Notes
 

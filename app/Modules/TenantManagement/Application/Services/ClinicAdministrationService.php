@@ -4,6 +4,7 @@ namespace App\Modules\TenantManagement\Application\Services;
 
 use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
+use App\Modules\Scheduling\Application\Contracts\AvailabilityCacheInvalidator;
 use App\Modules\TenantManagement\Application\Contracts\ClinicRepository;
 use App\Modules\TenantManagement\Application\Contracts\LocationReferenceRepository;
 use App\Modules\TenantManagement\Application\Data\ClinicData;
@@ -29,6 +30,7 @@ final class ClinicAdministrationService
         private readonly TenantContext $tenantContext,
         private readonly ClinicRepository $clinicRepository,
         private readonly LocationReferenceRepository $locationReferenceRepository,
+        private readonly AvailabilityCacheInvalidator $availabilityCacheInvalidator,
         private readonly AuditTrailWriter $auditTrailWriter,
     ) {}
 
@@ -151,6 +153,7 @@ final class ClinicAdministrationService
             after: $holiday->toArray(),
             metadata: ['clinic_id' => $clinic->clinicId],
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $holiday;
     }
@@ -216,6 +219,7 @@ final class ClinicAdministrationService
             objectId: $clinic->clinicId,
             before: $clinic->toArray(),
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $clinic;
     }
@@ -256,6 +260,7 @@ final class ClinicAdministrationService
             before: $holiday->toArray(),
             metadata: ['clinic_id' => $clinicId],
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $holiday;
     }
@@ -451,6 +456,7 @@ final class ClinicAdministrationService
             before: $before->toArray(),
             after: $after->toArray(),
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $after;
     }
@@ -469,6 +475,7 @@ final class ClinicAdministrationService
             before: $before->toArray(),
             after: $after->toArray(),
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $after;
     }
@@ -1030,6 +1037,7 @@ final class ClinicAdministrationService
             before: $clinic->toArray(),
             after: $updated->toArray(),
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $updated;
     }

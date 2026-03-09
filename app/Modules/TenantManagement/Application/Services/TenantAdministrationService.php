@@ -11,6 +11,7 @@ use App\Modules\IdentityAccess\Application\Contracts\PermissionProjectionInvalid
 use App\Modules\IdentityAccess\Application\Contracts\RoleRepository;
 use App\Modules\IdentityAccess\Application\Contracts\TenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Application\Contracts\UserRoleAssignmentRepository;
+use App\Modules\Scheduling\Application\Contracts\AvailabilityCacheInvalidator;
 use App\Modules\TenantManagement\Application\Contracts\TenantConfigurationRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantMetricsRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantRepository;
@@ -38,6 +39,7 @@ final class TenantAdministrationService
         private readonly PermissionCatalog $permissionCatalog,
         private readonly PermissionProjectionInvalidationDispatcher $permissionProjectionInvalidationDispatcher,
         private readonly TenantIpAllowlistRepository $tenantIpAllowlistRepository,
+        private readonly AvailabilityCacheInvalidator $availabilityCacheInvalidator,
         private readonly AuditTrailWriter $auditTrailWriter,
     ) {}
 
@@ -226,6 +228,7 @@ final class TenantAdministrationService
             after: $after->toArray(),
             metadata: ['source' => 'api'],
         ));
+        $this->availabilityCacheInvalidator->invalidate($tenantId);
 
         return $after;
     }

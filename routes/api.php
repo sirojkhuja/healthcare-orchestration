@@ -23,6 +23,7 @@ use App\Modules\Provider\Presentation\Http\Controllers\ProviderLicenseController
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderProfileController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderSpecialtyController;
 use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -180,6 +181,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/providers/{providerId}/profile', [ProviderProfileController::class, 'show'])->name('providers.profile.show');
                 Route::get('/providers/{providerId}/specialties', [ProviderSpecialtyController::class, 'list'])->name('providers.specialties.list');
                 Route::get('/providers/{providerId}/licenses', [ProviderLicenseController::class, 'list'])->name('providers.licenses.list');
+                Route::get('/providers/{providerId}/availability/rules', [AvailabilityController::class, 'list'])->name('providers.availability.rules.list');
+                Route::get('/providers/{providerId}/availability/slots', [AvailabilityController::class, 'slots'])->name('providers.availability.slots');
                 Route::get('/specialties', [SpecialtyController::class, 'list'])->name('specialties.list');
                 Route::get('/provider-groups', [ProviderGroupController::class, 'list'])->name('provider-groups.list');
             });
@@ -191,6 +194,18 @@ Route::prefix('v1')->group(function (): void {
                 Route::put('/providers/{providerId}/specialties', [ProviderSpecialtyController::class, 'update'])->name('providers.specialties.update');
                 Route::post('/providers/{providerId}/licenses', [ProviderLicenseController::class, 'create'])->name('providers.licenses.create');
                 Route::delete('/providers/{providerId}/licenses/{licenseId}', [ProviderLicenseController::class, 'delete'])->name('providers.licenses.delete');
+                Route::post('/providers/{providerId}/availability/rules', [AvailabilityController::class, 'create'])
+                    ->middleware('idempotency:availability.rules.create')
+                    ->name('providers.availability.rules.create');
+                Route::patch('/providers/{providerId}/availability/rules/{ruleId}', [AvailabilityController::class, 'update'])
+                    ->middleware('idempotency:availability.rules.update')
+                    ->name('providers.availability.rules.update');
+                Route::delete('/providers/{providerId}/availability/rules/{ruleId}', [AvailabilityController::class, 'delete'])
+                    ->middleware('idempotency:availability.rules.delete')
+                    ->name('providers.availability.rules.delete');
+                Route::post('/providers/{providerId}/availability:rebuild-cache', [AvailabilityController::class, 'rebuild'])
+                    ->middleware('idempotency:availability.cache.rebuild')
+                    ->name('providers.availability.rebuild');
                 Route::post('/specialties', [SpecialtyController::class, 'create'])->name('specialties.create');
                 Route::patch('/specialties/{specialtyId}', [SpecialtyController::class, 'update'])->name('specialties.update');
                 Route::delete('/specialties/{specialtyId}', [SpecialtyController::class, 'delete'])->name('specialties.delete');
