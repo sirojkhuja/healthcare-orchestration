@@ -4,6 +4,7 @@ namespace App\Modules\Provider\Application\Services;
 
 use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
+use App\Modules\Provider\Application\Contracts\ProviderProfileRepository;
 use App\Modules\Provider\Application\Contracts\ProviderRepository;
 use App\Modules\Provider\Application\Data\ProviderData;
 use App\Shared\Application\Contracts\TenantContext;
@@ -16,6 +17,7 @@ final class ProviderAdministrationService
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly ProviderRepository $providerRepository,
+        private readonly ProviderProfileRepository $providerProfileRepository,
         private readonly ProviderAttributeNormalizer $providerAttributeNormalizer,
         private readonly AuditTrailWriter $auditTrailWriter,
     ) {}
@@ -96,6 +98,15 @@ final class ProviderAdministrationService
 
         if (! $updated instanceof ProviderData) {
             throw new LogicException('Updated provider could not be reloaded.');
+        }
+
+        if (
+            array_key_exists('clinic_id', $updates)
+            && $updates['clinic_id'] !== $provider->clinicId
+        ) {
+            $this->providerProfileRepository->clearLocationFields($tenantId, $provider->providerId);
+            $updated = $this->providerRepository->findInTenant($tenantId, $provider->providerId)
+                ?? throw new LogicException('Updated provider could not be reloaded.');
         }
 
         $this->auditTrailWriter->record(new AuditRecordInput(

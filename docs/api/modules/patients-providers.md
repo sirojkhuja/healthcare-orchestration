@@ -125,7 +125,21 @@
 - `GET /providers` returns active providers ordered by `last_name asc`, `first_name asc`, and `created_at asc`.
 - `DELETE /providers/{providerId}` is a soft delete. Deleted providers are excluded from active provider reads but retained for auditability and future scheduling references.
 - Provider CRUD mutations emit provider audit actions `providers.created`, `providers.updated`, and `providers.deleted`.
-- `T033` implements the base provider CRUD surface. Search, profile, specialties, licenses, groups, availability, work hours, and time-off remain in later tasks.
+- `GET /providers/{providerId}/profile` returns the base provider record plus `professional_title`, `bio`, `years_of_experience`, `department_id`, `room_id`, `is_accepting_new_patients`, `languages`, and nested `department` and `room` summaries when present.
+- Provider profile is a one-to-one extension. `is_accepting_new_patients` defaults to `true`. `languages` are normalized by trimming, collapsing repeated internal whitespace, removing empty values, deduplicating case-insensitively, and sorting alphabetically.
+- `department_id` and `room_id` are optional, but if either is present the provider must already belong to a clinic and the selected department or room must belong to that clinic. When both are present and the room belongs to a department, the room department must match `department_id`.
+- If a provider clinic assignment changes through base CRUD, stored profile `department_id` and `room_id` are cleared automatically to avoid stale clinic-location links.
+- `GET /specialties` returns the tenant-owned specialty catalog ordered by `name asc`, `created_at asc`. Specialty `name` is required and unique case-insensitively per tenant.
+- `PUT /providers/{providerId}/specialties` replaces the full provider specialty set. The request uses `specialties`, an array of `{specialty_id, is_primary?}` objects. At most one specialty may be primary, and each specialty may appear only once in the replacement payload.
+- `GET /providers/{providerId}/specialties` returns assigned specialties ordered by `is_primary desc`, `name asc`, `assigned_at asc`.
+- `DELETE /specialties/{specialtyId}` fails with `409 Conflict` while the specialty is still assigned to any provider in the tenant.
+- Provider licenses use `license_type`, `license_number`, `issuing_authority`, optional `jurisdiction`, optional `issued_on`, optional `expires_on`, and optional `notes`.
+- `license_type` is normalized to lowercase snake case. The tuple `{provider_id, license_type, license_number}` must be unique. License status is derived as `active` or `expired`.
+- `GET /providers/{providerId}/licenses` returns licenses ordered by active first, then `expires_on asc nulls last`, then `created_at asc`.
+- Provider groups are tenant-owned records with `name`, optional `description`, optional `clinic_id`, and replacement-based member management through `provider_ids`.
+- `GET /provider-groups` returns groups ordered by `name asc`, `created_at asc`, including `member_count`, `member_ids`, and ordered `members` summaries.
+- Provider extension audit actions include `providers.profile_updated`, `providers.specialties_set`, `providers.license_added`, `providers.license_removed`, `provider_specialties.created`, `provider_specialties.updated`, `provider_specialties.deleted`, `provider_groups.created`, and `provider_groups.members_updated`.
+- `T033` implemented the base provider CRUD surface. `T034` adds provider profile, specialties, licenses, and provider groups. Availability, work hours, time-off, calendar, and search remain in later tasks.
 
 ## API Notes
 

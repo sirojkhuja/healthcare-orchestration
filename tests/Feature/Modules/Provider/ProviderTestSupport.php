@@ -17,6 +17,38 @@ function providerCreateClinic($testCase, string $token, string $tenantId, string
         ->assertCreated();
 }
 
+function providerCreateDepartment($testCase, string $token, string $tenantId, string $clinicId, string $code, string $name)
+{
+    return $testCase->withToken($token)
+        ->withHeader('X-Tenant-Id', $tenantId)
+        ->postJson('/api/v1/clinics/'.$clinicId.'/departments', [
+            'code' => $code,
+            'name' => $name,
+        ])
+        ->assertCreated();
+}
+
+function providerCreateRoom(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $clinicId,
+    string $departmentId,
+    string $code,
+    string $name,
+) {
+    return $testCase->withToken($token)
+        ->withHeader('X-Tenant-Id', $tenantId)
+        ->postJson('/api/v1/clinics/'.$clinicId.'/rooms', [
+            'department_id' => $departmentId,
+            'code' => $code,
+            'name' => $name,
+            'type' => 'consultation',
+            'capacity' => 1,
+        ])
+        ->assertCreated();
+}
+
 function providerCreateTenant($testCase, string $token, string $name)
 {
     return patientCreateTenant($testCase, $token, $name);

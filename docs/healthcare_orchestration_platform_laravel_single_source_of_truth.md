@@ -904,6 +904,20 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - provider list ordered by `last_name asc`, `first_name asc`, and `created_at asc`
 - `DELETE /providers/{providerId}` is a soft delete; deleted providers are excluded from active directory reads but retained for auditability and future scheduling references
 - provider CRUD mutations emit `providers.created`, `providers.updated`, and `providers.deleted` audit actions
+- `GET /providers/{providerId}/profile` returns the base provider record plus provider-profile fields `professional_title`, `bio`, `years_of_experience`, `department_id`, `room_id`, `is_accepting_new_patients`, `languages`, and nested `department` and `room` summaries when available
+- provider profile data is a one-to-one extension; `is_accepting_new_patients` defaults to `true` and `languages` are normalized by trimming, collapsing repeated internal whitespace, removing empties, deduplicating case-insensitively, and sorting alphabetically
+- `department_id` and `room_id` are optional, but if either is present the provider must belong to a clinic and the selected department or room must belong to that clinic; if both are present and the room has a department assignment, it must match `department_id`
+- if provider `clinic_id` changes through base CRUD, provider-profile `department_id` and `room_id` are cleared automatically to prevent stale clinic-location links
+- specialties are tenant-owned catalog records with required `name`, optional `description`, case-insensitive unique names per tenant, and list ordering `name asc`, `created_at asc`
+- `PUT /providers/{providerId}/specialties` replaces the full specialty set using `specialties[] = {specialty_id, is_primary?}`; each specialty may appear only once and at most one specialty may be primary
+- `GET /providers/{providerId}/specialties` returns assigned specialties ordered by `is_primary desc`, `name asc`, `assigned_at asc`
+- `DELETE /specialties/{specialtyId}` fails with `409 Conflict` while the specialty is still assigned to any provider
+- provider licenses use `license_type`, `license_number`, `issuing_authority`, optional `jurisdiction`, optional `issued_on`, optional `expires_on`, and optional `notes`
+- `license_type` is normalized to lowercase snake case; `{provider_id, license_type, license_number}` must be unique; license status is derived as `active` or `expired`
+- `GET /providers/{providerId}/licenses` returns licenses with active licenses first, then `expires_on asc nulls last`, then `created_at asc`
+- provider groups are tenant-owned records with required `name`, optional `description`, optional `clinic_id`, and replacement-based member management through `provider_ids`
+- `GET /provider-groups` returns `member_count`, `member_ids`, and ordered `members` summaries for each group
+- provider extension audit actions include `providers.profile_updated`, `providers.specialties_set`, `providers.license_added`, `providers.license_removed`, `provider_specialties.created`, `provider_specialties.updated`, `provider_specialties.deleted`, `provider_groups.created`, and `provider_groups.members_updated`
 
 ---
 

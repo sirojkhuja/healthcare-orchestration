@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `47% (33/70 tasks completed)`
+Overall Progress: `48% (34/70 tasks completed)`
 
 Active Task: `None`
 
@@ -71,7 +71,7 @@ Active Task: `None`
 | T031 | Done | Implement patient contacts, tags, and document management. | T029, T010 | Contact endpoints, tag assignment, document upload and delete flows. | Attachment, validation, and audit tests pass. |
 | T032 | Done | Implement patient consents, insurance links, and external reference mapping. | T029, T010 | Consent endpoints, insurance association, external refs integration. | Integration and tenant-scope tests pass. |
 | T033 | Done | Implement the provider aggregate and provider CRUD APIs. | T028 | Provider model, repository, commands, queries, routes. | CRUD and authorization tests pass. |
-| T034 | Todo | Implement provider profile, specialties, licenses, and provider groups. | T033 | Specialty catalog, license handling, grouping endpoints. | Validation and policy tests pass. |
+| T034 | Done | Implement provider profile, specialties, licenses, and provider groups. | T033 | Specialty catalog, license handling, grouping endpoints. | Validation and policy tests pass. |
 | T035 | Todo | Implement availability rules, slot generation, and cache rebuild operations. | T033, T018 | Availability domain, slot service, rebuild command. | Conflict and availability tests pass. |
 | T036 | Todo | Implement provider calendar, work hours, time-off, and calendar export. | T035, T010 | Calendar queries, time-off management, export endpoints. | Calendar correctness and export tests pass. |
 

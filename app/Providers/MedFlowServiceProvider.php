@@ -72,8 +72,16 @@ use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientContactReposit
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientDocumentRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientTagRepository;
+use App\Modules\Provider\Application\Contracts\ProviderGroupRepository;
+use App\Modules\Provider\Application\Contracts\ProviderLicenseRepository;
+use App\Modules\Provider\Application\Contracts\ProviderProfileRepository;
 use App\Modules\Provider\Application\Contracts\ProviderRepository;
+use App\Modules\Provider\Application\Contracts\SpecialtyRepository;
+use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderGroupRepository;
+use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderLicenseRepository;
+use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderProfileRepository;
 use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderRepository;
+use App\Modules\Provider\Infrastructure\Persistence\DatabaseSpecialtyRepository;
 use App\Modules\TenantManagement\Application\Contracts\ClinicRepository;
 use App\Modules\TenantManagement\Application\Contracts\LocationReferenceRepository;
 use App\Modules\TenantManagement\Application\Contracts\TenantConfigurationRepository;
@@ -156,7 +164,11 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(PatientTagRepository::class, DatabasePatientTagRepository::class);
         $this->app->bind(PatientInsurancePolicyRepository::class, DatabasePatientInsurancePolicyRepository::class);
         $this->app->bind(PatientExternalReferenceRepository::class, DatabasePatientExternalReferenceRepository::class);
+        $this->app->bind(ProviderGroupRepository::class, DatabaseProviderGroupRepository::class);
+        $this->app->bind(ProviderLicenseRepository::class, DatabaseProviderLicenseRepository::class);
         $this->app->bind(ProviderRepository::class, DatabaseProviderRepository::class);
+        $this->app->bind(ProviderProfileRepository::class, DatabaseProviderProfileRepository::class);
+        $this->app->bind(SpecialtyRepository::class, DatabaseSpecialtyRepository::class);
         $this->app->bind(SecurityEventRepository::class, DatabaseSecurityEventRepository::class);
         $this->app->bind(SecurityEventWriter::class, ContextualSecurityEventWriter::class);
         $this->app->singleton(PermissionCatalog::class, ConfigPermissionCatalog::class);

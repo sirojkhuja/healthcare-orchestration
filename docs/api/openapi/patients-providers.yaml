@@ -1391,6 +1391,577 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/profile:
+    get:
+      operationId: GetProviderProfileQuery
+      tags: [Providers]
+      summary: Get the provider profile extension
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider profile detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderProfileResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateProviderProfileCommand
+      tags: [Providers]
+      summary: Update the provider profile extension
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderProfileRequest'
+      responses:
+        '200':
+          description: Provider profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderProfileMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider profile payload or clinic location reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/specialties:
+    get:
+      operationId: ListProviderSpecialtiesQuery
+      tags: [Providers]
+      summary: List assigned specialties for a provider
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider specialty assignments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderSpecialtyCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: SetProviderSpecialtiesCommand
+      tags: [Providers]
+      summary: Replace the full specialty set for a provider
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetProviderSpecialtiesRequest'
+      responses:
+        '200':
+          description: Provider specialties replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderSpecialtyMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid specialty replacement payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/licenses:
+    get:
+      operationId: ListProviderLicensesQuery
+      tags: [Providers]
+      summary: List provider licenses
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider licenses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderLicenseCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddProviderLicenseCommand
+      tags: [Providers]
+      summary: Add a provider license
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProviderLicenseRequest'
+      responses:
+        '201':
+          description: Provider license added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderLicenseMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate provider license
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider license payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}/licenses/{licenseId}:
+    delete:
+      operationId: RemoveProviderLicenseCommand
+      tags: [Providers]
+      summary: Remove one provider license
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/ProviderLicenseIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider license removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderLicenseMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider or license not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/specialties:
+    get:
+      operationId: ListSpecialtiesQuery
+      tags: [Providers]
+      summary: List the tenant specialty catalog
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Tenant specialty catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecialtyCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateSpecialtyCommand
+      tags: [Providers]
+      summary: Create a tenant specialty catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpecialtyRequest'
+      responses:
+        '201':
+          description: Specialty created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecialtyMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Specialty name conflicts with another tenant specialty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid specialty payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/specialties/{specialtyId}:
+    patch:
+      operationId: UpdateSpecialtyCommand
+      tags: [Providers]
+      summary: Update a tenant specialty catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SpecialtyIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSpecialtyRequest'
+      responses:
+        '200':
+          description: Specialty updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecialtyMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Specialty not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Specialty name conflicts with another tenant specialty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid specialty payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteSpecialtyCommand
+      tags: [Providers]
+      summary: Delete one tenant specialty catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SpecialtyIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Specialty deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecialtyMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Specialty not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Specialty is still assigned to one or more providers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/provider-groups:
+    get:
+      operationId: ListProviderGroupsQuery
+      tags: [Providers]
+      summary: List tenant provider groups with current members
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider groups with member summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderGroupCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateProviderGroupCommand
+      tags: [Providers]
+      summary: Create a tenant provider group
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProviderGroupRequest'
+      responses:
+        '201':
+          description: Provider group created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderGroupMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Provider group name conflicts with another tenant group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider group payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/provider-groups/{groupId}/members:
+    put:
+      operationId: SetProviderGroupMembersCommand
+      tags: [Providers]
+      summary: Replace the full member set for one provider group
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderGroupIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetProviderGroupMembersRequest'
+      responses:
+        '200':
+          description: Provider group members replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderGroupMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider group not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider group membership payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -1407,6 +1978,27 @@ components:
         format: uuid
     ProviderIdPath:
       name: providerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SpecialtyIdPath:
+      name: specialtyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProviderLicenseIdPath:
+      name: licenseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProviderGroupIdPath:
+      name: groupId
       in: path
       required: true
       schema:
@@ -2402,6 +2994,497 @@ components:
           examples: [provider_created]
         data:
           $ref: '#/components/schemas/Provider'
+    ProviderProfile:
+      allOf:
+        - $ref: '#/components/schemas/Provider'
+        - type: object
+          required: [is_accepting_new_patients, languages]
+          properties:
+            professional_title:
+              type: string
+              nullable: true
+              maxLength: 160
+            bio:
+              type: string
+              nullable: true
+              maxLength: 5000
+            years_of_experience:
+              type: integer
+              nullable: true
+              minimum: 0
+              maximum: 80
+            department_id:
+              type: string
+              format: uuid
+              nullable: true
+            room_id:
+              type: string
+              format: uuid
+              nullable: true
+            is_accepting_new_patients:
+              type: boolean
+            languages:
+              type: array
+              items:
+                type: string
+            department:
+              $ref: '#/components/schemas/ProviderProfileDepartment'
+            room:
+              $ref: '#/components/schemas/ProviderProfileRoom'
+    ProviderProfileDepartment:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        phone_extension:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ProviderProfileRoom:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+        department_id:
+          type: string
+          format: uuid
+          nullable: true
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        floor:
+          type: string
+          nullable: true
+        capacity:
+          type: integer
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UpdateProviderProfileRequest:
+      type: object
+      description: At least one field is required.
+      properties:
+        professional_title:
+          type: string
+          nullable: true
+          maxLength: 160
+        bio:
+          type: string
+          nullable: true
+          maxLength: 5000
+        years_of_experience:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 80
+        department_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+        is_accepting_new_patients:
+          type: boolean
+        languages:
+          type: array
+          maxItems: 12
+          items:
+            type: string
+            maxLength: 80
+    ProviderProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProviderProfile'
+    ProviderProfileMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_profile_updated]
+        data:
+          $ref: '#/components/schemas/ProviderProfile'
+    Specialty:
+      type: object
+      required: [id, tenant_id, name, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateSpecialtyRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+    UpdateSpecialtyRequest:
+      type: object
+      description: At least one field is required.
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+    SpecialtyCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Specialty'
+    SpecialtyMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [specialty_created]
+        data:
+          $ref: '#/components/schemas/Specialty'
+    ProviderSpecialty:
+      type: object
+      required:
+        - provider_id
+        - specialty_id
+        - tenant_id
+        - name
+        - is_primary
+        - assigned_at
+      properties:
+        provider_id:
+          type: string
+          format: uuid
+        specialty_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+        is_primary:
+          type: boolean
+        assigned_at:
+          type: string
+          format: date-time
+    SetProviderSpecialtiesRequest:
+      type: object
+      required: [specialties]
+      properties:
+        specialties:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [specialty_id]
+            properties:
+              specialty_id:
+                type: string
+                format: uuid
+              is_primary:
+                type: boolean
+    ProviderSpecialtyCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderSpecialty'
+    ProviderSpecialtyMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_specialties_updated]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderSpecialty'
+    ProviderLicense:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - provider_id
+        - license_type
+        - license_number
+        - issuing_authority
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        license_type:
+          type: string
+          maxLength: 64
+        license_number:
+          type: string
+          maxLength: 120
+        issuing_authority:
+          type: string
+          maxLength: 160
+        jurisdiction:
+          type: string
+          nullable: true
+          maxLength: 120
+        issued_on:
+          type: string
+          format: date
+          nullable: true
+        expires_on:
+          type: string
+          format: date
+          nullable: true
+        status:
+          type: string
+          enum: [active, expired]
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateProviderLicenseRequest:
+      type: object
+      required: [license_type, license_number, issuing_authority]
+      properties:
+        license_type:
+          type: string
+          maxLength: 64
+        license_number:
+          type: string
+          maxLength: 120
+        issuing_authority:
+          type: string
+          maxLength: 160
+        jurisdiction:
+          type: string
+          nullable: true
+          maxLength: 120
+        issued_on:
+          type: string
+          format: date
+          nullable: true
+        expires_on:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    ProviderLicenseCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderLicense'
+    ProviderLicenseMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_license_added]
+        data:
+          $ref: '#/components/schemas/ProviderLicense'
+    ProviderGroupMember:
+      type: object
+      required:
+        - id
+        - display_name
+        - first_name
+        - last_name
+        - provider_type
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        preferred_name:
+          type: string
+          nullable: true
+        provider_type:
+          type: string
+          enum: [doctor, nurse, other]
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+    ProviderGroup:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - name
+        - member_count
+        - member_ids
+        - members
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        member_count:
+          type: integer
+        member_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderGroupMember'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateProviderGroupRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+          maxLength: 5000
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+    SetProviderGroupMembersRequest:
+      type: object
+      required: [provider_ids]
+      properties:
+        provider_ids:
+          type: array
+          maxItems: 200
+          items:
+            type: string
+            format: uuid
+    ProviderGroupCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderGroup'
+    ProviderGroupMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_group_created]
+        data:
+          $ref: '#/components/schemas/ProviderGroup'
     PatientSummary:
       type: object
       required:

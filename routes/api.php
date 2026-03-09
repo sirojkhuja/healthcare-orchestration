@@ -18,6 +18,11 @@ use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientDocumentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientTagController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderGroupController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderLicenseController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderProfileController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderSpecialtyController;
+use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -172,11 +177,25 @@ Route::prefix('v1')->group(function (): void {
             Route::middleware('permission:providers.view')->group(function (): void {
                 Route::get('/providers', [ProviderController::class, 'list'])->name('providers.list');
                 Route::get('/providers/{providerId}', [ProviderController::class, 'show'])->name('providers.show');
+                Route::get('/providers/{providerId}/profile', [ProviderProfileController::class, 'show'])->name('providers.profile.show');
+                Route::get('/providers/{providerId}/specialties', [ProviderSpecialtyController::class, 'list'])->name('providers.specialties.list');
+                Route::get('/providers/{providerId}/licenses', [ProviderLicenseController::class, 'list'])->name('providers.licenses.list');
+                Route::get('/specialties', [SpecialtyController::class, 'list'])->name('specialties.list');
+                Route::get('/provider-groups', [ProviderGroupController::class, 'list'])->name('provider-groups.list');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
                 Route::delete('/providers/{providerId}', [ProviderController::class, 'delete'])->name('providers.delete');
+                Route::patch('/providers/{providerId}/profile', [ProviderProfileController::class, 'update'])->name('providers.profile.update');
+                Route::put('/providers/{providerId}/specialties', [ProviderSpecialtyController::class, 'update'])->name('providers.specialties.update');
+                Route::post('/providers/{providerId}/licenses', [ProviderLicenseController::class, 'create'])->name('providers.licenses.create');
+                Route::delete('/providers/{providerId}/licenses/{licenseId}', [ProviderLicenseController::class, 'delete'])->name('providers.licenses.delete');
+                Route::post('/specialties', [SpecialtyController::class, 'create'])->name('specialties.create');
+                Route::patch('/specialties/{specialtyId}', [SpecialtyController::class, 'update'])->name('specialties.update');
+                Route::delete('/specialties/{specialtyId}', [SpecialtyController::class, 'delete'])->name('specialties.delete');
+                Route::post('/provider-groups', [ProviderGroupController::class, 'create'])->name('provider-groups.create');
+                Route::put('/provider-groups/{groupId}/members', [ProviderGroupController::class, 'updateMembers'])->name('provider-groups.members.update');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');
