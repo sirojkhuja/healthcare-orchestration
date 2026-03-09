@@ -1,0 +1,455 @@
+openapi: 3.1.1
+info:
+  title: MedFlow Patients and Providers Fragment
+  version: 0.1.0
+paths:
+  /api/v1/patients:
+    get:
+      operationId: ListPatientsQuery
+      tags: [Patients]
+      summary: List active patients in the current tenant
+      description: Returns the active patient directory for the tenant resolved from `X-Tenant-Id`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Active patient directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreatePatientCommand
+      tags: [Patients]
+      summary: Create a patient master record
+      description: Creates a tenant-owned patient master record in the active tenant scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientRequest'
+            examples:
+              default:
+                value:
+                  first_name: Aziza
+                  last_name: Karimova
+                  middle_name: Anvarovna
+                  preferred_name: Azi
+                  sex: female
+                  birth_date: '1990-05-01'
+                  national_id: AA1234567
+                  email: aziza@openai.com
+                  phone: '+998901234567'
+                  city_code: tashkent
+                  district_code: mirzo-ulugbek
+                  address_line_1: 12 Amir Temur Street
+                  postal_code: '100000'
+                  notes: Prefers morning visits.
+      responses:
+        '201':
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: National ID conflicts with another active patient in the tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or invalid location combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}:
+    get:
+      operationId: GetPatientQuery
+      tags: [Patients]
+      summary: Get one active patient in tenant scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdatePatientCommand
+      tags: [Patients]
+      summary: Update a patient master record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePatientRequest'
+            examples:
+              default:
+                value:
+                  preferred_name: Dr. Azi
+                  district_code: yunusabad
+                  phone: null
+      responses:
+        '200':
+          description: Patient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: National ID conflicts with another active patient in the tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or invalid location combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeletePatientCommand
+      tags: [Patients]
+      summary: Soft delete a patient master record
+      description: Soft deletes the patient so it no longer appears in active patient directory reads.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PatientIdPath:
+      name: patientId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TenantIdHeader:
+      name: X-Tenant-Id
+      in: header
+      required: true
+      description: Active tenant scope for the request.
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    Patient:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - first_name
+        - last_name
+        - sex
+        - birth_date
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        middle_name:
+          type: string
+          nullable: true
+        preferred_name:
+          type: string
+          nullable: true
+        sex:
+          type: string
+          enum: [female, male, other, unknown]
+        birth_date:
+          type: string
+          format: date
+        national_id:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        city_code:
+          type: string
+          nullable: true
+        district_code:
+          type: string
+          nullable: true
+        address_line_1:
+          type: string
+          nullable: true
+        address_line_2:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PatientResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Patient'
+    PatientCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+    PatientMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_created]
+        data:
+          $ref: '#/components/schemas/Patient'
+    CreatePatientRequest:
+      type: object
+      required: [first_name, last_name, sex, birth_date]
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        middle_name:
+          type: string
+          nullable: true
+        preferred_name:
+          type: string
+          nullable: true
+        sex:
+          type: string
+          enum: [female, male, other, unknown]
+        birth_date:
+          type: string
+          format: date
+        national_id:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        city_code:
+          type: string
+          nullable: true
+        district_code:
+          type: string
+          nullable: true
+        address_line_1:
+          type: string
+          nullable: true
+        address_line_2:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+    UpdatePatientRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        middle_name:
+          type: string
+          nullable: true
+        preferred_name:
+          type: string
+          nullable: true
+        sex:
+          type: string
+          enum: [female, male, other, unknown]
+        birth_date:
+          type: string
+          format: date
+        national_id:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        city_code:
+          type: string
+          nullable: true
+        district_code:
+          type: string
+          nullable: true
+        address_line_1:
+          type: string
+          nullable: true
+        address_line_2:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+    ApiErrorResponse:
+      type: object
+      required: [code, message, details, trace_id, correlation_id]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        trace_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid

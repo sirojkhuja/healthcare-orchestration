@@ -64,8 +64,13 @@ final class DatabaseTenantMetricsRepository implements TenantMetricsRepository
             return 0;
         }
 
-        return DB::table($table)
-            ->where('tenant_id', $tenantId)
-            ->count();
+        $query = DB::table($table)
+            ->where('tenant_id', $tenantId);
+
+        if (Schema::hasColumn($table, 'deleted_at')) {
+            $query->whereNull('deleted_at');
+        }
+
+        return $query->count();
     }
 }

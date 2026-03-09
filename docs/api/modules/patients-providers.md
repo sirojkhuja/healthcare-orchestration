@@ -33,6 +33,17 @@
 - `POST /patients/{patientId}/external-refs` -> `AttachPatientExternalRefCommand` -> Integrations
 - `DELETE /patients/{patientId}/external-refs/{refId}` -> `DetachPatientExternalRefCommand` -> Integrations
 
+## Patient Contract Notes
+
+- Patient routes are tenant-owned and require tenant context through `X-Tenant-Id`.
+- `patients.view` protects patient reads and `patients.manage` protects patient writes.
+- The patient master record currently contains `first_name`, `last_name`, `middle_name`, `preferred_name`, `sex`, `birth_date`, `national_id`, `email`, `phone`, `city_code`, `district_code`, `address_line_1`, `address_line_2`, `postal_code`, and `notes`.
+- `first_name`, `last_name`, `sex`, and `birth_date` are required on create.
+- `sex` uses the enum values `female`, `male`, `other`, and `unknown`.
+- Optional location codes reuse the approved global location catalog. If `district_code` is provided, `city_code` must also be present and the district must belong to that city.
+- `DELETE /patients/{patientId}` is a soft delete. Deleted patients are excluded from active directory reads but retained for auditability.
+- `T029` implements the base CRUD surface. Search, summary, timeline, contacts, documents, consents, insurance links, tags, bulk flows, exports, and external references are tracked in later tasks.
+
 ## Providers and Availability
 
 - `GET /providers` -> `ListProvidersQuery` -> Provider

@@ -24,6 +24,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Throwable;
 
 final class ApiErrorResponseFactory
@@ -120,6 +121,12 @@ final class ApiErrorResponseFactory
                 'IDEMPOTENCY_REPLAY',
                 $throwable->getMessage(),
                 $throwable->details,
+            ],
+            $throwable instanceof UnprocessableEntityHttpException => [
+                422,
+                'UNPROCESSABLE_ENTITY',
+                $throwable->getMessage() !== '' ? $throwable->getMessage() : 'The request could not be processed.',
+                [],
             ],
             $throwable instanceof ModelNotFoundException, $throwable instanceof NotFoundHttpException => [
                 404,

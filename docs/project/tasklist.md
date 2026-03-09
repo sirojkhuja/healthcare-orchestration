@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-09`
 
-Overall Progress: `40% (28/70 tasks completed)`
+Overall Progress: `41% (29/70 tasks completed)`
 
 Active Task: `None`
 
@@ -66,7 +66,7 @@ Active Task: `None`
 
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
-| T029 | Todo | Implement the patient aggregate and patient CRUD APIs. | T011, T013, T014 | Patient model, repository, commands, queries, routes. | CRUD and authorization tests pass. |
+| T029 | Done | Implement the patient aggregate and patient CRUD APIs. | T011, T013, T014 | Patient model, repository, commands, queries, routes. | CRUD and authorization tests pass. |
 | T030 | Todo | Implement patient search, summary, timeline, and export capabilities. | T029, T010 | Search queries, summary read model, timeline view, export pipeline. | Search relevance and export tests pass. |
 | T031 | Todo | Implement patient contacts, tags, and document management. | T029, T010 | Contact endpoints, tag assignment, document upload and delete flows. | Attachment, validation, and audit tests pass. |
 | T032 | Todo | Implement patient consents, insurance links, and external reference mapping. | T029, T010 | Consent endpoints, insurance association, external refs integration. | Integration and tenant-scope tests pass. |

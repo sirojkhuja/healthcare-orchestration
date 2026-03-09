@@ -22,6 +22,7 @@ Until full distributed tracing is implemented, `trace_id` uses the resolved requ
 | Code | HTTP | Meaning |
 | --- | --- | --- |
 | `VALIDATION_FAILED` | `422` | Request payload is invalid. |
+| `UNPROCESSABLE_ENTITY` | `422` | Request shape is valid but violates documented business validation rules. |
 | `UNAUTHENTICATED` | `401` | Missing or invalid credentials. |
 | `FORBIDDEN` | `403` | Authenticated actor lacks permission. |
 | `RESOURCE_NOT_FOUND` | `404` | The requested resource does not exist in the current tenant scope. |

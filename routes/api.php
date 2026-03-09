@@ -10,6 +10,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
+use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -128,6 +129,15 @@ Route::prefix('v1')->group(function (): void {
                 Route::put('/clinics/{clinicId}/work-hours', [ClinicWorkHoursController::class, 'update'])->name('clinics.work-hours.update');
                 Route::post('/clinics/{clinicId}/holidays', [ClinicHolidayController::class, 'create'])->name('clinics.holidays.create');
                 Route::delete('/clinics/{clinicId}/holidays/{holidayId}', [ClinicHolidayController::class, 'delete'])->name('clinics.holidays.delete');
+            });
+            Route::middleware('permission:patients.view')->group(function (): void {
+                Route::get('/patients', [PatientController::class, 'list'])->name('patients.list');
+                Route::get('/patients/{patientId}', [PatientController::class, 'show'])->name('patients.show');
+            });
+            Route::middleware('permission:patients.manage')->group(function (): void {
+                Route::post('/patients', [PatientController::class, 'create'])->name('patients.create');
+                Route::patch('/patients/{patientId}', [PatientController::class, 'update'])->name('patients.update');
+                Route::delete('/patients/{patientId}', [PatientController::class, 'delete'])->name('patients.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

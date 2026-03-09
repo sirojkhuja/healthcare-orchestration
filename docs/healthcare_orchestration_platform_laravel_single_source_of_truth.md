@@ -442,6 +442,8 @@ Standard error:
 - CRUD patients
 - search
 - attach documents
+- patient master records: first name, last name, middle name, preferred name, sex, birth date, national ID, contact details, approved location codes, address fields, notes
+- patient deletion is a soft delete; deleted patients are excluded from active directory reads but retained for auditability
 
 ### 12.5 Providers
 - CRUD providers
