@@ -1206,6 +1206,191 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers:
+    get:
+      operationId: ListProvidersQuery
+      tags: [Providers]
+      summary: List active providers in the current tenant
+      description: Returns the active provider directory ordered by provider name.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Active provider directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateProviderCommand
+      tags: [Providers]
+      summary: Create a provider master record
+      description: Creates a tenant-owned provider master record in the active tenant scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProviderRequest'
+      responses:
+        '201':
+          description: Provider created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider payload or clinic reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/providers/{providerId}:
+    get:
+      operationId: GetProviderQuery
+      tags: [Providers]
+      summary: Get one active provider in tenant scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateProviderCommand
+      tags: [Providers]
+      summary: Update a provider master record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderRequest'
+      responses:
+        '200':
+          description: Provider updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider payload or clinic reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteProviderCommand
+      tags: [Providers]
+      summary: Soft delete a provider master record
+      description: Soft deletes the provider so it no longer appears in active provider directory reads.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProviderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Provider soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -1215,6 +1400,13 @@ components:
   parameters:
     PatientIdPath:
       name: patientId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProviderIdPath:
+      name: providerId
       in: path
       required: true
       schema:
@@ -2051,6 +2243,165 @@ components:
           examples: [patient_external_ref_attached]
         data:
           $ref: '#/components/schemas/PatientExternalReference'
+    Provider:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - first_name
+        - last_name
+        - provider_type
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+          maxLength: 120
+        last_name:
+          type: string
+          maxLength: 120
+        middle_name:
+          type: string
+          nullable: true
+          maxLength: 120
+        preferred_name:
+          type: string
+          nullable: true
+          maxLength: 120
+        provider_type:
+          type: string
+          enum: [doctor, nurse, other]
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+          maxLength: 32
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateProviderRequest:
+      type: object
+      required: [first_name, last_name, provider_type]
+      properties:
+        first_name:
+          type: string
+          maxLength: 120
+        last_name:
+          type: string
+          maxLength: 120
+        middle_name:
+          type: string
+          nullable: true
+          maxLength: 120
+        preferred_name:
+          type: string
+          nullable: true
+          maxLength: 120
+        provider_type:
+          type: string
+          enum: [doctor, nurse, other]
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 32
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    UpdateProviderRequest:
+      type: object
+      description: At least one field is required.
+      properties:
+        first_name:
+          type: string
+          maxLength: 120
+        last_name:
+          type: string
+          maxLength: 120
+        middle_name:
+          type: string
+          nullable: true
+          maxLength: 120
+        preferred_name:
+          type: string
+          nullable: true
+          maxLength: 120
+        provider_type:
+          type: string
+          enum: [doctor, nurse, other]
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 32
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    ProviderResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Provider'
+    ProviderCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Provider'
+    ProviderMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [provider_created]
+        data:
+          $ref: '#/components/schemas/Provider'
     PatientSummary:
       type: object
       required:

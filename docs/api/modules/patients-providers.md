@@ -113,6 +113,20 @@
 - `POST /provider-groups` -> `CreateProviderGroupCommand` -> Provider
 - `PUT /provider-groups/{groupId}/members` -> `SetProviderGroupMembersCommand` -> Provider
 
+## Provider Contract Notes
+
+- Provider routes are tenant-owned and require tenant context through `X-Tenant-Id`.
+- `providers.view` protects provider reads and `providers.manage` protects provider writes.
+- The base provider master record currently contains `first_name`, `last_name`, `middle_name`, `preferred_name`, `provider_type`, `email`, `phone`, `clinic_id`, and `notes`.
+- `first_name`, `last_name`, and `provider_type` are required on create.
+- `provider_type` uses the enum values `doctor`, `nurse`, and `other`.
+- `provider_type` is normalized to lowercase. `email` is lowercased when present and `phone` is trimmed.
+- `clinic_id` is optional, but when present it must reference an existing clinic in the current tenant scope.
+- `GET /providers` returns active providers ordered by `last_name asc`, `first_name asc`, and `created_at asc`.
+- `DELETE /providers/{providerId}` is a soft delete. Deleted providers are excluded from active provider reads but retained for auditability and future scheduling references.
+- Provider CRUD mutations emit provider audit actions `providers.created`, `providers.updated`, and `providers.deleted`.
+- `T033` implements the base provider CRUD surface. Search, profile, specialties, licenses, groups, availability, work hours, and time-off remain in later tasks.
+
 ## API Notes
 
 - Patient insurance attachment crosses the Patient and Insurance contexts but remains application-layer coordinated.

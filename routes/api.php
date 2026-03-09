@@ -17,6 +17,7 @@ use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientDocumentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientTagController;
+use App\Modules\Provider\Presentation\Http\Controllers\ProviderController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -167,6 +168,15 @@ Route::prefix('v1')->group(function (): void {
                 Route::delete('/patients/{patientId}/documents/{docId}', [PatientDocumentController::class, 'delete'])->name('patients.documents.delete');
                 Route::post('/patients/{patientId}/external-refs', [PatientExternalReferenceController::class, 'create'])->name('patients.external-refs.create');
                 Route::delete('/patients/{patientId}/external-refs/{refId}', [PatientExternalReferenceController::class, 'delete'])->name('patients.external-refs.delete');
+            });
+            Route::middleware('permission:providers.view')->group(function (): void {
+                Route::get('/providers', [ProviderController::class, 'list'])->name('providers.list');
+                Route::get('/providers/{providerId}', [ProviderController::class, 'show'])->name('providers.show');
+            });
+            Route::middleware('permission:providers.manage')->group(function (): void {
+                Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
+                Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
+                Route::delete('/providers/{providerId}', [ProviderController::class, 'delete'])->name('providers.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

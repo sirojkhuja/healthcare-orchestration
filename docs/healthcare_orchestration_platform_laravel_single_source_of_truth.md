@@ -895,6 +895,16 @@ Patient search, summary, timeline, and export operate on the active tenant-owned
 - POST `/provider-groups` → `CreateProviderGroupCommand` → Provider
 - PUT `/provider-groups/{groupId}/members` → `SetProviderGroupMembersCommand` → Provider
 
+Provider master records use the base fields `first_name`, `last_name`, `middle_name`, `preferred_name`, `provider_type`, `email`, `phone`, `clinic_id`, and `notes`:
+
+- `first_name`, `last_name`, and `provider_type` are required on create
+- `provider_type` enum values are `doctor`, `nurse`, and `other`
+- `provider_type` is normalized to lowercase; `email` is lowercased when present and `phone` is trimmed
+- `clinic_id` is optional, but when present it must reference an existing clinic in the same tenant scope
+- provider list ordered by `last_name asc`, `first_name asc`, and `created_at asc`
+- `DELETE /providers/{providerId}` is a soft delete; deleted providers are excluded from active directory reads but retained for auditability and future scheduling references
+- provider CRUD mutations emit `providers.created`, `providers.updated`, and `providers.deleted` audit actions
+
 ---
 
 ## A.7 Scheduling: Appointments (State Machine) (44)
