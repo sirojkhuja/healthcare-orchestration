@@ -59,7 +59,22 @@
 - `POST /patients/{patientId}/documents` accepts multipart uploads with `document`, optional `title`, and optional `document_type`. Allowed upload types are `pdf`, `jpg`, `jpeg`, `png`, and `webp` with a maximum size of `10 MiB`.
 - Patient documents are stored on the private shared attachments disk. If `title` is omitted it defaults to the uploaded filename.
 - Contact, tag, and document mutations emit patient audit actions and appear in the patient timeline through patient-scoped audit metadata.
-- `T029` implemented the base CRUD surface. `T030` adds search, summary, timeline, and export. `T031` adds contacts, tags, and document management. Consents, insurance links, bulk flows, and external references remain in later tasks.
+- `GET /patients/{patientId}/consents` returns consent history with active consents first, then `granted_at desc`, then `created_at desc`.
+- `POST /patients/{patientId}/consents` accepts `consent_type`, `granted_by_name`, optional `granted_by_relationship`, optional `granted_at`, optional `expires_at`, and optional `notes`.
+- Consent type is normalized to lowercase snake case. `granted_by_name` is required. `granted_at` defaults to the current timestamp when omitted.
+- Consent status is derived as `active`, `expired`, or `revoked`. At most one active consent of the same type may exist per patient at a time.
+- `POST /patients/{patientId}/consents/{consentId}:revoke` sets `revoked_at` and optional `reason`. Revoked consent history is retained and is never hard-deleted in normal flows.
+- `GET /patients/{patientId}/insurance` returns patient insurance links ordered by `is_primary desc`, `effective_from desc nulls last`, and `created_at desc`.
+- `POST /patients/{patientId}/insurance` accepts `insurance_code`, `policy_number`, optional `member_number`, optional `group_number`, optional `plan_name`, optional `effective_from`, optional `effective_to`, optional `is_primary`, and optional `notes`.
+- `insurance_code` is normalized to lowercase. `policy_number` is required. Duplicate `{patient_id, insurance_code, policy_number}` links are rejected as conflicts.
+- Only one patient insurance link may be primary at a time. Attaching a new primary policy clears the previous primary flag.
+- `DELETE /patients/{patientId}/insurance/{policyId}` hard-deletes the insurance link and writes patient audit action `patients.insurance_detached`.
+- `GET /patients/{patientId}/external-refs` returns patient external references ordered by `integration_key asc`, `external_type asc`, and `created_at asc`.
+- `POST /patients/{patientId}/external-refs` accepts `integration_key`, `external_id`, optional `external_type`, optional `display_name`, and optional JSON `metadata`.
+- `external_type` defaults to `patient`. The tuple `{patient_id, integration_key, external_type, external_id}` must be unique per patient.
+- External-reference metadata must remain safe to expose to internal API clients. `DELETE /patients/{patientId}/external-refs/{refId}` hard-deletes the mapping and writes patient audit action `patients.external_ref_detached`.
+- Consent, insurance-link, and external-reference mutations emit patient audit actions and appear in the patient timeline through patient-scoped audit metadata.
+- `T029` implemented the base CRUD surface. `T030` added search, summary, timeline, and export. `T031` added contacts, tags, and document management. `T032` adds consents, insurance links, and external references. Bulk flows remain in later tasks.
 
 ## Providers and Availability
 

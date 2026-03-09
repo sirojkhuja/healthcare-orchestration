@@ -46,8 +46,8 @@ return [
             'name' => 'Patients',
             'description' => 'Patient directories, records, and related artifacts.',
             'permissions' => [
-                'patients.view' => 'View patients and patient summaries.',
-                'patients.manage' => 'Create and update patients, contacts, documents, and consents.',
+                'patients.view' => 'View patients, summaries, timelines, contacts, consents, insurance links, documents, tags, and external references.',
+                'patients.manage' => 'Create and update patients, contacts, consents, insurance links, documents, tags, and external references.',
             ],
         ],
         'providers' => [

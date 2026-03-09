@@ -810,6 +810,402 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/consents:
+    get:
+      operationId: ListPatientConsentsQuery
+      tags: [Patients]
+      summary: List patient consents
+      description: Returns patient consent history with active consents first, then by grant time descending.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient consents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientConsentCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreatePatientConsentCommand
+      tags: [Patients]
+      summary: Create a patient consent
+      description: Creates a tenant-scoped patient consent. At most one active consent of the same type may exist per patient.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientConsentRequest'
+      responses:
+        '201':
+          description: Patient consent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientConsentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: An active consent of the same type already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid consent payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/consents/{consentId}:revoke:
+    post:
+      operationId: RevokePatientConsentCommand
+      tags: [Patients]
+      summary: Revoke a patient consent
+      description: Marks a patient consent as revoked and records the optional revocation reason.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientConsentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokePatientConsentRequest'
+      responses:
+        '200':
+          description: Patient consent revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientConsentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or consent not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The consent has already been revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid revocation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/insurance:
+    get:
+      operationId: ListPatientInsuranceQuery
+      tags: [Patients]
+      summary: List patient insurance links
+      description: Returns patient insurance policies ordered by primary flag, effective date descending, and creation time descending.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient insurance policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientInsuranceCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AttachPatientInsuranceCommand
+      tags: [Patients]
+      summary: Attach a patient insurance link
+      description: Attaches a patient insurance policy and clears the previous primary policy when `is_primary` is true.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachPatientInsuranceRequest'
+      responses:
+        '201':
+          description: Patient insurance attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientInsuranceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The insurance link already exists for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid insurance payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/insurance/{policyId}:
+    delete:
+      operationId: DetachPatientInsuranceCommand
+      tags: [Patients]
+      summary: Delete a patient insurance link
+      description: Hard deletes a patient insurance link and records a patient audit event.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientInsurancePolicyIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient insurance detached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientInsuranceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or policy not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/external-refs:
+    get:
+      operationId: ListPatientExternalRefsQuery
+      tags: [Patients]
+      summary: List patient external references
+      description: Returns patient external references ordered by integration key, external type, and creation time.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient external references
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientExternalReferenceCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AttachPatientExternalRefCommand
+      tags: [Patients]
+      summary: Attach a patient external reference
+      description: Attaches an integration-keyed external identifier to the patient.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachPatientExternalReferenceRequest'
+      responses:
+        '201':
+          description: Patient external reference attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientExternalReferenceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The external reference already exists for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid external reference payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/external-refs/{refId}:
+    delete:
+      operationId: DetachPatientExternalRefCommand
+      tags: [Patients]
+      summary: Delete a patient external reference
+      description: Hard deletes a patient external reference mapping and records a patient audit event.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientExternalReferenceIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient external reference detached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientExternalReferenceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or external reference not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -831,8 +1227,29 @@ components:
       schema:
         type: string
         format: uuid
+    PatientConsentIdPath:
+      name: consentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     PatientDocumentIdPath:
       name: docId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PatientInsurancePolicyIdPath:
+      name: policyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PatientExternalReferenceIdPath:
+      name: refId
       in: path
       required: true
       schema:
@@ -1335,6 +1752,305 @@ components:
           examples: [patient_document_uploaded]
         data:
           $ref: '#/components/schemas/PatientDocument'
+    PatientConsent:
+      type: object
+      required:
+        - id
+        - patient_id
+        - consent_type
+        - status
+        - granted_by_name
+        - granted_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        consent_type:
+          type: string
+          maxLength: 64
+        status:
+          type: string
+          enum: [active, expired, revoked]
+        granted_by_name:
+          type: string
+          maxLength: 160
+        granted_by_relationship:
+          type: string
+          nullable: true
+          maxLength: 120
+        granted_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+        revocation_reason:
+          type: string
+          nullable: true
+          maxLength: 5000
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreatePatientConsentRequest:
+      type: object
+      required: [consent_type, granted_by_name]
+      properties:
+        consent_type:
+          type: string
+          maxLength: 64
+        granted_by_name:
+          type: string
+          maxLength: 160
+        granted_by_relationship:
+          type: string
+          nullable: true
+          maxLength: 120
+        granted_at:
+          type: string
+          format: date-time
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    RevokePatientConsentRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          nullable: true
+          maxLength: 5000
+    PatientConsentCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientConsent'
+    PatientConsentMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_consent_created]
+        data:
+          $ref: '#/components/schemas/PatientConsent'
+    PatientInsurancePolicy:
+      type: object
+      required:
+        - id
+        - patient_id
+        - insurance_code
+        - policy_number
+        - is_primary
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        insurance_code:
+          type: string
+          maxLength: 64
+        policy_number:
+          type: string
+          maxLength: 120
+        member_number:
+          type: string
+          nullable: true
+          maxLength: 120
+        group_number:
+          type: string
+          nullable: true
+          maxLength: 120
+        plan_name:
+          type: string
+          nullable: true
+          maxLength: 160
+        effective_from:
+          type: string
+          format: date
+          nullable: true
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        is_primary:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AttachPatientInsuranceRequest:
+      type: object
+      required: [insurance_code, policy_number]
+      properties:
+        insurance_code:
+          type: string
+          maxLength: 64
+        policy_number:
+          type: string
+          maxLength: 120
+        member_number:
+          type: string
+          nullable: true
+          maxLength: 120
+        group_number:
+          type: string
+          nullable: true
+          maxLength: 120
+        plan_name:
+          type: string
+          nullable: true
+          maxLength: 160
+        effective_from:
+          type: string
+          format: date
+          nullable: true
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        is_primary:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+    PatientInsuranceCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientInsurancePolicy'
+    PatientInsuranceMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_insurance_attached]
+        data:
+          $ref: '#/components/schemas/PatientInsurancePolicy'
+    PatientExternalReference:
+      type: object
+      required:
+        - id
+        - patient_id
+        - integration_key
+        - external_id
+        - external_type
+        - metadata
+        - linked_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        integration_key:
+          type: string
+          maxLength: 64
+        external_id:
+          type: string
+          maxLength: 191
+        external_type:
+          type: string
+          maxLength: 64
+        display_name:
+          type: string
+          nullable: true
+          maxLength: 160
+        metadata:
+          type: object
+          additionalProperties: true
+        linked_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AttachPatientExternalReferenceRequest:
+      type: object
+      required: [integration_key, external_id]
+      properties:
+        integration_key:
+          type: string
+          maxLength: 64
+          pattern: '^[a-z0-9._-]+$'
+        external_id:
+          type: string
+          maxLength: 191
+        external_type:
+          type: string
+          nullable: true
+          maxLength: 64
+          pattern: '^[a-z0-9._-]+$'
+        display_name:
+          type: string
+          nullable: true
+          maxLength: 160
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    PatientExternalReferenceCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientExternalReference'
+    PatientExternalReferenceMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          examples: [patient_external_ref_attached]
+        data:
+          $ref: '#/components/schemas/PatientExternalReference'
     PatientSummary:
       type: object
       required:

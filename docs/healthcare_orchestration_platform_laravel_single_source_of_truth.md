@@ -844,7 +844,18 @@ Patient search, summary, timeline, and export operate on the active tenant-owned
 - patient contacts list ordered by `is_primary desc`, `is_emergency desc`, `name asc`, and `created_at asc`
 - patient tags are replaced as a full normalized set; normalization trims, collapses repeated internal whitespace, lowercases, discards empty values, and sorts alphabetically
 - patient document routes expose metadata only, store files on the private shared attachments disk, and accept only `pdf`, `jpg`, `jpeg`, `png`, and `webp` uploads up to `10 MiB`
-- patient contact, tag, and document mutations emit patient audit actions so they can appear in patient timelines
+- patient consents accept `consent_type`, `granted_by_name`, optional `granted_by_relationship`, optional `granted_at`, optional `expires_at`, and optional `notes`
+- patient consent type is normalized to lowercase snake case; `granted_by_name` is required and `granted_at` defaults to the current timestamp
+- patient consent status is derived as `active`, `expired`, or `revoked`; at most one active consent of the same type may exist for a patient at a time
+- patient consent list ordered by active consents first, then `granted_at desc`, then `created_at desc`
+- `POST /patients/{patientId}/consents/{consentId}:revoke` records `revoked_at` and optional `reason`; revoked consent history is retained and not hard-deleted in normal flows
+- patient insurance links accept `insurance_code`, `policy_number`, optional `member_number`, optional `group_number`, optional `plan_name`, optional `effective_from`, optional `effective_to`, optional `is_primary`, and optional `notes`
+- patient insurance links ordered by `is_primary desc`, `effective_from desc nulls last`, and `created_at desc`
+- only one patient insurance link may be primary at a time; attaching a new primary policy clears the previous primary flag
+- duplicate patient insurance links for `{patient_id, insurance_code, policy_number}` are conflicts
+- patient external references accept `integration_key`, `external_id`, optional `external_type`, optional `display_name`, and optional JSON `metadata`
+- patient external reference `external_type` defaults to `patient` and the tuple `{patient_id, integration_key, external_type, external_id}` must be unique
+- patient contact, tag, document, consent, insurance-link, and external-reference mutations emit patient audit actions so they can appear in patient timelines
 
 ---
 

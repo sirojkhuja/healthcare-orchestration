@@ -10,6 +10,9 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
+use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceController;
+use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
+use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientDocumentController;
@@ -141,9 +144,12 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/patients/{patientId}/summary', [PatientController::class, 'summary'])->name('patients.summary');
                 Route::get('/patients/{patientId}/timeline', [PatientController::class, 'timeline'])->name('patients.timeline');
                 Route::get('/patients/{patientId}/contacts', [PatientContactController::class, 'list'])->name('patients.contacts.list');
+                Route::get('/patients/{patientId}/consents', [PatientConsentController::class, 'list'])->name('patients.consents.list');
+                Route::get('/patients/{patientId}/insurance', [PatientInsuranceController::class, 'list'])->name('patients.insurance.list');
                 Route::get('/patients/{patientId}/tags', [PatientTagController::class, 'list'])->name('patients.tags.list');
                 Route::get('/patients/{patientId}/documents', [PatientDocumentController::class, 'list'])->name('patients.documents.list');
                 Route::get('/patients/{patientId}/documents/{docId}', [PatientDocumentController::class, 'show'])->name('patients.documents.show');
+                Route::get('/patients/{patientId}/external-refs', [PatientExternalReferenceController::class, 'list'])->name('patients.external-refs.list');
             });
             Route::middleware('permission:patients.manage')->group(function (): void {
                 Route::post('/patients', [PatientController::class, 'create'])->name('patients.create');
@@ -152,9 +158,15 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/patients/{patientId}/contacts', [PatientContactController::class, 'create'])->name('patients.contacts.create');
                 Route::patch('/patients/{patientId}/contacts/{contactId}', [PatientContactController::class, 'update'])->name('patients.contacts.update');
                 Route::delete('/patients/{patientId}/contacts/{contactId}', [PatientContactController::class, 'delete'])->name('patients.contacts.delete');
+                Route::post('/patients/{patientId}/consents', [PatientConsentController::class, 'create'])->name('patients.consents.create');
+                Route::post('/patients/{patientId}/consents/{consentId}:revoke', [PatientConsentController::class, 'revoke'])->name('patients.consents.revoke');
+                Route::post('/patients/{patientId}/insurance', [PatientInsuranceController::class, 'create'])->name('patients.insurance.create');
+                Route::delete('/patients/{patientId}/insurance/{policyId}', [PatientInsuranceController::class, 'delete'])->name('patients.insurance.delete');
                 Route::put('/patients/{patientId}/tags', [PatientTagController::class, 'update'])->name('patients.tags.update');
                 Route::post('/patients/{patientId}/documents', [PatientDocumentController::class, 'upload'])->name('patients.documents.create');
                 Route::delete('/patients/{patientId}/documents/{docId}', [PatientDocumentController::class, 'delete'])->name('patients.documents.delete');
+                Route::post('/patients/{patientId}/external-refs', [PatientExternalReferenceController::class, 'create'])->name('patients.external-refs.create');
+                Route::delete('/patients/{patientId}/external-refs/{refId}', [PatientExternalReferenceController::class, 'delete'])->name('patients.external-refs.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');
