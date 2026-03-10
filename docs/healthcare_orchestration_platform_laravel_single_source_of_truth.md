@@ -513,7 +513,10 @@ Standard error:
 
 ### 12.9 Prescriptions
 - CRUD prescriptions
-- actions: issue, cancel
+- actions: issue, cancel, dispense
+- prescriptions are tenant-scoped records with patient and provider linkage, optional encounter and treatment-item linkage, medication snapshot fields, explicit issue/cancel/dispense actions, and soft-delete retention
+- prescription status values are `draft`, `issued`, `dispensed`, and `canceled`
+- generic `PATCH /prescriptions/{prescriptionId}` is draft-only and workflow changes happen only through `:issue`, `:cancel`, and `:dispense`
 
 ### 12.10 Billing & Payments
 - invoices
@@ -1159,14 +1162,21 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 ## A.10 Prescriptions & Medications (22)
 - GET `/prescriptions` → `ListPrescriptionsQuery` → Pharmacy
 - POST `/prescriptions` → `CreatePrescriptionCommand` → Pharmacy
-- GET `/prescriptions/{rxId}` → `GetPrescriptionQuery` → Pharmacy
-- PATCH `/prescriptions/{rxId}` → `UpdatePrescriptionCommand` → Pharmacy
-- DELETE `/prescriptions/{rxId}` → `DeletePrescriptionCommand` → Pharmacy
-- POST `/prescriptions/{rxId}:issue` → `IssuePrescriptionCommand` → Pharmacy
-- POST `/prescriptions/{rxId}:cancel` → `CancelPrescriptionCommand` → Pharmacy
-- POST `/prescriptions/{rxId}:dispense` → `DispensePrescriptionCommand` → Pharmacy
+- GET `/prescriptions/{prescriptionId}` → `GetPrescriptionQuery` → Pharmacy
+- PATCH `/prescriptions/{prescriptionId}` → `UpdatePrescriptionCommand` → Pharmacy
+- DELETE `/prescriptions/{prescriptionId}` → `DeletePrescriptionCommand` → Pharmacy
+- POST `/prescriptions/{prescriptionId}:issue` → `IssuePrescriptionCommand` → Pharmacy
+- POST `/prescriptions/{prescriptionId}:cancel` → `CancelPrescriptionCommand` → Pharmacy
+- POST `/prescriptions/{prescriptionId}:dispense` → `DispensePrescriptionCommand` → Pharmacy
 - GET `/prescriptions/search` → `SearchPrescriptionsQuery` → Pharmacy
 - GET `/prescriptions/export` → `ExportPrescriptionsQuery` → Pharmacy
+
+- `T046` implements only the prescription aggregate, lifecycle, search, and export contract defined in ADR `033`
+- `T046` does not depend on the medication catalog; medication identity remains on the prescription as free-text snapshot fields until `T047`
+- `GET /prescriptions`, `GET /prescriptions/search`, and `GET /prescriptions/export` share the filter contract `q`, `status`, `patient_id`, `provider_id`, `encounter_id`, `issued_from`, `issued_to`, `start_from`, `start_to`, `created_from`, `created_to`, and `limit`
+- `POST /prescriptions/{prescriptionId}:issue` records `issued_at`
+- `POST /prescriptions/{prescriptionId}:dispense` records `dispensed_at`
+- `POST /prescriptions/{prescriptionId}:cancel` requires a non-empty `reason` and records `canceled_at`
 
 ### Medication catalog
 - GET `/medications` → `ListMedicationsQuery` → Pharmacy

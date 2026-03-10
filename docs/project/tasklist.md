@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `62% (44/70 tasks completed)`
+Overall Progress: `64% (45/70 tasks completed)`
 
 Active Task: `None`
 
@@ -93,7 +93,7 @@ Active Task: `None`
 
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
-| T046 | Todo | Implement the prescription aggregate and prescription lifecycle. | T044 | Prescription domain, issue, cancel, dispense flows. | State transition and authorization tests pass. |
+| T046 | Done | Implement the prescription aggregate and prescription lifecycle. | T044 | Prescription domain, issue, cancel, dispense flows. | State transition and authorization tests pass. |
 | T047 | Todo | Implement medication catalog, medication search, allergies, and patient medication views. | T046 | Medication endpoints, allergy management, patient medication queries. | Search, validation, and patient view tests pass. |
 | T048 | Todo | Implement billable services and price list management. | T027 | Billing catalog endpoints, price list item management. | CRUD and pricing rule tests pass. |
 | T049 | Todo | Implement the invoice aggregate, invoice items, and invoice lifecycle. | T048, T029 | Invoice domain, item management, issue, void, finalize actions. | Invoice state and calculation tests pass. |

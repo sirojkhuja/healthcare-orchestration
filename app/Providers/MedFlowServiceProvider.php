@@ -82,6 +82,8 @@ use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientContactReposit
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientDocumentRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientTagRepository;
+use App\Modules\Pharmacy\Application\Contracts\PrescriptionRepository;
+use App\Modules\Pharmacy\Infrastructure\Persistence\DatabasePrescriptionRepository;
 use App\Modules\Provider\Application\Contracts\ProviderGroupRepository;
 use App\Modules\Provider\Application\Contracts\ProviderLicenseRepository;
 use App\Modules\Provider\Application\Contracts\ProviderProfileRepository;
@@ -203,6 +205,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(PatientTagRepository::class, DatabasePatientTagRepository::class);
         $this->app->bind(PatientInsurancePolicyRepository::class, DatabasePatientInsurancePolicyRepository::class);
         $this->app->bind(PatientExternalReferenceRepository::class, DatabasePatientExternalReferenceRepository::class);
+        $this->app->bind(PrescriptionRepository::class, DatabasePrescriptionRepository::class);
         $this->app->bind(ProviderGroupRepository::class, DatabaseProviderGroupRepository::class);
         $this->app->bind(ProviderLicenseRepository::class, DatabaseProviderLicenseRepository::class);
         $this->app->bind(ProviderRepository::class, DatabaseProviderRepository::class);

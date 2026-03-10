@@ -112,12 +112,12 @@
 
 - `GET /prescriptions` -> `ListPrescriptionsQuery` -> Pharmacy
 - `POST /prescriptions` -> `CreatePrescriptionCommand` -> Pharmacy
-- `GET /prescriptions/{rxId}` -> `GetPrescriptionQuery` -> Pharmacy
-- `PATCH /prescriptions/{rxId}` -> `UpdatePrescriptionCommand` -> Pharmacy
-- `DELETE /prescriptions/{rxId}` -> `DeletePrescriptionCommand` -> Pharmacy
-- `POST /prescriptions/{rxId}:issue` -> `IssuePrescriptionCommand` -> Pharmacy
-- `POST /prescriptions/{rxId}:cancel` -> `CancelPrescriptionCommand` -> Pharmacy
-- `POST /prescriptions/{rxId}:dispense` -> `DispensePrescriptionCommand` -> Pharmacy
+- `GET /prescriptions/{prescriptionId}` -> `GetPrescriptionQuery` -> Pharmacy
+- `PATCH /prescriptions/{prescriptionId}` -> `UpdatePrescriptionCommand` -> Pharmacy
+- `DELETE /prescriptions/{prescriptionId}` -> `DeletePrescriptionCommand` -> Pharmacy
+- `POST /prescriptions/{prescriptionId}:issue` -> `IssuePrescriptionCommand` -> Pharmacy
+- `POST /prescriptions/{prescriptionId}:cancel` -> `CancelPrescriptionCommand` -> Pharmacy
+- `POST /prescriptions/{prescriptionId}:dispense` -> `DispensePrescriptionCommand` -> Pharmacy
 - `GET /prescriptions/search` -> `SearchPrescriptionsQuery` -> Pharmacy
 - `GET /prescriptions/export` -> `ExportPrescriptionsQuery` -> Pharmacy
 - `GET /medications` -> `ListMedicationsQuery` -> Pharmacy
@@ -131,7 +131,20 @@
 - `DELETE /patients/{patientId}/allergies/{allergyId}` -> `RemoveAllergyCommand` -> Pharmacy
 - `GET /patients/{patientId}/medications` -> `ListPatientMedicationsQuery` -> Pharmacy
 
-## API Notes
+## Prescription Notes
+
+- `T046` makes prescriptions operational through ADR `033`.
+- Prescriptions are tenant-scoped records with patient and provider linkage, optional encounter and treatment-item linkage, free-text medication snapshot fields, explicit issue/cancel/dispense actions, and soft-delete retention.
+- The documented prescription status catalog is `draft`, `issued`, `dispensed`, and `canceled`.
+- Generic `PATCH /prescriptions/{prescriptionId}` is draft-only. Workflow changes happen only through `:issue`, `:cancel`, and `:dispense`.
+- `POST /prescriptions/{prescriptionId}:issue` records `issued_at` and transitions the prescription to `issued`.
+- `POST /prescriptions/{prescriptionId}:dispense` records `dispensed_at` and transitions the prescription to `dispensed`.
+- `POST /prescriptions/{prescriptionId}:cancel` requires a non-empty `reason`, records `canceled_at`, and transitions the prescription to `canceled`.
+- `GET /prescriptions`, `GET /prescriptions/search`, and `GET /prescriptions/export` share the same filter contract: `q`, `status`, `patient_id`, `provider_id`, `encounter_id`, `issued_from`, `issued_to`, `start_from`, `start_to`, `created_from`, `created_to`, and `limit`.
+- Prescription exports reuse the active search filter set, support `format=csv`, store a private export artifact, and write `prescriptions.exported`.
+- `T046` does not depend on the medication catalog. Medication identity is stored as free-text snapshot fields until `T047` adds catalog endpoints and patient medication views.
+
+## Scheduling Notes
 
 - Scheduling owns availability and slot decisions.
 - The appointment aggregate owns `appointment_id`, tenant scope, patient and provider linkage, optional clinic and room assignment, the scheduled slot, status, and the latest transition metadata.

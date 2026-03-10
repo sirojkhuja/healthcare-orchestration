@@ -23,6 +23,8 @@ use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientDocumentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientTagController;
+use App\Modules\Pharmacy\Presentation\Http\Controllers\PrescriptionController;
+use App\Modules\Pharmacy\Presentation\Http\Controllers\PrescriptionWorkflowController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderGroupController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderLicenseController;
@@ -250,6 +252,12 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/lab-orders/{orderId}/results/{resultId}', [LabResultController::class, 'show'])->name('lab-orders.results.show');
                 Route::get('/lab-orders/{orderId}', [LabOrderController::class, 'show'])->name('lab-orders.show');
             });
+            Route::middleware('permission:prescriptions.view')->group(function (): void {
+                Route::get('/prescriptions', [PrescriptionController::class, 'list'])->name('prescriptions.list');
+                Route::get('/prescriptions/search', [PrescriptionController::class, 'search'])->name('prescriptions.search');
+                Route::get('/prescriptions/export', [PrescriptionController::class, 'export'])->name('prescriptions.export');
+                Route::get('/prescriptions/{prescriptionId}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
+            });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
@@ -401,6 +409,26 @@ Route::prefix('v1')->group(function (): void {
                         ->middleware('idempotency:lab-orders.reconcile')
                         ->name('lab-orders.reconcile');
                 });
+            });
+            Route::middleware('permission:prescriptions.manage')->group(function (): void {
+                Route::post('/prescriptions', [PrescriptionController::class, 'create'])
+                    ->middleware('idempotency:prescriptions.create')
+                    ->name('prescriptions.create');
+                Route::patch('/prescriptions/{prescriptionId}', [PrescriptionController::class, 'update'])
+                    ->middleware('idempotency:prescriptions.update')
+                    ->name('prescriptions.update');
+                Route::delete('/prescriptions/{prescriptionId}', [PrescriptionController::class, 'delete'])
+                    ->middleware('idempotency:prescriptions.delete')
+                    ->name('prescriptions.delete');
+                Route::post('/prescriptions/{prescriptionId}:issue', [PrescriptionWorkflowController::class, 'issue'])
+                    ->middleware('idempotency:prescriptions.issue')
+                    ->name('prescriptions.issue');
+                Route::post('/prescriptions/{prescriptionId}:cancel', [PrescriptionWorkflowController::class, 'cancel'])
+                    ->middleware('idempotency:prescriptions.cancel')
+                    ->name('prescriptions.cancel');
+                Route::post('/prescriptions/{prescriptionId}:dispense', [PrescriptionWorkflowController::class, 'dispense'])
+                    ->middleware('idempotency:prescriptions.dispense')
+                    ->name('prescriptions.dispense');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])

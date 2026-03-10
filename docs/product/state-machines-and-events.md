@@ -118,6 +118,35 @@
 - results are read-only records received through webhook or reconciliation intake
 - webhook updates must remain idempotent and signature-verified
 
+## Prescription State Machine
+
+### States
+
+- `draft`
+- `issued`
+- `dispensed`
+- `canceled`
+
+### Allowed Transitions
+
+- `draft -> issued`
+- `issued -> dispensed`
+- `draft|issued -> canceled`
+
+### Required Guards
+
+- only draft prescriptions may be issued
+- only issued prescriptions may be dispensed
+- canceling requires a non-empty reason
+- dispensed and canceled prescriptions are terminal
+
+### Operational Notes
+
+- prescription CRUD uses draft creation with explicit action routes for lifecycle changes
+- generic patch remains draft-only
+- delete is soft-delete and limited to `draft|canceled`
+- medication catalog linkage remains deferred; prescriptions keep medication snapshot fields directly on the aggregate
+
 ## Insurance Claim State Machine
 
 ### States
@@ -169,6 +198,7 @@ At minimum the platform must support events for:
 - `TreatmentPlanApproved`
 - `LabOrderCreated`
 - `LabResultReceived`
+- `PrescriptionIssued`
 - `InvoiceIssued`
 - `PaymentCaptured`
 - `ClaimSubmitted`
@@ -180,6 +210,7 @@ Each module may define more events, but they must follow the standard envelope a
 
 - `medflow.appointments.v1`
 - `medflow.labs.v1`
+- `medflow.pharmacy.v1`
 - `medflow.treatments.v1`
 - `medflow.billing.v1`
 - `medflow.claims.v1`
