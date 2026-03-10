@@ -199,6 +199,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/bulk:
+    post:
+      operationId: BulkUpdateAppointmentsCommand
+      tags: [Appointments]
+      summary: Apply one shared change set to multiple draft appointments
+      description: Updates only active draft appointments in the current tenant. The request is all-or-nothing and requires an idempotency key.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkUpdateAppointmentsRequest'
+            examples:
+              default:
+                value:
+                  appointment_ids:
+                    - 6b565215-58f5-45b2-a89d-292c489b21c1
+                    - 0bf4ae31-f5d4-406d-88a5-84bde8209a5f
+                  changes:
+                    timezone: UTC
+      responses:
+        '200':
+          description: Draft appointments updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAppointmentUpdateResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: One or more appointments do not exist in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: One or more selected appointments are not in draft status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or unsupported change set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/appointments/{appointmentId}:
     get:
       operationId: GetAppointmentQuery
@@ -334,6 +396,302 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}/participants:
+    get:
+      operationId: ListAppointmentParticipantsQuery
+      tags: [Appointments]
+      summary: List appointment participants
+      description: Returns appointment participants for an active tenant-scoped appointment ordered by required flag, display name, and creation time.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Appointment participants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentParticipantCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddAppointmentParticipantCommand
+      tags: [Appointments]
+      summary: Add one appointment participant
+      description: Adds one participant to an active tenant-scoped appointment and snapshots the participant display name.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentParticipantRequest'
+      responses:
+        '201':
+          description: Appointment participant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentParticipantMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The appointment already contains that participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid participant payload or unresolved reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}/participants/{participantId}:
+    delete:
+      operationId: RemoveAppointmentParticipantCommand
+      tags: [Appointments]
+      summary: Remove one appointment participant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/AppointmentParticipantIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment participant removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentParticipantMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment or participant not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}/notes:
+    get:
+      operationId: ListAppointmentNotesQuery
+      tags: [Appointments]
+      summary: List appointment notes
+      description: Returns appointment notes for an active tenant-scoped appointment ordered by most recently updated first.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Appointment notes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentNoteCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddAppointmentNoteCommand
+      tags: [Appointments]
+      summary: Add one appointment note
+      description: Adds an authored note to an active tenant-scoped appointment and snapshots the authenticated author identity.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentNoteRequest'
+      responses:
+        '201':
+          description: Appointment note created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentNoteMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid note payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}/notes/{noteId}:
+    patch:
+      operationId: UpdateAppointmentNoteCommand
+      tags: [Appointments]
+      summary: Update one appointment note
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/AppointmentNoteIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppointmentNoteRequest'
+      responses:
+        '200':
+          description: Appointment note updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentNoteMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment or note not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid note payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteAppointmentNoteCommand
+      tags: [Appointments]
+      summary: Delete one appointment note
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/AppointmentNoteIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment note deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentNoteMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment or note not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/appointments/{appointmentId}/audit:
     get:
       operationId: GetAppointmentAuditQuery
@@ -398,6 +756,20 @@ components:
     AppointmentIdPath:
       in: path
       name: appointmentId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AppointmentParticipantIdPath:
+      in: path
+      name: participantId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AppointmentNoteIdPath:
+      in: path
+      name: noteId
       required: true
       schema:
         type: string
@@ -660,6 +1032,145 @@ components:
           enum: [appointment_created, appointment_updated, appointment_deleted]
         data:
           $ref: '#/components/schemas/Appointment'
+    AppointmentParticipant:
+      type: object
+      required:
+        - id
+        - appointment_id
+        - participant_type
+        - display_name
+        - role
+        - required
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        appointment_id:
+          type: string
+          format: uuid
+        participant_type:
+          type: string
+          enum: [user, provider, external]
+        reference_id:
+          type: string
+          format: uuid
+          nullable: true
+        display_name:
+          type: string
+        role:
+          type: string
+        required:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AppointmentParticipantCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppointmentParticipant'
+    AppointmentParticipantMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_participant_created, appointment_participant_deleted]
+        data:
+          $ref: '#/components/schemas/AppointmentParticipant'
+    AppointmentNoteAuthor:
+      type: object
+      required: [user_id, name, email]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+    AppointmentNote:
+      type: object
+      required:
+        - id
+        - appointment_id
+        - body
+        - author
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        appointment_id:
+          type: string
+          format: uuid
+        body:
+          type: string
+        author:
+          $ref: '#/components/schemas/AppointmentNoteAuthor'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AppointmentNoteCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppointmentNote'
+    AppointmentNoteMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_note_created, appointment_note_updated, appointment_note_deleted]
+        data:
+          $ref: '#/components/schemas/AppointmentNote'
+    BulkAppointmentUpdate:
+      type: object
+      required: [operation_id, affected_count, updated_fields, appointments]
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+        affected_count:
+          type: integer
+        updated_fields:
+          type: array
+          items:
+            type: string
+            enum: [patient_id, provider_id, clinic_id, room_id, scheduled_start_at, scheduled_end_at, timezone]
+        appointments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+    BulkAppointmentUpdateResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointments_bulk_updated]
+        data:
+          $ref: '#/components/schemas/BulkAppointmentUpdate'
     AppointmentSearchFilters:
       type: object
       properties:
@@ -890,3 +1401,81 @@ components:
           format: date-time
         timezone:
           type: string
+    CreateAppointmentParticipantRequest:
+      type: object
+      required: [participant_type, role]
+      properties:
+        participant_type:
+          type: string
+          enum: [user, provider, external]
+        reference_id:
+          type: string
+          format: uuid
+          nullable: true
+        display_name:
+          type: string
+          maxLength: 160
+          nullable: true
+        role:
+          type: string
+          maxLength: 120
+        required:
+          type: boolean
+          default: false
+        notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+    CreateAppointmentNoteRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          maxLength: 10000
+    UpdateAppointmentNoteRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 10000
+    BulkUpdateAppointmentsRequest:
+      type: object
+      required: [appointment_ids, changes]
+      properties:
+        appointment_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        changes:
+          type: object
+          minProperties: 1
+          properties:
+            patient_id:
+              type: string
+              format: uuid
+            provider_id:
+              type: string
+              format: uuid
+            clinic_id:
+              oneOf:
+                - type: string
+                  format: uuid
+                - type: 'null'
+            room_id:
+              oneOf:
+                - type: string
+                  format: uuid
+                - type: 'null'
+            scheduled_start_at:
+              type: string
+              format: date-time
+            scheduled_end_at:
+              type: string
+              format: date-time
+            timezone:
+              type: string

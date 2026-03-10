@@ -26,7 +26,10 @@ use App\Modules\Provider\Presentation\Http\Controllers\ProviderTimeOffController
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderWorkHoursController;
 use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentAuditController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentBulkController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentNoteController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentParticipantController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\ProviderCalendarController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
@@ -200,6 +203,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/appointments/search', [AppointmentController::class, 'search'])->name('appointments.search');
                 Route::get('/appointments/export', [AppointmentController::class, 'export'])->name('appointments.export');
                 Route::get('/appointments/{appointmentId}/audit', [AppointmentAuditController::class, 'list'])->name('appointments.audit.list');
+                Route::get('/appointments/{appointmentId}/participants', [AppointmentParticipantController::class, 'list'])->name('appointments.participants.list');
+                Route::get('/appointments/{appointmentId}/notes', [AppointmentNoteController::class, 'list'])->name('appointments.notes.list');
                 Route::get('/appointments/{appointmentId}', [AppointmentController::class, 'show'])->name('appointments.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
@@ -250,6 +255,24 @@ Route::prefix('v1')->group(function (): void {
                 Route::delete('/appointments/{appointmentId}', [AppointmentController::class, 'delete'])
                     ->middleware('idempotency:appointments.delete')
                     ->name('appointments.delete');
+                Route::post('/appointments/bulk', [AppointmentBulkController::class, 'update'])
+                    ->middleware('idempotency:appointments.bulk.update')
+                    ->name('appointments.bulk.update');
+                Route::post('/appointments/{appointmentId}/participants', [AppointmentParticipantController::class, 'create'])
+                    ->middleware('idempotency:appointments.participants.create')
+                    ->name('appointments.participants.create');
+                Route::delete('/appointments/{appointmentId}/participants/{participantId}', [AppointmentParticipantController::class, 'delete'])
+                    ->middleware('idempotency:appointments.participants.delete')
+                    ->name('appointments.participants.delete');
+                Route::post('/appointments/{appointmentId}/notes', [AppointmentNoteController::class, 'create'])
+                    ->middleware('idempotency:appointments.notes.create')
+                    ->name('appointments.notes.create');
+                Route::patch('/appointments/{appointmentId}/notes/{noteId}', [AppointmentNoteController::class, 'update'])
+                    ->middleware('idempotency:appointments.notes.update')
+                    ->name('appointments.notes.update');
+                Route::delete('/appointments/{appointmentId}/notes/{noteId}', [AppointmentNoteController::class, 'delete'])
+                    ->middleware('idempotency:appointments.notes.delete')
+                    ->name('appointments.notes.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

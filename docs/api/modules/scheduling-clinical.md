@@ -138,6 +138,14 @@
 - Appointment search supports `q`, `status`, `patient_id`, `provider_id`, `clinic_id`, `room_id`, `scheduled_from`, `scheduled_to`, `created_from`, `created_to`, and `limit`.
 - Appointment exports reuse the active search filter set, support `format=csv`, store a private export artifact, and write `appointments.exported`.
 - Appointment audit views read immutable audit events with `object_type = appointment`, return newest first, and remain available for soft-deleted draft appointments inside tenant scope.
+- Appointment participants in `T039` are tenant-scoped appointment subresources with `participant_type = user|provider|external`, `reference_id`, `display_name`, `role`, optional `required`, and optional `notes`.
+- `user` appointment participants must resolve to an active tenant user membership, `provider` participants must resolve to an active tenant provider, and `external` participants are free-text attendees with `display_name`.
+- Appointment participant reads order by `required desc`, `display_name asc`, and `created_at asc`. Participant deletion hard-deletes the row and writes appointment participant audit events.
+- Appointment notes in `T039` are authored subresources with `body`, immutable author metadata, `created_at`, and `updated_at`. Note reads order by `updated_at desc`, `created_at desc`, and `id desc`.
+- `POST /appointments/bulk` in `T039` is the generic bulk draft update route. It requires `Idempotency-Key`, accepts `appointment_ids` plus a shared `changes` object, supports `1..100` distinct ids, and is all-or-nothing.
+- Bulk draft updates reuse the same mutable field set and validation rules as the single generic draft `PATCH /appointments/{appointmentId}` route and remain limited to active `draft` appointments.
+- Bulk draft updates return `operation_id`, `affected_count`, `updated_fields`, and the updated appointment payloads in input order, and they write a summary `appointments.bulk_updated` audit event plus linked per-appointment `appointments.updated` events.
+- `POST /appointments:bulk-cancel` and `POST /appointments:bulk-reschedule` are deferred to `T040` because they depend on explicit transition-route behavior.
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.

@@ -1019,6 +1019,13 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/appointments/{appointmentId}/notes` → `AddAppointmentNoteCommand` → Scheduling
 - PATCH `/appointments/{appointmentId}/notes/{noteId}` → `UpdateAppointmentNoteCommand` → Scheduling
 - DELETE `/appointments/{appointmentId}/notes/{noteId}` → `DeleteAppointmentNoteCommand` → Scheduling
+- appointment participants are tenant-owned subresources and use `participant_type = user|provider|external`, `reference_id`, `display_name`, `role`, optional `required`, and optional `notes`
+- `user` participants must reference an active tenant user membership; `provider` participants must reference an active tenant provider; `external` participants carry free-text `display_name`
+- participant reads are ordered by `required desc`, `display_name asc`, `created_at asc`; participant deletion hard-deletes the row
+- appointment notes are authored tenant-owned subresources with `body`, immutable author metadata, `created_at`, and `updated_at`
+- appointment notes are ordered by `updated_at desc`, `created_at desc`, `id desc`; note deletion hard-deletes the row
+- participant mutations write `appointments.participant_added` and `appointments.participant_removed`
+- note mutations write `appointments.note_added`, `appointments.note_updated`, and `appointments.note_deleted`
 
 ### Reminders & communications
 - POST `/appointments/{appointmentId}:send-reminder` → `SendAppointmentReminderCommand` → Notifications
@@ -1039,6 +1046,12 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/appointments:bulk-cancel` → `BulkCancelAppointmentsCommand` → Scheduling
 - POST `/appointments:bulk-reschedule` → `BulkRescheduleAppointmentsCommand` → Scheduling
 - POST `/appointments:rebuild-cache` → `RebuildSchedulingCacheCommand` → Scheduling
+- `POST /appointments/bulk` applies one shared change set across `1..100` distinct appointment ids, requires `Idempotency-Key`, and is all-or-nothing
+- bulk draft updates support the same mutable fields as the single generic draft `PATCH /appointments/{appointmentId}` route
+- bulk draft updates are limited to active `draft` appointments so explicit state-transition routes remain authoritative for scheduled workflows
+- bulk draft updates return `operation_id`, `affected_count`, `updated_fields`, and the updated appointment payloads in input order
+- bulk draft updates write one summary `appointments.bulk_updated` audit event plus per-appointment `appointments.updated` events linked to the bulk operation
+- `POST /appointments:bulk-cancel` and `POST /appointments:bulk-reschedule` remain transition work for `T040`
 
 ---
 
