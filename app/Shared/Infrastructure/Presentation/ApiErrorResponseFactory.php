@@ -5,6 +5,7 @@ namespace App\Shared\Infrastructure\Presentation;
 use App\Modules\IdentityAccess\Application\Exceptions\IpAddressNotAllowedException;
 use App\Modules\IdentityAccess\Application\Exceptions\MfaChallengeRequiredException;
 use App\Modules\IdentityAccess\Application\Exceptions\RevokedApiKeyException;
+use App\Modules\Lab\Application\Exceptions\InvalidLabWebhookSignatureException;
 use App\Shared\Application\Contracts\RequestMetadataContext;
 use App\Shared\Application\Data\ApiError;
 use App\Shared\Application\Data\RequestMetadata;
@@ -90,6 +91,12 @@ final class ApiErrorResponseFactory
                 401,
                 'UNAUTHENTICATED',
                 'Authentication is required for this operation.',
+                [],
+            ],
+            $throwable instanceof InvalidLabWebhookSignatureException => [
+                401,
+                'WEBHOOK_SIGNATURE_INVALID',
+                'Inbound webhook signature failed verification.',
                 [],
             ],
             $throwable instanceof IpAddressNotAllowedException => [

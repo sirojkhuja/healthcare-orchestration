@@ -12,6 +12,12 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
+use App\Modules\Lab\Presentation\Http\Controllers\LabOrderBulkController;
+use App\Modules\Lab\Presentation\Http\Controllers\LabOrderController;
+use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
+use App\Modules\Lab\Presentation\Http\Controllers\LabResultController;
+use App\Modules\Lab\Presentation\Http\Controllers\LabTestController;
+use App\Modules\Lab\Presentation\Http\Controllers\LabWebhookController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
@@ -66,6 +72,11 @@ Route::prefix('v1')->group(function (): void {
             'status' => 'ok',
         ]);
     });
+
+    Route::post('/webhooks/lab/{provider}', [LabWebhookController::class, 'process'])
+        ->where('provider', '[A-Za-z0-9_-]+')
+        ->middleware('idempotency:lab.webhooks.process')
+        ->name('webhooks.labs.process');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
@@ -230,6 +241,15 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/encounters/{encounterId}/procedures', [EncounterProcedureController::class, 'list'])->name('encounters.procedures.list');
                 Route::get('/encounters/{encounterId}', [EncounterController::class, 'show'])->name('encounters.show');
             });
+            Route::middleware('permission:labs.view')->group(function (): void {
+                Route::get('/lab-tests', [LabTestController::class, 'list'])->name('lab-tests.list');
+                Route::get('/lab-orders', [LabOrderController::class, 'list'])->name('lab-orders.list');
+                Route::get('/lab-orders/search', [LabOrderController::class, 'search'])->name('lab-orders.search');
+                Route::get('/lab-orders/export', [LabOrderController::class, 'export'])->name('lab-orders.export');
+                Route::get('/lab-orders/{orderId}/results', [LabResultController::class, 'list'])->name('lab-orders.results.list');
+                Route::get('/lab-orders/{orderId}/results/{resultId}', [LabResultController::class, 'show'])->name('lab-orders.results.show');
+                Route::get('/lab-orders/{orderId}', [LabOrderController::class, 'show'])->name('lab-orders.show');
+            });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
@@ -344,6 +364,48 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/waitlist/{entryId}:offer-slot', [WaitlistController::class, 'offer'])
                     ->middleware('idempotency:waitlist.offer')
                     ->name('waitlist.offer');
+            });
+            Route::middleware('permission:labs.manage')->group(function (): void {
+                Route::post('/lab-tests', [LabTestController::class, 'create'])->name('lab-tests.create');
+                Route::patch('/lab-tests/{testId}', [LabTestController::class, 'update'])->name('lab-tests.update');
+                Route::delete('/lab-tests/{testId}', [LabTestController::class, 'delete'])->name('lab-tests.delete');
+                Route::post('/lab-orders', [LabOrderController::class, 'create'])
+                    ->middleware('idempotency:lab-orders.create')
+                    ->name('lab-orders.create');
+                Route::patch('/lab-orders/{orderId}', [LabOrderController::class, 'update'])
+                    ->middleware('idempotency:lab-orders.update')
+                    ->name('lab-orders.update');
+                Route::delete('/lab-orders/{orderId}', [LabOrderController::class, 'delete'])
+                    ->middleware('idempotency:lab-orders.delete')
+                    ->name('lab-orders.delete');
+                Route::post('/lab-orders/bulk', [LabOrderBulkController::class, 'update'])
+                    ->middleware('idempotency:lab-orders.bulk.update')
+                    ->name('lab-orders.bulk.update');
+                Route::post('/lab-orders/{orderId}:cancel', [LabOrderWorkflowController::class, 'cancel'])
+                    ->middleware('idempotency:lab-orders.cancel')
+                    ->name('lab-orders.cancel');
+                Route::post('/lab-orders/{orderId}:mark-collected', [LabOrderWorkflowController::class, 'markCollected'])
+                    ->middleware('idempotency:lab-orders.mark-collected')
+                    ->name('lab-orders.mark-collected');
+                Route::post('/lab-orders/{orderId}:mark-received', [LabOrderWorkflowController::class, 'markReceived'])
+                    ->middleware('idempotency:lab-orders.mark-received')
+                    ->name('lab-orders.mark-received');
+                Route::post('/lab-orders/{orderId}:mark-complete', [LabOrderWorkflowController::class, 'complete'])
+                    ->middleware('idempotency:lab-orders.mark-complete')
+                    ->name('lab-orders.mark-complete');
+                Route::middleware('permission:integrations.manage')->group(function (): void {
+                    Route::post('/lab-orders/{orderId}:send', [LabOrderWorkflowController::class, 'send'])
+                        ->middleware('idempotency:lab-orders.send')
+                        ->name('lab-orders.send');
+                    Route::post('/lab-orders:reconcile', [LabOrderWorkflowController::class, 'reconcile'])
+                        ->middleware('idempotency:lab-orders.reconcile')
+                        ->name('lab-orders.reconcile');
+                });
+            });
+            Route::middleware('permission:integrations.manage')->group(function (): void {
+                Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
+                    ->where('provider', '[A-Za-z0-9_-]+')
+                    ->name('webhooks.labs.verify');
             });
             Route::middleware('permission:treatments.manage')->group(function (): void {
                 Route::post('/treatment-plans', [TreatmentPlanController::class, 'create'])->name('treatment-plans.create');

@@ -60,6 +60,16 @@ use App\Modules\Insurance\Application\Contracts\PatientInsurancePolicyRepository
 use App\Modules\Insurance\Infrastructure\Persistence\DatabasePatientInsurancePolicyRepository;
 use App\Modules\Integrations\Application\Contracts\PatientExternalReferenceRepository;
 use App\Modules\Integrations\Infrastructure\Persistence\DatabasePatientExternalReferenceRepository;
+use App\Modules\Lab\Application\Contracts\LabOrderRepository;
+use App\Modules\Lab\Application\Contracts\LabProviderGatewayRegistry;
+use App\Modules\Lab\Application\Contracts\LabResultRepository;
+use App\Modules\Lab\Application\Contracts\LabTestRepository;
+use App\Modules\Lab\Application\Contracts\LabWebhookDeliveryRepository;
+use App\Modules\Lab\Infrastructure\Integrations\ConfigLabProviderGatewayRegistry;
+use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabOrderRepository;
+use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabResultRepository;
+use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabTestRepository;
+use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabWebhookDeliveryRepository;
 use App\Modules\Patient\Application\Contracts\PatientConsentRepository;
 use App\Modules\Patient\Application\Contracts\PatientContactRepository;
 use App\Modules\Patient\Application\Contracts\PatientDocumentRepository;
@@ -180,6 +190,11 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
         $this->app->bind(ClinicRepository::class, DatabaseClinicRepository::class);
         $this->app->bind(LocationReferenceRepository::class, ConfigLocationReferenceRepository::class);
+        $this->app->bind(LabOrderRepository::class, DatabaseLabOrderRepository::class);
+        $this->app->bind(LabProviderGatewayRegistry::class, ConfigLabProviderGatewayRegistry::class);
+        $this->app->bind(LabResultRepository::class, DatabaseLabResultRepository::class);
+        $this->app->bind(LabTestRepository::class, DatabaseLabTestRepository::class);
+        $this->app->bind(LabWebhookDeliveryRepository::class, DatabaseLabWebhookDeliveryRepository::class);
         $this->app->bind(PatientRepository::class, DatabasePatientRepository::class);
         $this->app->bind(PatientConsentRepository::class, DatabasePatientConsentRepository::class);
         $this->app->bind(PatientContactRepository::class, DatabasePatientContactRepository::class);

@@ -65,6 +65,15 @@ return [
     'cache' => [
         'namespace' => env('MEDFLOW_CACHE_NAMESPACE', 'medflow'),
     ],
+    'lab' => [
+        'webhook_signature_header' => env('LAB_WEBHOOK_SIGNATURE_HEADER', 'X-Lab-Signature'),
+        'providers' => [
+            'mock-lab' => [
+                'secret' => env('LAB_PROVIDER_MOCK_LAB_SECRET', 'mock-lab-secret'),
+                'external_order_prefix' => env('LAB_PROVIDER_MOCK_LAB_EXTERNAL_ORDER_PREFIX', 'mocklab'),
+            ],
+        ],
+    ],
     'kafka' => [
         'brokers' => env('KAFKA_BROKERS', 'kafka:9092'),
         'client_id' => env('KAFKA_CLIENT_ID', 'medflow-app'),

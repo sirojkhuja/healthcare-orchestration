@@ -2626,6 +2626,986 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/lab/{provider}:
+    post:
+      operationId: ReceiveLabResultWebhookCommand
+      tags: [Labs]
+      summary: Accept one signed inbound lab webhook delivery
+      description: Public integration route for provider delivery intake. The webhook is idempotent on provider plus delivery ID and requires signature verification before any state change.
+      parameters:
+        - $ref: '#/components/parameters/LabProviderPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/LabSignatureHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessLabWebhookRequest'
+            examples:
+              completedDelivery:
+                value:
+                  delivery_id: delivery-001
+                  external_order_id: remote-order-001
+                  status: completed
+                  occurred_at: '2026-03-11T09:15:00+05:00'
+                  results:
+                    - external_result_id: result-001
+                      status: final
+                      observed_at: '2026-03-11T09:00:00+05:00'
+                      received_at: '2026-03-11T09:10:00+05:00'
+                      value_type: numeric
+                      value_numeric: '5.2'
+                      unit: 10^9/L
+                      reference_range: 4.0-11.0
+                      abnormal_flag: normal
+      responses:
+        '200':
+          description: Delivery processed or safely deduplicated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabWebhookProcessResultResponse'
+        '401':
+          description: Signature verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: The external order cannot be resolved to a tracked tenant order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The resolved lab order cannot accept the incoming transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid webhook payload or missing signature header
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-tests:
+    get:
+      operationId: ListLabTestsQuery
+      tags: [Labs]
+      summary: List tenant lab catalog entries
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/LabTestSearchQuery'
+        - $ref: '#/components/parameters/LabTestProviderFilter'
+        - $ref: '#/components/parameters/LabTestActiveFilter'
+        - $ref: '#/components/parameters/LabTestLimit'
+      responses:
+        '200':
+          description: Filtered lab catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabTestCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateLabTestCommand
+      tags: [Labs]
+      summary: Create one tenant lab catalog entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLabTestRequest'
+      responses:
+        '201':
+          description: Lab test created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabTestMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate catalog code in the same tenant and provider scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid catalog payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-tests/{testId}:
+    patch:
+      operationId: UpdateLabTestCommand
+      tags: [Labs]
+      summary: Update one tenant lab catalog entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabTestIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLabTestRequest'
+      responses:
+        '200':
+          description: Lab test updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabTestMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab test not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid patch payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteLabTestCommand
+      tags: [Labs]
+      summary: Delete one tenant lab catalog entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabTestIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Lab test deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabTestMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab test not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders:
+    get:
+      operationId: ListLabOrdersQuery
+      tags: [Labs]
+      summary: List active tenant lab orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/LabOrderSearchQuery'
+        - $ref: '#/components/parameters/LabOrderStatusFilter'
+        - $ref: '#/components/parameters/LabOrderPatientFilter'
+        - $ref: '#/components/parameters/LabOrderProviderFilter'
+        - $ref: '#/components/parameters/LabOrderEncounterFilter'
+        - $ref: '#/components/parameters/LabOrderLabTestFilter'
+        - $ref: '#/components/parameters/LabOrderProviderKeyFilter'
+        - $ref: '#/components/parameters/LabOrderOrderedFromFilter'
+        - $ref: '#/components/parameters/LabOrderOrderedToFilter'
+        - $ref: '#/components/parameters/LabOrderCreatedFromFilter'
+        - $ref: '#/components/parameters/LabOrderCreatedToFilter'
+        - $ref: '#/components/parameters/LabOrderSearchLimit'
+      responses:
+        '200':
+          description: Filtered active lab orders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateLabOrderCommand
+      tags: [Labs]
+      summary: Create one draft lab order
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLabOrderRequest'
+      responses:
+        '201':
+          description: Draft lab order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Referenced patient, provider, encounter, treatment item, or lab test is unavailable in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or timezone/date mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/search:
+    get:
+      operationId: SearchLabOrdersQuery
+      tags: [Labs]
+      summary: Search active lab orders in tenant scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/LabOrderSearchQuery'
+        - $ref: '#/components/parameters/LabOrderStatusFilter'
+        - $ref: '#/components/parameters/LabOrderPatientFilter'
+        - $ref: '#/components/parameters/LabOrderProviderFilter'
+        - $ref: '#/components/parameters/LabOrderEncounterFilter'
+        - $ref: '#/components/parameters/LabOrderLabTestFilter'
+        - $ref: '#/components/parameters/LabOrderProviderKeyFilter'
+        - $ref: '#/components/parameters/LabOrderOrderedFromFilter'
+        - $ref: '#/components/parameters/LabOrderOrderedToFilter'
+        - $ref: '#/components/parameters/LabOrderCreatedFromFilter'
+        - $ref: '#/components/parameters/LabOrderCreatedToFilter'
+        - $ref: '#/components/parameters/LabOrderSearchLimit'
+      responses:
+        '200':
+          description: Matching lab orders ordered by relevance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderSearchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid search filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/export:
+    get:
+      operationId: ExportLabOrdersQuery
+      tags: [Labs]
+      summary: Export the active lab order result set
+      description: Generates a CSV snapshot of the current tenant lab order result set and stores it on the private exports disk.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/LabOrderSearchQuery'
+        - $ref: '#/components/parameters/LabOrderStatusFilter'
+        - $ref: '#/components/parameters/LabOrderPatientFilter'
+        - $ref: '#/components/parameters/LabOrderProviderFilter'
+        - $ref: '#/components/parameters/LabOrderEncounterFilter'
+        - $ref: '#/components/parameters/LabOrderLabTestFilter'
+        - $ref: '#/components/parameters/LabOrderProviderKeyFilter'
+        - $ref: '#/components/parameters/LabOrderOrderedFromFilter'
+        - $ref: '#/components/parameters/LabOrderOrderedToFilter'
+        - $ref: '#/components/parameters/LabOrderCreatedFromFilter'
+        - $ref: '#/components/parameters/LabOrderCreatedToFilter'
+        - $ref: '#/components/parameters/LabOrderExportLimit'
+        - $ref: '#/components/parameters/LabOrderExportFormat'
+      responses:
+        '200':
+          description: Export generated and persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid export filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/bulk:
+    post:
+      operationId: BulkUpdateLabOrdersCommand
+      tags: [Labs]
+      summary: Apply one shared change set to multiple draft lab orders
+      description: Updates only active draft lab orders in the current tenant. The request is all-or-nothing and requires an idempotency key.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkUpdateLabOrdersRequest'
+      responses:
+        '200':
+          description: Draft lab orders updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkLabOrderUpdateResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: One or more orders do not exist in active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: One or more selected orders are not in draft status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or unsupported change set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}:
+    get:
+      operationId: GetLabOrderQuery
+      tags: [Labs]
+      summary: Show one tenant lab order
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Lab order detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateLabOrderCommand
+      tags: [Labs]
+      summary: Update one draft lab order
+      description: Generic patch is allowed only while the order is still in `draft`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLabOrderRequest'
+      responses:
+        '200':
+          description: Lab order updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order is no longer in draft status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid patch payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteLabOrderCommand
+      tags: [Labs]
+      summary: Soft-delete one draft or canceled lab order
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Lab order deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order cannot be deleted in its current status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}:send:
+    post:
+      operationId: SendLabOrderCommand
+      tags: [Labs]
+      summary: Dispatch one draft lab order to the configured provider
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Lab order dispatched and transitioned to sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope, lab write permission, or integration management permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order cannot be sent in its current status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}:cancel:
+    post:
+      operationId: CancelLabOrderCommand
+      tags: [Labs]
+      summary: Cancel one tenant lab order
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabOrderReasonRequest'
+      responses:
+        '200':
+          description: Lab order canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order cannot be canceled in its current status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}:mark-collected:
+    post:
+      operationId: MarkSpecimenCollectedCommand
+      tags: [Labs]
+      summary: Mark a sent lab order specimen as collected
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Specimen collection recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order cannot transition to specimen collected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}:mark-received:
+    post:
+      operationId: MarkSpecimenReceivedCommand
+      tags: [Labs]
+      summary: Mark a collected specimen as received by the lab
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Specimen receipt recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order cannot transition to specimen received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}:mark-complete:
+    post:
+      operationId: MarkLabOrderCompleteCommand
+      tags: [Labs]
+      summary: Mark one lab order as completed
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Lab order completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrderMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: The order cannot transition to completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}/results:
+    get:
+      operationId: ListLabResultsQuery
+      tags: [Labs]
+      summary: List all persisted results for one lab order
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Lab result list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabResultCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders/{orderId}/results/{resultId}:
+    get:
+      operationId: GetLabResultQuery
+      tags: [Labs]
+      summary: Show one persisted result for one lab order
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabOrderIdPath'
+        - $ref: '#/components/parameters/LabResultIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Lab result detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabResultResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or lab read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Lab order or result not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/lab/{provider}:verify:
+    post:
+      operationId: VerifyLabWebhookCommand
+      tags: [Labs]
+      summary: Verify a lab webhook payload and signature without mutating state
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LabProviderPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyLabWebhookRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabWebhookVerificationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integration management permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid verification payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/lab-orders:reconcile:
+    post:
+      operationId: ReconcileLabOrdersCommand
+      tags: [Labs]
+      summary: Synchronize in-flight lab orders against the provider
+      description: Uses the provider gateway selected by `lab_provider_key` to reconcile remote order state and ingest any newly available results.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabReconcileRequest'
+      responses:
+        '200':
+          description: Reconciliation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabReconcileResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope, lab write permission, or integration management permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Provider or selected orders not found in active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: One or more selected orders cannot be reconciled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reconciliation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -2977,6 +3957,175 @@ components:
         maximum: 1000
         default: 1000
     EncounterExportFormat:
+      in: query
+      name: format
+      required: false
+      schema:
+        type: string
+        enum: [csv]
+        default: csv
+    LabProviderPath:
+      in: path
+      name: provider
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9._-]+$'
+    LabTestIdPath:
+      in: path
+      name: testId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LabOrderIdPath:
+      in: path
+      name: orderId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LabResultIdPath:
+      in: path
+      name: resultId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LabSignatureHeader:
+      in: header
+      name: X-Lab-Signature
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 2048
+      description: Signature header verified against the provider-specific shared secret before processing inbound lab webhooks.
+    LabTestSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    LabTestProviderFilter:
+      in: query
+      name: lab_provider_key
+      required: false
+      schema:
+        type: string
+        pattern: '^[a-z0-9._-]+$'
+    LabTestActiveFilter:
+      in: query
+      name: is_active
+      required: false
+      schema:
+        type: boolean
+    LabTestLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    LabOrderSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    LabOrderStatusFilter:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [draft, sent, specimen_collected, specimen_received, completed, canceled]
+    LabOrderPatientFilter:
+      in: query
+      name: patient_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    LabOrderProviderFilter:
+      in: query
+      name: provider_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    LabOrderEncounterFilter:
+      in: query
+      name: encounter_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    LabOrderLabTestFilter:
+      in: query
+      name: lab_test_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    LabOrderProviderKeyFilter:
+      in: query
+      name: lab_provider_key
+      required: false
+      schema:
+        type: string
+        pattern: '^[a-z0-9._-]+$'
+    LabOrderOrderedFromFilter:
+      in: query
+      name: ordered_from
+      required: false
+      schema:
+        type: string
+        format: date
+    LabOrderOrderedToFilter:
+      in: query
+      name: ordered_to
+      required: false
+      schema:
+        type: string
+        format: date
+    LabOrderCreatedFromFilter:
+      in: query
+      name: created_from
+      required: false
+      schema:
+        type: string
+        format: date
+    LabOrderCreatedToFilter:
+      in: query
+      name: created_to
+      required: false
+      schema:
+        type: string
+        format: date
+    LabOrderSearchLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    LabOrderExportLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 1000
+    LabOrderExportFormat:
       in: query
       name: format
       required: false
@@ -3889,6 +5038,913 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Encounter'
+    LabTransition:
+      type: object
+      required: [from_status, to_status, occurred_at, actor, reason]
+      properties:
+        from_status:
+          type: string
+          enum: [draft, sent, specimen_collected, specimen_received, completed, canceled]
+        to_status:
+          type: string
+          enum: [draft, sent, specimen_collected, specimen_received, completed, canceled]
+        occurred_at:
+          type: string
+          format: date-time
+        actor:
+          $ref: '#/components/schemas/AppointmentActor'
+        reason:
+          type: string
+          nullable: true
+    LabTest:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - code
+        - name
+        - specimen_type
+        - result_type
+        - lab_provider_key
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        specimen_type:
+          type: string
+        result_type:
+          type: string
+          enum: [numeric, text, boolean, json]
+        unit:
+          type: string
+          nullable: true
+        reference_range:
+          type: string
+          nullable: true
+        lab_provider_key:
+          type: string
+        external_test_code:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    LabTestListFilters:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+        lab_provider_key:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+          nullable: true
+        limit:
+          type: integer
+    LabTestCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabTest'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/LabTestListFilters'
+    LabTestMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [lab_test_created, lab_test_updated, lab_test_deleted]
+        data:
+          $ref: '#/components/schemas/LabTest'
+    CreateLabTestRequest:
+      type: object
+      required: [code, name, specimen_type, result_type, lab_provider_key]
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        specimen_type:
+          type: string
+          maxLength: 64
+        result_type:
+          type: string
+          enum: [numeric, text, boolean, json]
+        unit:
+          type: string
+          maxLength: 64
+          nullable: true
+        reference_range:
+          type: string
+          maxLength: 255
+          nullable: true
+        lab_provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        external_test_code:
+          type: string
+          maxLength: 120
+          nullable: true
+        is_active:
+          type: boolean
+    UpdateLabTestRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        specimen_type:
+          type: string
+          maxLength: 64
+        result_type:
+          type: string
+          enum: [numeric, text, boolean, json]
+        unit:
+          type: string
+          maxLength: 64
+          nullable: true
+        reference_range:
+          type: string
+          maxLength: 255
+          nullable: true
+        lab_provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        external_test_code:
+          type: string
+          maxLength: 120
+          nullable: true
+        is_active:
+          type: boolean
+    LabOrderEncounterReference:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        summary:
+          type: string
+          nullable: true
+    LabTreatmentItemReference:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          nullable: true
+    LabOrderLabTestReference:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+    LabRequestedTest:
+      type: object
+      required: [code, name, specimen_type, result_type]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        specimen_type:
+          type: string
+        result_type:
+          type: string
+          enum: [numeric, text, boolean, json]
+    LabOrder:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - patient
+        - provider
+        - lab_provider_key
+        - requested_test
+        - status
+        - ordered_at
+        - timezone
+        - result_count
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        patient:
+          $ref: '#/components/schemas/AppointmentReference'
+        provider:
+          $ref: '#/components/schemas/AppointmentReference'
+        encounter:
+          $ref: '#/components/schemas/LabOrderEncounterReference'
+        treatment_item:
+          $ref: '#/components/schemas/LabTreatmentItemReference'
+        lab_test:
+          $ref: '#/components/schemas/LabOrderLabTestReference'
+        lab_provider_key:
+          type: string
+        requested_test:
+          $ref: '#/components/schemas/LabRequestedTest'
+        status:
+          type: string
+          enum: [draft, sent, specimen_collected, specimen_received, completed, canceled]
+        ordered_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        external_order_id:
+          type: string
+          nullable: true
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+        specimen_collected_at:
+          type: string
+          format: date-time
+          nullable: true
+        specimen_received_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        canceled_at:
+          type: string
+          format: date-time
+          nullable: true
+        cancel_reason:
+          type: string
+          nullable: true
+        last_transition:
+          oneOf:
+            - $ref: '#/components/schemas/LabTransition'
+            - type: 'null'
+        result_count:
+          type: integer
+          minimum: 0
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    LabOrderSearchFilters:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        patient_id:
+          type: string
+          format: uuid
+          nullable: true
+        provider_id:
+          type: string
+          format: uuid
+          nullable: true
+        encounter_id:
+          type: string
+          format: uuid
+          nullable: true
+        lab_test_id:
+          type: string
+          format: uuid
+          nullable: true
+        lab_provider_key:
+          type: string
+          nullable: true
+        ordered_from:
+          type: string
+          format: date
+          nullable: true
+        ordered_to:
+          type: string
+          format: date
+          nullable: true
+        created_from:
+          type: string
+          format: date
+          nullable: true
+        created_to:
+          type: string
+          format: date
+          nullable: true
+        limit:
+          type: integer
+    LabOrderCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabOrder'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/LabOrderSearchFilters'
+    LabOrderSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabOrder'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/LabOrderSearchFilters'
+    LabOrderResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/LabOrder'
+    LabOrderMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum:
+            - lab_order_created
+            - lab_order_updated
+            - lab_order_deleted
+            - lab_order_sent
+            - lab_order_canceled
+            - lab_order_specimen_collected
+            - lab_order_specimen_received
+            - lab_order_completed
+        data:
+          $ref: '#/components/schemas/LabOrder'
+    CreateLabOrderRequest:
+      type: object
+      required: [patient_id, provider_id, lab_test_id, lab_provider_key, ordered_at, timezone]
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        encounter_id:
+          type: string
+          format: uuid
+          nullable: true
+        treatment_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        lab_test_id:
+          type: string
+          format: uuid
+        lab_provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        ordered_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+    UpdateLabOrderRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        encounter_id:
+          type: string
+          format: uuid
+          nullable: true
+        treatment_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        lab_test_id:
+          type: string
+          format: uuid
+        lab_provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        ordered_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+    LabOrderReasonRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          maxLength: 5000
+    LabOrderExport:
+      type: object
+      required: [export_id, format, file_name, row_count, generated_at, filters, storage]
+      properties:
+        export_id:
+          type: string
+          format: uuid
+        format:
+          type: string
+          enum: [csv]
+        file_name:
+          type: string
+        row_count:
+          type: integer
+          minimum: 0
+        generated_at:
+          type: string
+          format: date-time
+        filters:
+          $ref: '#/components/schemas/LabOrderSearchFilters'
+        storage:
+          type: object
+          required: [disk, path, visibility]
+          properties:
+            disk:
+              type: string
+            path:
+              type: string
+            visibility:
+              type: string
+    LabOrderExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [lab_order_export_created]
+        data:
+          $ref: '#/components/schemas/LabOrderExport'
+    BulkUpdateLabOrdersRequest:
+      type: object
+      required: [order_ids, changes]
+      properties:
+        order_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        changes:
+          type: object
+          minProperties: 1
+          properties:
+            encounter_id:
+              type: string
+              format: uuid
+              nullable: true
+            treatment_item_id:
+              type: string
+              format: uuid
+              nullable: true
+            lab_test_id:
+              type: string
+              format: uuid
+            lab_provider_key:
+              type: string
+              pattern: '^[a-z0-9._-]+$'
+            ordered_at:
+              type: string
+              format: date-time
+            timezone:
+              type: string
+            notes:
+              type: string
+              maxLength: 5000
+              nullable: true
+          additionalProperties: false
+    BulkLabOrderUpdateResult:
+      type: object
+      required: [operation_id, affected_count, updated_fields, orders]
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+        affected_count:
+          type: integer
+          minimum: 0
+        updated_fields:
+          type: array
+          items:
+            type: string
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabOrder'
+    BulkLabOrderUpdateResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [lab_orders_bulk_updated]
+        data:
+          $ref: '#/components/schemas/BulkLabOrderUpdateResult'
+    LabResult:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - lab_order_id
+        - status
+        - observed_at
+        - received_at
+        - value_type
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        lab_order_id:
+          type: string
+          format: uuid
+        lab_test_id:
+          type: string
+          format: uuid
+          nullable: true
+        external_result_id:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [preliminary, final, corrected]
+        observed_at:
+          type: string
+          format: date-time
+        received_at:
+          type: string
+          format: date-time
+        value_type:
+          type: string
+          enum: [numeric, text, boolean, json]
+        value_numeric:
+          type: string
+          nullable: true
+        value_text:
+          type: string
+          nullable: true
+        value_boolean:
+          type: boolean
+          nullable: true
+        value_json:
+          type: object
+          additionalProperties: true
+          nullable: true
+        unit:
+          type: string
+          nullable: true
+        reference_range:
+          type: string
+          nullable: true
+        abnormal_flag:
+          type: string
+          enum: [normal, low, high, critical, abnormal]
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        raw_payload:
+          type: object
+          additionalProperties: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    LabResultCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabResult'
+    LabResultResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/LabResult'
+    LabWebhookDelivery:
+      type: object
+      required:
+        - id
+        - provider_key
+        - delivery_id
+        - payload_hash
+        - signature_hash
+        - outcome
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider_key:
+          type: string
+        delivery_id:
+          type: string
+        payload_hash:
+          type: string
+        signature_hash:
+          type: string
+        lab_order_id:
+          type: string
+          format: uuid
+          nullable: true
+        resolved_tenant_id:
+          type: string
+          format: uuid
+          nullable: true
+        outcome:
+          type: string
+          enum: [processed]
+        occurred_at:
+          type: string
+          format: date-time
+          nullable: true
+        processed_at:
+          type: string
+          format: date-time
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        payload:
+          type: object
+          additionalProperties: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    LabWebhookResultInput:
+      type: object
+      required: [status, observed_at, received_at, value_type]
+      properties:
+        external_result_id:
+          type: string
+          maxLength: 191
+          nullable: true
+        status:
+          type: string
+          enum: [preliminary, final, corrected]
+        observed_at:
+          type: string
+          format: date-time
+        received_at:
+          type: string
+          format: date-time
+        value_type:
+          type: string
+          enum: [numeric, text, boolean, json]
+        value_numeric:
+          nullable: true
+        value_text:
+          type: string
+          nullable: true
+        value_boolean:
+          type: boolean
+          nullable: true
+        value_json:
+          type: object
+          additionalProperties: true
+          nullable: true
+        unit:
+          type: string
+          maxLength: 64
+          nullable: true
+        reference_range:
+          type: string
+          maxLength: 255
+          nullable: true
+        abnormal_flag:
+          type: string
+          enum: [normal, low, high, critical, abnormal]
+          nullable: true
+        notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+        raw_payload:
+          type: object
+          additionalProperties: true
+          nullable: true
+    ProcessLabWebhookRequest:
+      type: object
+      required: [delivery_id, external_order_id, status, occurred_at]
+      properties:
+        delivery_id:
+          type: string
+          maxLength: 191
+        external_order_id:
+          type: string
+          maxLength: 191
+        status:
+          type: string
+          enum: [sent, specimen_collected, specimen_received, completed, canceled]
+        occurred_at:
+          type: string
+          format: date-time
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabWebhookResultInput'
+    LabWebhookProcessResult:
+      type: object
+      required: [provider_key, delivery_id, already_processed, order, result_count, results, delivery]
+      properties:
+        provider_key:
+          type: string
+        delivery_id:
+          type: string
+        already_processed:
+          type: boolean
+        order:
+          $ref: '#/components/schemas/LabOrder'
+        result_count:
+          type: integer
+          minimum: 0
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabResult'
+        delivery:
+          $ref: '#/components/schemas/LabWebhookDelivery'
+    LabWebhookProcessResultResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [lab_webhook_processed]
+        data:
+          $ref: '#/components/schemas/LabWebhookProcessResult'
+    VerifyLabWebhookRequest:
+      type: object
+      required: [signature, payload]
+      properties:
+        signature:
+          type: string
+          maxLength: 2048
+        payload:
+          type: object
+          additionalProperties: true
+    LabWebhookVerificationResult:
+      type: object
+      required: [provider_key, valid]
+      properties:
+        provider_key:
+          type: string
+        valid:
+          type: boolean
+    LabWebhookVerificationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [lab_webhook_verified]
+        data:
+          $ref: '#/components/schemas/LabWebhookVerificationResult'
+    LabReconcileRequest:
+      type: object
+      required: [lab_provider_key]
+      properties:
+        lab_provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        order_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+    LabReconcileResult:
+      type: object
+      required: [operation_id, lab_provider_key, affected_count, result_count, orders]
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+        lab_provider_key:
+          type: string
+        affected_count:
+          type: integer
+          minimum: 0
+        result_count:
+          type: integer
+          minimum: 0
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabOrder'
+    LabReconcileResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [lab_orders_reconciled]
+        data:
+          $ref: '#/components/schemas/LabReconcileResult'
     AppointmentReference:
       type: object
       required: [id, display_name]

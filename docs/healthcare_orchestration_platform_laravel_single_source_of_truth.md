@@ -1141,6 +1141,18 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - GET `/lab-orders/export` → `ExportLabOrdersQuery` → Lab
 - POST `/lab-orders/bulk` → `BulkUpdateLabOrdersCommand` → Lab
 - POST `/lab-orders:reconcile` → `ReconcileLabOrdersCommand` → Lab
+- `T045` implements lab orders through ADR `032`.
+- Lab orders are tenant-scoped single-test orders with patient and provider linkage, optional `encounter_id`, optional `treatment_item_id`, `lab_provider_key`, requested-test snapshots, workflow timestamps, optional `external_order_id`, and soft-delete retention.
+- Lab-order status values are `draft`, `sent`, `specimen_collected`, `specimen_received`, `completed`, and `canceled`.
+- Generic `PATCH /lab-orders/{orderId}` is draft-only. Workflow changes happen only through `:send`, `:cancel`, `:mark-collected`, `:mark-received`, and `:mark-complete`.
+- `POST /lab-orders/{orderId}:send` requires `labs.manage`, `integrations.manage`, and `Idempotency-Key`, dispatches through a provider gateway selected by `lab_provider_key`, stores `external_order_id`, and transitions the order to `sent`.
+- `GET /lab-orders`, `GET /lab-orders/search`, and `GET /lab-orders/export` share the same filter contract: `q`, `status`, `patient_id`, `provider_id`, `encounter_id`, `lab_test_id`, `lab_provider_key`, `ordered_from`, `ordered_to`, `created_from`, `created_to`, and `limit`.
+- `POST /lab-orders/bulk` is an all-or-nothing draft-only route. It requires `Idempotency-Key`, accepts `order_ids` plus a shared `changes` object, supports `1..100` distinct ids, and may update only `encounter_id`, `treatment_item_id`, `lab_test_id`, `lab_provider_key`, `ordered_at`, `timezone`, and `notes`.
+- Lab tests are tenant-scoped catalog records with `code`, `name`, `specimen_type`, `result_type`, `lab_provider_key`, optional `unit`, optional `reference_range`, optional `description`, optional `external_test_code`, and `is_active`.
+- Lab results are read-only order-owned records created through webhook or reconciliation intake. They expose `status = preliminary|final|corrected`, typed value storage, optional `abnormal_flag`, `observed_at`, `received_at`, and provider payload metadata.
+- `POST /webhooks/lab/{provider}` is the public inbound route. It requires `Idempotency-Key`, `X-Lab-Signature`, signature verification before state changes, and a payload containing `delivery_id`, `external_order_id`, `status`, `occurred_at`, and optional `results`.
+- `POST /webhooks/lab/{provider}:verify` is the authenticated diagnostics helper. It requires tenant scope plus `integrations.manage` and validates a submitted payload and signature without mutating business state.
+- `POST /lab-orders:reconcile` requires `labs.manage`, `integrations.manage`, and `Idempotency-Key`. It synchronizes active sent or specimen-in-flight tenant orders through the same provider gateway and result-sync logic used by webhook intake.
 
 ---
 

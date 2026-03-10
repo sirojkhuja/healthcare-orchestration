@@ -52,3 +52,10 @@ Verification or diagnostics helpers:
 - Expose retry and failure metrics.
 - Make replay safe for idempotent handlers.
 - Alert on verification failure spikes and dead-letter growth.
+
+## Lab Webhook Notes
+
+- `POST /webhooks/lab/{provider}` requires `Idempotency-Key` and `X-Lab-Signature`.
+- Lab webhook payloads must include `delivery_id`, `external_order_id`, `status`, `occurred_at`, and optional normalized `results`.
+- Successful lab webhook processing must persist a delivery record with provider key, delivery id, payload hash, signature hash, resolved lab order, tenant linkage, and processing outcome.
+- `POST /webhooks/lab/{provider}:verify` is the authenticated diagnostics helper and must not mutate business state.

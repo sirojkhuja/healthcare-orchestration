@@ -84,6 +84,40 @@
 - delete is soft-delete and limited to `draft|rejected`
 - treatment-plan search and item subresources are implemented in `T043` and must continue to reuse this lifecycle; item writes remain limited to parent plans in `draft|approved`
 
+## Lab Order State Machine
+
+### States
+
+- `draft`
+- `sent`
+- `specimen_collected`
+- `specimen_received`
+- `completed`
+- `canceled`
+
+### Allowed Transitions
+
+- `draft -> sent`
+- `draft|sent|specimen_collected|specimen_received -> canceled`
+- `sent -> specimen_collected`
+- `specimen_collected -> specimen_received`
+- `specimen_received -> completed`
+
+### Required Guards
+
+- only draft lab orders may be sent
+- canceling requires a non-empty reason
+- specimen collection requires `sent`
+- specimen receipt requires `specimen_collected`
+- completion requires `specimen_received`
+- completed and canceled lab orders are terminal
+
+### Operational Notes
+
+- remote provider sync may fast-forward a local order through missing intermediate specimen states in order
+- results are read-only records received through webhook or reconciliation intake
+- webhook updates must remain idempotent and signature-verified
+
 ## Insurance Claim State Machine
 
 ### States
@@ -145,6 +179,7 @@ Each module may define more events, but they must follow the standard envelope a
 ## Kafka Topics
 
 - `medflow.appointments.v1`
+- `medflow.labs.v1`
 - `medflow.treatments.v1`
 - `medflow.billing.v1`
 - `medflow.claims.v1`
