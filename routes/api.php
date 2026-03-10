@@ -23,6 +23,9 @@ use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientDocumentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientTagController;
+use App\Modules\Pharmacy\Presentation\Http\Controllers\MedicationController;
+use App\Modules\Pharmacy\Presentation\Http\Controllers\PatientAllergyController;
+use App\Modules\Pharmacy\Presentation\Http\Controllers\PatientMedicationController;
 use App\Modules\Pharmacy\Presentation\Http\Controllers\PrescriptionController;
 use App\Modules\Pharmacy\Presentation\Http\Controllers\PrescriptionWorkflowController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderController;
@@ -253,6 +256,11 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/lab-orders/{orderId}', [LabOrderController::class, 'show'])->name('lab-orders.show');
             });
             Route::middleware('permission:prescriptions.view')->group(function (): void {
+                Route::get('/medications', [MedicationController::class, 'list'])->name('medications.list');
+                Route::get('/medications/search', [MedicationController::class, 'search'])->name('medications.search');
+                Route::get('/medications/{medId}', [MedicationController::class, 'show'])->name('medications.show');
+                Route::get('/patients/{patientId}/allergies', [PatientAllergyController::class, 'list'])->name('patients.allergies.list');
+                Route::get('/patients/{patientId}/medications', [PatientMedicationController::class, 'list'])->name('patients.medications.list');
                 Route::get('/prescriptions', [PrescriptionController::class, 'list'])->name('prescriptions.list');
                 Route::get('/prescriptions/search', [PrescriptionController::class, 'search'])->name('prescriptions.search');
                 Route::get('/prescriptions/export', [PrescriptionController::class, 'export'])->name('prescriptions.export');
@@ -411,6 +419,21 @@ Route::prefix('v1')->group(function (): void {
                 });
             });
             Route::middleware('permission:prescriptions.manage')->group(function (): void {
+                Route::post('/medications', [MedicationController::class, 'create'])
+                    ->middleware('idempotency:medications.create')
+                    ->name('medications.create');
+                Route::patch('/medications/{medId}', [MedicationController::class, 'update'])
+                    ->middleware('idempotency:medications.update')
+                    ->name('medications.update');
+                Route::delete('/medications/{medId}', [MedicationController::class, 'delete'])
+                    ->middleware('idempotency:medications.delete')
+                    ->name('medications.delete');
+                Route::post('/patients/{patientId}/allergies', [PatientAllergyController::class, 'create'])
+                    ->middleware('idempotency:patients.allergies.create')
+                    ->name('patients.allergies.create');
+                Route::delete('/patients/{patientId}/allergies/{allergyId}', [PatientAllergyController::class, 'delete'])
+                    ->middleware('idempotency:patients.allergies.delete')
+                    ->name('patients.allergies.delete');
                 Route::post('/prescriptions', [PrescriptionController::class, 'create'])
                     ->middleware('idempotency:prescriptions.create')
                     ->name('prescriptions.create');

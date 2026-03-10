@@ -3606,6 +3606,406 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/medications:
+    get:
+      operationId: ListMedicationsQuery
+      tags: [Medications]
+      summary: List tenant-scoped medications
+      description: Returns medication catalog records ordered by name, code, and creation time.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/MedicationSearchQuery'
+        - $ref: '#/components/parameters/MedicationActiveFilter'
+        - $ref: '#/components/parameters/MedicationLimit'
+      responses:
+        '200':
+          description: Medication catalog list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid list filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateMedicationCommand
+      tags: [Medications]
+      summary: Create one medication catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMedicationRequest'
+      responses:
+        '201':
+          description: Medication created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or duplicate medication code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/medications/search:
+    get:
+      operationId: SearchMedicationsQuery
+      tags: [Medications]
+      summary: Search medication catalog records
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/MedicationSearchQuery'
+        - $ref: '#/components/parameters/MedicationActiveFilter'
+        - $ref: '#/components/parameters/MedicationLimit'
+      responses:
+        '200':
+          description: Matching medication catalog records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationSearchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid search filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/medications/{medId}:
+    get:
+      operationId: GetMedicationQuery
+      tags: [Medications]
+      summary: Show one medication catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MedicationIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Medication detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Medication not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateMedicationCommand
+      tags: [Medications]
+      summary: Update one medication catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MedicationIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMedicationRequest'
+      responses:
+        '200':
+          description: Medication updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Medication not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid patch payload or duplicate medication code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteMedicationCommand
+      tags: [Medications]
+      summary: Delete one medication catalog record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MedicationIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Medication deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Medication not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/allergies:
+    get:
+      operationId: ListAllergiesQuery
+      tags: [Medications]
+      summary: List allergy records for one patient
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient allergy list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientAllergyCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or allergy read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddAllergyCommand
+      tags: [Medications]
+      summary: Add one allergy record for one patient
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientAllergyRequest'
+      responses:
+        '201':
+          description: Allergy created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientAllergyMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or allergy write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate allergy for the normalized allergen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid allergy payload or medication reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/allergies/{allergyId}:
+    delete:
+      operationId: RemoveAllergyCommand
+      tags: [Medications]
+      summary: Delete one allergy record for one patient
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/PatientAllergyIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Allergy deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientAllergyMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or allergy write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient or allergy not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/patients/{patientId}/medications:
+    get:
+      operationId: ListPatientMedicationsQuery
+      tags: [Medications]
+      summary: List patient medication history projected from prescriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PatientIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PatientMedicationStatusFilter'
+        - $ref: '#/components/parameters/PatientMedicationLimit'
+      responses:
+        '200':
+          description: Patient medication view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientMedicationCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or medication read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid patient medication filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/prescriptions:
     get:
       operationId: ListPrescriptionsQuery
@@ -4583,6 +4983,65 @@ components:
         type: string
         enum: [csv]
         default: csv
+    PatientIdPath:
+      in: path
+      name: patientId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    MedicationIdPath:
+      in: path
+      name: medId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PatientAllergyIdPath:
+      in: path
+      name: allergyId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    MedicationSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    MedicationActiveFilter:
+      in: query
+      name: is_active
+      required: false
+      schema:
+        type: boolean
+    MedicationLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    PatientMedicationStatusFilter:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [issued, dispensed, canceled]
+    PatientMedicationLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
     PrescriptionIdPath:
       in: path
       name: prescriptionId
@@ -6505,6 +6964,378 @@ components:
           enum: [lab_orders_reconciled]
         data:
           $ref: '#/components/schemas/LabReconcileResult'
+    Medication:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - code
+        - name
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        generic_name:
+          type: string
+          nullable: true
+        form:
+          type: string
+          nullable: true
+        strength:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MedicationSearchFilters:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+          nullable: true
+        limit:
+          type: integer
+    MedicationCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Medication'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/MedicationSearchFilters'
+    MedicationSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Medication'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/MedicationSearchFilters'
+    MedicationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Medication'
+    MedicationMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [medication_created, medication_updated, medication_deleted]
+        data:
+          $ref: '#/components/schemas/Medication'
+    CreateMedicationRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        generic_name:
+          type: string
+          maxLength: 255
+          nullable: true
+        form:
+          type: string
+          maxLength: 64
+          nullable: true
+        strength:
+          type: string
+          maxLength: 120
+          nullable: true
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        is_active:
+          type: boolean
+    UpdateMedicationRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        generic_name:
+          type: string
+          maxLength: 255
+          nullable: true
+        form:
+          type: string
+          maxLength: 64
+          nullable: true
+        strength:
+          type: string
+          maxLength: 120
+          nullable: true
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        is_active:
+          type: boolean
+    MedicationReference:
+      type: object
+      required: [id, code, name, generic_name, form, strength, is_active]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        generic_name:
+          type: string
+          nullable: true
+        form:
+          type: string
+          nullable: true
+        strength:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+          nullable: true
+    PatientAllergy:
+      type: object
+      required:
+        - id
+        - patient_id
+        - allergen_name
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        medication:
+          oneOf:
+            - $ref: '#/components/schemas/MedicationReference'
+            - type: 'null'
+        allergen_name:
+          type: string
+        reaction:
+          type: string
+          nullable: true
+        severity:
+          type: string
+          enum: [mild, moderate, severe, life_threatening]
+          nullable: true
+        noted_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PatientAllergyCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientAllergy'
+    PatientAllergyMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [patient_allergy_created, patient_allergy_deleted]
+        data:
+          $ref: '#/components/schemas/PatientAllergy'
+    CreatePatientAllergyRequest:
+      type: object
+      properties:
+        medication_id:
+          type: string
+          format: uuid
+          nullable: true
+        allergen_name:
+          type: string
+          maxLength: 255
+          nullable: true
+        reaction:
+          type: string
+          maxLength: 5000
+          nullable: true
+        severity:
+          type: string
+          enum: [mild, moderate, severe, life_threatening]
+          nullable: true
+        noted_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+    PatientMedicationFilters:
+      type: object
+      properties:
+        status:
+          type: string
+          nullable: true
+        limit:
+          type: integer
+    PatientMedication:
+      type: object
+      required:
+        - prescription_id
+        - status
+        - medication
+        - provider
+        - dosage
+        - route
+        - frequency
+        - quantity
+        - authorized_refills
+        - created_at
+        - updated_at
+      properties:
+        prescription_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [issued, dispensed, canceled]
+        medication:
+          type: object
+          required: [name, code, catalog]
+          properties:
+            name:
+              type: string
+            code:
+              type: string
+              nullable: true
+            catalog:
+              oneOf:
+                - $ref: '#/components/schemas/MedicationReference'
+                - type: 'null'
+        provider:
+          $ref: '#/components/schemas/AppointmentReference'
+        encounter:
+          $ref: '#/components/schemas/PrescriptionEncounterReference'
+        treatment_item:
+          $ref: '#/components/schemas/PrescriptionTreatmentItemReference'
+        dosage:
+          type: string
+        route:
+          type: string
+        frequency:
+          type: string
+        quantity:
+          type: string
+        quantity_unit:
+          type: string
+          nullable: true
+        authorized_refills:
+          type: integer
+          minimum: 0
+          maximum: 99
+        instructions:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        starts_on:
+          type: string
+          format: date
+          nullable: true
+        ends_on:
+          type: string
+          format: date
+          nullable: true
+        issued_at:
+          type: string
+          format: date-time
+          nullable: true
+        dispensed_at:
+          type: string
+          format: date-time
+          nullable: true
+        canceled_at:
+          type: string
+          format: date-time
+          nullable: true
+        cancel_reason:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PatientMedicationCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientMedication'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/PatientMedicationFilters'
     PrescriptionTransition:
       type: object
       required: [from_status, to_status, occurred_at, actor, reason]

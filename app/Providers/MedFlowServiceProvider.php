@@ -82,7 +82,13 @@ use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientContactReposit
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientDocumentRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientRepository;
 use App\Modules\Patient\Infrastructure\Persistence\DatabasePatientTagRepository;
+use App\Modules\Pharmacy\Application\Contracts\MedicationRepository;
+use App\Modules\Pharmacy\Application\Contracts\PatientAllergyRepository;
+use App\Modules\Pharmacy\Application\Contracts\PatientMedicationViewRepository;
 use App\Modules\Pharmacy\Application\Contracts\PrescriptionRepository;
+use App\Modules\Pharmacy\Infrastructure\Persistence\DatabaseMedicationRepository;
+use App\Modules\Pharmacy\Infrastructure\Persistence\DatabasePatientAllergyRepository;
+use App\Modules\Pharmacy\Infrastructure\Persistence\DatabasePatientMedicationViewRepository;
 use App\Modules\Pharmacy\Infrastructure\Persistence\DatabasePrescriptionRepository;
 use App\Modules\Provider\Application\Contracts\ProviderGroupRepository;
 use App\Modules\Provider\Application\Contracts\ProviderLicenseRepository;
@@ -205,6 +211,9 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(PatientTagRepository::class, DatabasePatientTagRepository::class);
         $this->app->bind(PatientInsurancePolicyRepository::class, DatabasePatientInsurancePolicyRepository::class);
         $this->app->bind(PatientExternalReferenceRepository::class, DatabasePatientExternalReferenceRepository::class);
+        $this->app->bind(MedicationRepository::class, DatabaseMedicationRepository::class);
+        $this->app->bind(PatientAllergyRepository::class, DatabasePatientAllergyRepository::class);
+        $this->app->bind(PatientMedicationViewRepository::class, DatabasePatientMedicationViewRepository::class);
         $this->app->bind(PrescriptionRepository::class, DatabasePrescriptionRepository::class);
         $this->app->bind(ProviderGroupRepository::class, DatabaseProviderGroupRepository::class);
         $this->app->bind(ProviderLicenseRepository::class, DatabaseProviderLicenseRepository::class);

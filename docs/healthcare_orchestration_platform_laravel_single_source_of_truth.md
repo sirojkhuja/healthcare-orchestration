@@ -1185,12 +1185,23 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - PATCH `/medications/{medId}` → `UpdateMedicationCommand` → Pharmacy
 - DELETE `/medications/{medId}` → `DeleteMedicationCommand` → Pharmacy
 - GET `/medications/search` → `SearchMedicationsQuery` → Pharmacy
+- `T047` defines the medication catalog contract in ADR `034`
+- medications are tenant-scoped catalog records with `code`, `name`, optional `generic_name`, optional `form`, optional `strength`, optional `description`, and `is_active`
+- medication `code` is required, normalized to uppercase, and unique per tenant
+- `GET /medications` and `GET /medications/search` share filters `q`, `is_active`, and `limit`
+- `DELETE /medications/{medId}` hard-deletes the catalog row
 
 ### Allergies
 - GET `/patients/{patientId}/allergies` → `ListAllergiesQuery` → Pharmacy
 - POST `/patients/{patientId}/allergies` → `AddAllergyCommand` → Pharmacy
 - DELETE `/patients/{patientId}/allergies/{allergyId}` → `RemoveAllergyCommand` → Pharmacy
 - GET `/patients/{patientId}/medications` → `ListPatientMedicationsQuery` → Pharmacy
+- allergy records are patient-owned tenant records with an `allergen_name` snapshot, optional `medication_id`, optional `reaction`, optional `severity`, optional `noted_at`, and optional `notes`
+- allergy `severity` values are `mild`, `moderate`, `severe`, and `life_threatening`
+- duplicate allergies for the same patient and normalized allergen are rejected
+- `GET /patients/{patientId}/medications` projects non-draft prescriptions for the patient and supports optional `status` and `limit` filters
+- patient medication views may include an optional medication catalog match by exact `medication_code = medications.code`
+- `T047` does not require prescriptions to store `medication_id`; prescription snapshot fields remain authoritative
 
 ---
 

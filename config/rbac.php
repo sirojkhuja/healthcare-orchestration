@@ -74,8 +74,8 @@ return [
                 'treatments.manage' => 'Manage treatment plans, encounters, and procedures.',
                 'labs.view' => 'View lab orders and lab results.',
                 'labs.manage' => 'Manage lab orders, catalogs, and result intake.',
-                'prescriptions.view' => 'View prescriptions and medication records.',
-                'prescriptions.manage' => 'Issue, cancel, and dispense prescriptions.',
+                'prescriptions.view' => 'View prescriptions, medication catalogs, allergies, and patient medication records.',
+                'prescriptions.manage' => 'Manage prescriptions, medication catalogs, and allergy records.',
             ],
         ],
         'finance' => [

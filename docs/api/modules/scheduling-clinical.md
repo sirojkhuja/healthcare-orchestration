@@ -144,6 +144,18 @@
 - Prescription exports reuse the active search filter set, support `format=csv`, store a private export artifact, and write `prescriptions.exported`.
 - `T046` does not depend on the medication catalog. Medication identity is stored as free-text snapshot fields until `T047` adds catalog endpoints and patient medication views.
 
+## Medication Notes
+
+- `T047` defines the medication catalog, allergy, and patient medication-view contract through ADR `034`.
+- Medications are tenant-scoped catalog records with `code`, `name`, optional `generic_name`, optional `form`, optional `strength`, optional `description`, and `is_active`.
+- Medication `code` is required, normalized to uppercase, and unique per tenant.
+- `GET /medications` and `GET /medications/search` share the same filter contract: `q`, `is_active`, and `limit`.
+- `DELETE /medications/{medId}` hard-deletes the medication row.
+- Allergies are patient-owned tenant records with an `allergen_name` snapshot, optional `medication_id`, optional `reaction`, optional `severity`, optional `noted_at`, and optional `notes`.
+- Allergy `severity` uses `mild`, `moderate`, `severe`, and `life_threatening`. Duplicate allergies for the same patient and normalized allergen are rejected.
+- `GET /patients/{patientId}/medications` projects non-draft prescriptions for that patient, supports optional `status` and `limit` filters, and may include an optional catalog match when `medication_code` exactly matches a medication catalog `code` in the same tenant.
+- `T047` does not add a required prescription `medication_id`; prescription snapshot fields remain authoritative.
+
 ## Scheduling Notes
 
 - Scheduling owns availability and slot decisions.

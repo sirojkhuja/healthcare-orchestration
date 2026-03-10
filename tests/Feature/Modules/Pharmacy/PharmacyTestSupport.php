@@ -9,14 +9,60 @@ function pharmacyCreateEncounter($testCase, string $token, string $tenantId, arr
     return treatmentCreateEncounter($testCase, $token, $tenantId, $overrides);
 }
 
+function pharmacyAddAllergy(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $patientId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/patients/'.$patientId.'/allergies', $payload);
+}
+
 function pharmacyCreatePatient($testCase, string $token, string $tenantId, array $overrides = [])
 {
     return treatmentCreatePatient($testCase, $token, $tenantId, $overrides);
 }
 
+function pharmacyCreateMedication(
+    $testCase,
+    string $token,
+    string $tenantId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/medications', $payload);
+}
+
 function pharmacyCreatePlan($testCase, string $token, string $tenantId, array $overrides = [])
 {
     return treatmentCreatePlan($testCase, $token, $tenantId, $overrides);
+}
+
+function pharmacyDeleteMedication(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $medicationId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->deleteJson('/api/v1/medications/'.$medicationId);
 }
 
 function pharmacyCreatePrescription(
@@ -67,4 +113,20 @@ function pharmacyGrantPermissions(User $user, string $tenantId, array $permissio
 function pharmacyIssueBearerToken($testCase, string $email, string $password = 'secret-password'): string
 {
     return treatmentIssueBearerToken($testCase, $email, $password);
+}
+
+function pharmacyUpdateMedication(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $medicationId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->patchJson('/api/v1/medications/'.$medicationId, $payload);
 }
