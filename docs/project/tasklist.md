@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `68% (48/70 tasks completed)`
+Overall Progress: `70% (49/70 tasks completed)`
 
 Active Task: `None`
 
@@ -97,7 +97,7 @@ Active Task: `None`
 | T047 | Done | Implement medication catalog, medication search, allergies, and patient medication views. | T046 | Medication endpoints, allergy management, patient medication queries. | Search, validation, and patient view tests pass. |
 | T048 | Done | Implement billable services and price list management. | T027 | Billing catalog endpoints, price list item management. | CRUD and pricing rule tests pass. |
 | T049 | Done | Implement the invoice aggregate, invoice items, and invoice lifecycle. | T048, T029 | Invoice domain, item management, issue, void, finalize actions. | Invoice state and calculation tests pass. |
-| T050 | Todo | Implement the payment aggregate and payment state machine. | T049, T016 | Payment domain, initiation contract, transition rules. | Unit and feature tests cover payment lifecycle. |
+| T050 | Done | Implement the payment aggregate and payment state machine. | T049, T016 | Payment domain, initiation contract, transition rules. | Unit and feature tests cover payment lifecycle. |
 | T051 | Todo | Implement payment API operations for initiate, status, capture, cancel, and refund. | T050 | Payment endpoints and idempotent command handling. | Feature tests cover all payment actions. |
 | T052 | Todo | Implement the Payme adapter, webhook handling, verification, and error mapping. | T051, T019 | Payme contract, adapter, webhook verifier, mapper. | Sandbox or contract tests pass. |
 | T053 | Todo | Implement the Click adapter, webhook handling, verification, and error mapping. | T051, T019 | Click contract, adapter, webhook verifier, mapper. | Sandbox or contract tests pass. |

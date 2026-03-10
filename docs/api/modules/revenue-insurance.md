@@ -72,6 +72,21 @@
 - `GET /invoices` and `GET /invoices/search` support `q`, `status`, `patient_id`, `issued_from`, `issued_to`, `due_from`, `due_to`, `created_from`, `created_to`, and `limit`.
 - `GET /invoices/export` supports CSV export for the same invoice filters with a maximum limit of `1000`.
 
+## Payment Notes
+
+- `T050` defines the payment aggregate and initiation contract in ADR `037`.
+- Payment status values are `initiated`, `pending`, `captured`, `failed`, `canceled`, and `refunded`.
+- Payments are tenant-scoped records linked to a single invoice and snapshot `invoice_number`.
+- Payment initiation requires `invoice_id`, `provider_key`, and `amount`.
+- Payment initiation is allowed only for invoices in `issued|finalized`.
+- Payment amount must be positive, may not exceed the linked invoice `total_amount`, and must use the invoice currency.
+- `provider_key` is a lowercase slug used to resolve the provider gateway implementation.
+- Local payment creation starts in `initiated`.
+- Allowed forward transitions are `initiated -> pending`, `pending -> captured|failed|canceled`, and `captured -> refunded`.
+- Refunds are allowed only for captured payments and only when the selected gateway supports refunds.
+- Payment creation and transitions write audit records and billing-topic outbox events.
+- Payment records do not mutate invoice balances or settlement state in this phase.
+
 ## Insurance Claims
 
 - `GET /insurance/payers` -> `ListPayersQuery` -> Insurance

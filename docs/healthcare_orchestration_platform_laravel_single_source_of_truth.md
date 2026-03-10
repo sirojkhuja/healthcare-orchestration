@@ -1264,6 +1264,17 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/payments/{paymentId}:cancel` → `CancelPaymentCommand` → Billing
 - POST `/payments/{paymentId}:refund` → `RefundPaymentCommand` → Billing
 - POST `/payments/{paymentId}:capture` → `CapturePaymentCommand` → Billing
+- `T050` defines the payment aggregate and initiation contract in ADR `037`
+- payment status values are `initiated`, `pending`, `captured`, `failed`, `canceled`, and `refunded`
+- payment initiation requires `invoice_id`, `provider_key`, and `amount`
+- payments link to a single tenant-scoped invoice and snapshot `invoice_number`
+- initiation is allowed only for invoices in `issued|finalized`
+- payment `currency` must equal the linked invoice currency and `amount` must be positive and no greater than invoice `total_amount`
+- payment creation starts in `initiated`
+- allowed forward transitions are `initiated -> pending`, `pending -> captured|failed|canceled`, and `captured -> refunded`
+- refunds are allowed only when the gateway supports refunds and the payment is already `captured`
+- payment creation and transitions write audit records and billing outbox events
+- payment allocation and invoice balance mutation remain deferred in this phase
 
 ### Reconciliation
 - POST `/payments:reconcile` → `ReconcilePaymentsCommand` → Billing

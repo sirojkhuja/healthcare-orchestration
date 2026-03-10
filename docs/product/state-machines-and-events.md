@@ -208,11 +208,28 @@
 - `canceled`
 - `refunded`
 
-### Rules
+### Allowed Transitions
 
-- webhook updates must be idempotent
-- reconciliation may confirm or repair local payment status
+- `initiated -> pending`
+- `pending -> captured`
+- `pending -> failed`
+- `pending -> canceled`
+- `captured -> refunded`
+
+### Required Guards
+
+- capture is allowed only from `pending`
+- fail is allowed only from `pending`
+- cancel is allowed only from `pending`
 - refunds are conditional on provider support and prior capture
+
+### Operational Notes
+
+- payment creation starts in `initiated`
+- webhook updates must be idempotent
+- reconciliation may confirm or repair local payment status through valid forward transitions only
+- payment creation validates that the linked invoice is in `issued|finalized`
+- payment allocation and invoice-balance mutation remain deferred beyond `T050`
 
 ## Domain Event Catalog
 

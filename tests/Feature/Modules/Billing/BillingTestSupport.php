@@ -1,6 +1,10 @@
 <?php
 
 use App\Models\User;
+use App\Shared\Application\Contracts\RequestMetadataContext;
+use App\Shared\Application\Contracts\TenantContext;
+use App\Shared\Application\Data\RequestMetadata;
+use Illuminate\Support\Str;
 
 require_once __DIR__.'/../Treatment/TreatmentTestSupport.php';
 
@@ -128,6 +132,23 @@ function billingEnsureMembership(User $user, string $tenantId, string $status = 
 function billingGrantPermissions(User $user, string $tenantId, array $permissions): void
 {
     treatmentGrantPermissions($user, $tenantId, $permissions);
+}
+
+function billingInitializeApplicationContext(
+    $testCase,
+    User $user,
+    string $tenantId,
+    string $sessionId = 'billing-test-session',
+): void {
+    $testCase->actingAs($user, 'api');
+    request()->attributes->set('auth_session_id', $sessionId);
+
+    app(RequestMetadataContext::class)->initialize(new RequestMetadata(
+        requestId: (string) Str::uuid(),
+        correlationId: (string) Str::uuid(),
+        causationId: (string) Str::uuid(),
+    ));
+    app(TenantContext::class)->initialize($tenantId, 'test');
 }
 
 function billingIssueBearerToken($testCase, string $email, string $password = 'secret-password'): string
