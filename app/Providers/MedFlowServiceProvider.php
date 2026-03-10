@@ -82,9 +82,11 @@ use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderLicenseRepos
 use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderProfileRepository;
 use App\Modules\Provider\Infrastructure\Persistence\DatabaseProviderRepository;
 use App\Modules\Provider\Infrastructure\Persistence\DatabaseSpecialtyRepository;
+use App\Modules\Scheduling\Application\Contracts\AppointmentRepository;
 use App\Modules\Scheduling\Application\Contracts\AvailabilityCacheInvalidator;
 use App\Modules\Scheduling\Application\Contracts\AvailabilityRuleRepository;
 use App\Modules\Scheduling\Infrastructure\Cache\TenantScopedAvailabilityCacheInvalidator;
+use App\Modules\Scheduling\Infrastructure\Persistence\DatabaseAppointmentRepository;
 use App\Modules\Scheduling\Infrastructure\Persistence\DatabaseAvailabilityRuleRepository;
 use App\Modules\TenantManagement\Application\Contracts\ClinicRepository;
 use App\Modules\TenantManagement\Application\Contracts\LocationReferenceRepository;
@@ -172,6 +174,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(ProviderLicenseRepository::class, DatabaseProviderLicenseRepository::class);
         $this->app->bind(ProviderRepository::class, DatabaseProviderRepository::class);
         $this->app->bind(ProviderProfileRepository::class, DatabaseProviderProfileRepository::class);
+        $this->app->bind(AppointmentRepository::class, DatabaseAppointmentRepository::class);
         $this->app->bind(AvailabilityRuleRepository::class, DatabaseAvailabilityRuleRepository::class);
         $this->app->bind(AvailabilityCacheInvalidator::class, TenantScopedAvailabilityCacheInvalidator::class);
         $this->app->bind(SpecialtyRepository::class, DatabaseSpecialtyRepository::class);

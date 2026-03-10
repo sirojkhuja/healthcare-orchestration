@@ -485,6 +485,12 @@ Standard error:
 - CRUD appointments
 - actions: schedule, confirm, check-in, start, complete, cancel, no-show, reschedule
 - appointment booking owns patient, provider, optional clinic and room assignment, scheduled slot, status, and transition metadata
+- `POST /appointments` creates draft appointments; `PATCH /appointments/{appointmentId}` and `DELETE /appointments/{appointmentId}` apply only to draft appointments so workflow transitions remain action-based
+- appointment deletion is a soft delete; deleted draft appointments leave active directory reads but remain auditable
+- appointment search supports `q`, `status`, `patient_id`, `provider_id`, `clinic_id`, `room_id`, `scheduled_from`, `scheduled_to`, `created_from`, `created_to`, and `limit`
+- appointment export uses the active search result set, supports `format=csv`, stores a private export artifact, and returns export metadata with `filters` and `storage`
+- appointment audit views use immutable audit events with object type `appointment` and remain accessible for soft-deleted appointments inside tenant scope
+- draft appointments do not consume slot capacity yet; availability and provider-calendar reads continue to ignore draft appointments until later scheduling workflow tasks
 - reschedule closes the current appointment as `rescheduled` and preserves the original slot history for the replacement booking
 
 ### 12.7 Treatments
@@ -970,6 +976,13 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - provider calendar combines the provider weekly template, date-specific time-off, clinic closures, and effective slots; booked appointment subtraction remains out of scope until later scheduling tasks
 - `GET /providers/{providerId}/calendar/export` accepts the same window query plus optional `format=csv`, stores a private export artifact, and returns export metadata with `filters` and `storage`
 - provider schedule audit actions additionally include `providers.work_hours_updated`, `providers.time_off_created`, `providers.time_off_updated`, `providers.time_off_deleted`, and `providers.calendar_exported`
+- appointments persist `patient_id`, `provider_id`, optional `clinic_id`, optional `room_id`, `status`, `scheduled_start_at`, `scheduled_end_at`, `timezone`, optional `last_transition`, soft-delete timestamp, and audit timestamps
+- appointment create and update validate tenant-scoped patient, provider, clinic, and room references; `room_id` requires `clinic_id`, and an explicit appointment clinic must match the provider clinic assignment when the provider is already clinic-bound
+- `GET /appointments` returns active tenant-scoped appointments ordered by `scheduled_start_at asc`, `created_at asc`, and `id asc`
+- appointment search matches appointment IDs plus patient and provider display names using AND semantics across query tokens and deterministic relevance ordering
+- appointment export writes audit action `appointments.exported` with object type `appointment_export`
+- appointment CRUD audit actions are `appointments.created`, `appointments.updated`, and `appointments.deleted`
+- appointment mutation routes `POST /appointments`, `PATCH /appointments/{appointmentId}`, and `DELETE /appointments/{appointmentId}` require `Idempotency-Key`
 - provider groups are tenant-owned records with required `name`, optional `description`, optional `clinic_id`, and replacement-based member management through `provider_ids`
 - `GET /provider-groups` returns `member_count`, `member_ids`, and ordered `members` summaries for each group
 - provider extension audit actions include `providers.profile_updated`, `providers.specialties_set`, `providers.license_added`, `providers.license_removed`, `provider_specialties.created`, `provider_specialties.updated`, `provider_specialties.deleted`, `provider_groups.created`, and `provider_groups.members_updated`

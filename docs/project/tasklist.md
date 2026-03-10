@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `52% (37/70 tasks completed)`
+Overall Progress: `54% (38/70 tasks completed)`
 
 Active Task: `None`
 
@@ -80,7 +80,7 @@ Active Task: `None`
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
 | T037 | Done | Implement the appointment aggregate and appointment state machine. | T029, T033, T035 | Appointment domain, transition guards, domain events. | State machine unit tests reach full coverage. |
-| T038 | Todo | Implement appointment CRUD, search, export, and audit views. | T037, T014, T010 | Appointment endpoints, search, export, audit query integration. | Feature tests cover list, search, export, and audit. |
+| T038 | Done | Implement appointment CRUD, search, export, and audit views. | T037, T014, T010 | Appointment endpoints, search, export, audit query integration. | Feature tests cover list, search, export, and audit. |
 | T039 | Todo | Implement appointment participants, notes, and bulk appointment operations. | T038 | Participant management, note endpoints, bulk update commands. | Bulk safety and authorization tests pass. |
 | T040 | Todo | Implement waitlist, recurrence, reschedule, no-show, cancel, and restore flows. | T037, T039 | Waitlist model, recurrence support, action endpoints. | Transition and calendar consistency tests pass. |
 | T041 | Todo | Implement reminder and confirmation orchestration for appointments. | T040, T056, T057 | Reminder scheduling, confirmation dispatch, notification linkage. | Idempotency and delivery tests pass. |

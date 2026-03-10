@@ -1,0 +1,892 @@
+openapi: 3.1.1
+info:
+  title: MedFlow Scheduling and Clinical Fragment
+  version: 0.1.0
+paths:
+  /api/v1/appointments:
+    get:
+      operationId: ListAppointmentsQuery
+      tags: [Appointments]
+      summary: List active appointments in the current tenant
+      description: Returns active tenant-scoped appointments ordered by scheduled start time.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Appointment directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentCollectionResponse'
+              examples:
+                default:
+                  value:
+                    data:
+                      - id: 6b565215-58f5-45b2-a89d-292c489b21c1
+                        tenant_id: 50234272-f1a8-40e8-a548-3a3b60230936
+                        status: draft
+                        patient:
+                          id: 2c9fcd89-f6c6-49bf-a22c-476b32e9be6e
+                          display_name: Aziza Karimova
+                        provider:
+                          id: 0cf87d48-8892-4d43-8d50-7b1046adc80f
+                          display_name: Kamola Rasulova
+                        clinic: null
+                        room: null
+                        scheduled_slot:
+                          start_at: '2026-03-13T04:00:00+00:00'
+                          end_at: '2026-03-13T04:30:00+00:00'
+                          timezone: Asia/Tashkent
+                        last_transition: null
+                        deleted_at: null
+                        created_at: '2026-03-10T08:00:00+00:00'
+                        updated_at: '2026-03-10T08:00:00+00:00'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateAppointmentCommand
+      tags: [Appointments]
+      summary: Create a draft appointment
+      description: Creates a tenant-owned appointment in draft status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentRequest'
+            examples:
+              default:
+                value:
+                  patient_id: 2c9fcd89-f6c6-49bf-a22c-476b32e9be6e
+                  provider_id: 0cf87d48-8892-4d43-8d50-7b1046adc80f
+                  clinic_id: 52ccdb45-a06d-47dd-a2ea-e39126402f61
+                  room_id: 68116f2b-c8e6-44c9-8941-ff995f301db1
+                  scheduled_start_at: '2026-03-13T09:00:00+05:00'
+                  scheduled_end_at: '2026-03-13T09:30:00+05:00'
+                  timezone: Asia/Tashkent
+      responses:
+        '201':
+          description: Draft appointment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or cross-reference mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/search:
+    get:
+      operationId: SearchAppointmentsQuery
+      tags: [Appointments]
+      summary: Search active appointments in tenant scope
+      description: Searches appointment IDs plus patient and provider display names with structured tenant-scoped filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/AppointmentSearchQuery'
+        - $ref: '#/components/parameters/AppointmentStatusFilter'
+        - $ref: '#/components/parameters/AppointmentPatientFilter'
+        - $ref: '#/components/parameters/AppointmentProviderFilter'
+        - $ref: '#/components/parameters/AppointmentClinicFilter'
+        - $ref: '#/components/parameters/AppointmentRoomFilter'
+        - $ref: '#/components/parameters/AppointmentScheduledFromFilter'
+        - $ref: '#/components/parameters/AppointmentScheduledToFilter'
+        - $ref: '#/components/parameters/AppointmentCreatedFromFilter'
+        - $ref: '#/components/parameters/AppointmentCreatedToFilter'
+        - $ref: '#/components/parameters/AppointmentSearchLimit'
+      responses:
+        '200':
+          description: Matching appointments ordered by relevance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentSearchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid search filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/export:
+    get:
+      operationId: ExportAppointmentsQuery
+      tags: [Appointments]
+      summary: Export the active appointment search result set
+      description: Generates a CSV snapshot of the active appointment search result set and stores it on the private exports disk.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/AppointmentSearchQuery'
+        - $ref: '#/components/parameters/AppointmentStatusFilter'
+        - $ref: '#/components/parameters/AppointmentPatientFilter'
+        - $ref: '#/components/parameters/AppointmentProviderFilter'
+        - $ref: '#/components/parameters/AppointmentClinicFilter'
+        - $ref: '#/components/parameters/AppointmentRoomFilter'
+        - $ref: '#/components/parameters/AppointmentScheduledFromFilter'
+        - $ref: '#/components/parameters/AppointmentScheduledToFilter'
+        - $ref: '#/components/parameters/AppointmentCreatedFromFilter'
+        - $ref: '#/components/parameters/AppointmentCreatedToFilter'
+        - $ref: '#/components/parameters/AppointmentExportLimit'
+        - $ref: '#/components/parameters/AppointmentExportFormat'
+      responses:
+        '200':
+          description: Export generated and persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid export filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:
+    get:
+      operationId: GetAppointmentQuery
+      tags: [Appointments]
+      summary: Get one active appointment in tenant scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Appointment detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateAppointmentCommand
+      tags: [Appointments]
+      summary: Update a draft appointment
+      description: Updates only draft appointments. Workflow state changes remain on explicit action routes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppointmentRequest'
+            examples:
+              default:
+                value:
+                  scheduled_end_at: '2026-03-13T09:45:00+05:00'
+      responses:
+        '200':
+          description: Draft appointment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment is no longer mutable through generic CRUD
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload or cross-reference mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteAppointmentCommand
+      tags: [Appointments]
+      summary: Soft-delete a draft appointment
+      description: Soft-deletes only draft appointments. Deleted drafts leave active reads but remain auditable.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Draft appointment soft-deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment is no longer deletable through generic CRUD
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}/audit:
+    get:
+      operationId: GetAppointmentAuditQuery
+      tags: [Appointments]
+      summary: Get appointment audit history
+      description: Returns immutable appointment audit events newest first and remains available for soft-deleted appointments in tenant scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/AppointmentAuditLimit'
+      responses:
+        '200':
+          description: Appointment audit history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentAuditResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantIdHeader:
+      in: header
+      name: X-Tenant-Id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Active tenant scope for tenant-owned appointment operations.
+    IdempotencyKeyHeader:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 255
+      description: Required for appointment mutation routes. The uniqueness scope is tenant plus operation plus key.
+    AppointmentIdPath:
+      in: path
+      name: appointmentId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AppointmentSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    AppointmentStatusFilter:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [draft, scheduled, confirmed, checked_in, in_progress, completed, canceled, no_show, rescheduled]
+    AppointmentPatientFilter:
+      in: query
+      name: patient_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    AppointmentProviderFilter:
+      in: query
+      name: provider_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    AppointmentClinicFilter:
+      in: query
+      name: clinic_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    AppointmentRoomFilter:
+      in: query
+      name: room_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    AppointmentScheduledFromFilter:
+      in: query
+      name: scheduled_from
+      required: false
+      schema:
+        type: string
+        format: date
+    AppointmentScheduledToFilter:
+      in: query
+      name: scheduled_to
+      required: false
+      schema:
+        type: string
+        format: date
+    AppointmentCreatedFromFilter:
+      in: query
+      name: created_from
+      required: false
+      schema:
+        type: string
+        format: date
+    AppointmentCreatedToFilter:
+      in: query
+      name: created_to
+      required: false
+      schema:
+        type: string
+        format: date
+    AppointmentSearchLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    AppointmentExportLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 1000
+    AppointmentExportFormat:
+      in: query
+      name: format
+      required: false
+      schema:
+        type: string
+        enum: [csv]
+        default: csv
+    AppointmentAuditLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+  schemas:
+    ApiErrorResponse:
+      type: object
+      required: [code, message, details, trace_id, correlation_id]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        trace_id:
+          type: string
+        correlation_id:
+          type: string
+    AppointmentReference:
+      type: object
+      required: [id, display_name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+    AppointmentLocationReference:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    AppointmentActor:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+    AppointmentSlot:
+      type: object
+      required: [start_at, end_at, timezone]
+      properties:
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+    AppointmentTransition:
+      type: object
+      nullable: true
+      properties:
+        from_status:
+          type: string
+        to_status:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        actor:
+          $ref: '#/components/schemas/AppointmentActor'
+        reason:
+          type: string
+          nullable: true
+        admin_override:
+          type: boolean
+        restored_from_status:
+          type: string
+          nullable: true
+        replacement_appointment_id:
+          type: string
+          format: uuid
+          nullable: true
+        replacement_slot:
+          oneOf:
+            - $ref: '#/components/schemas/AppointmentSlot'
+            - type: 'null'
+    Appointment:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - status
+        - patient
+        - provider
+        - scheduled_slot
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [draft, scheduled, confirmed, checked_in, in_progress, completed, canceled, no_show, rescheduled]
+        patient:
+          $ref: '#/components/schemas/AppointmentReference'
+        provider:
+          $ref: '#/components/schemas/AppointmentReference'
+        clinic:
+          $ref: '#/components/schemas/AppointmentLocationReference'
+        room:
+          $ref: '#/components/schemas/AppointmentLocationReference'
+        scheduled_slot:
+          $ref: '#/components/schemas/AppointmentSlot'
+        last_transition:
+          $ref: '#/components/schemas/AppointmentTransition'
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AppointmentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Appointment'
+    AppointmentCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+    AppointmentMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_created, appointment_updated, appointment_deleted]
+        data:
+          $ref: '#/components/schemas/Appointment'
+    AppointmentSearchFilters:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        patient_id:
+          type: string
+          format: uuid
+          nullable: true
+        provider_id:
+          type: string
+          format: uuid
+          nullable: true
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+        scheduled_from:
+          type: string
+          format: date
+          nullable: true
+        scheduled_to:
+          type: string
+          format: date
+          nullable: true
+        created_from:
+          type: string
+          format: date
+          nullable: true
+        created_to:
+          type: string
+          format: date
+          nullable: true
+        limit:
+          type: integer
+    AppointmentSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/AppointmentSearchFilters'
+    AppointmentExport:
+      type: object
+      required:
+        - export_id
+        - format
+        - file_name
+        - row_count
+        - generated_at
+        - filters
+        - storage
+      properties:
+        export_id:
+          type: string
+          format: uuid
+        format:
+          type: string
+          enum: [csv]
+        file_name:
+          type: string
+        row_count:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+        filters:
+          $ref: '#/components/schemas/AppointmentSearchFilters'
+        storage:
+          type: object
+          required: [disk, path, visibility]
+          properties:
+            disk:
+              type: string
+            path:
+              type: string
+            visibility:
+              type: string
+    AppointmentExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_export_created]
+        data:
+          $ref: '#/components/schemas/AppointmentExport'
+    AppointmentAuditEvent:
+      type: object
+      required:
+        - id
+        - action
+        - object_type
+        - object_id
+        - actor
+        - request_id
+        - correlation_id
+        - before
+        - after
+        - metadata
+        - occurred_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+          nullable: true
+        action:
+          type: string
+        object_type:
+          type: string
+        object_id:
+          type: string
+        actor:
+          type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+              nullable: true
+            name:
+              type: string
+              nullable: true
+        request_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        occurred_at:
+          type: string
+          format: date-time
+    AppointmentAuditResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppointmentAuditEvent'
+        meta:
+          type: object
+          required: [limit]
+          properties:
+            limit:
+              type: integer
+    CreateAppointmentRequest:
+      type: object
+      required:
+        - patient_id
+        - provider_id
+        - scheduled_start_at
+        - scheduled_end_at
+        - timezone
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+        scheduled_start_at:
+          type: string
+          format: date-time
+        scheduled_end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+    UpdateAppointmentRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+        scheduled_start_at:
+          type: string
+          format: date-time
+        scheduled_end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string

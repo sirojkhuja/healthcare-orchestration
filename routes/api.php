@@ -25,6 +25,8 @@ use App\Modules\Provider\Presentation\Http\Controllers\ProviderSpecialtyControll
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderTimeOffController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderWorkHoursController;
 use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentAuditController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\ProviderCalendarController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
@@ -193,6 +195,13 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/specialties', [SpecialtyController::class, 'list'])->name('specialties.list');
                 Route::get('/provider-groups', [ProviderGroupController::class, 'list'])->name('provider-groups.list');
             });
+            Route::middleware('permission:appointments.view')->group(function (): void {
+                Route::get('/appointments', [AppointmentController::class, 'list'])->name('appointments.list');
+                Route::get('/appointments/search', [AppointmentController::class, 'search'])->name('appointments.search');
+                Route::get('/appointments/export', [AppointmentController::class, 'export'])->name('appointments.export');
+                Route::get('/appointments/{appointmentId}/audit', [AppointmentAuditController::class, 'list'])->name('appointments.audit.list');
+                Route::get('/appointments/{appointmentId}', [AppointmentController::class, 'show'])->name('appointments.show');
+            });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
@@ -230,6 +239,17 @@ Route::prefix('v1')->group(function (): void {
                 Route::delete('/specialties/{specialtyId}', [SpecialtyController::class, 'delete'])->name('specialties.delete');
                 Route::post('/provider-groups', [ProviderGroupController::class, 'create'])->name('provider-groups.create');
                 Route::put('/provider-groups/{groupId}/members', [ProviderGroupController::class, 'updateMembers'])->name('provider-groups.members.update');
+            });
+            Route::middleware('permission:appointments.manage')->group(function (): void {
+                Route::post('/appointments', [AppointmentController::class, 'create'])
+                    ->middleware('idempotency:appointments.create')
+                    ->name('appointments.create');
+                Route::patch('/appointments/{appointmentId}', [AppointmentController::class, 'update'])
+                    ->middleware('idempotency:appointments.update')
+                    ->name('appointments.update');
+                Route::delete('/appointments/{appointmentId}', [AppointmentController::class, 'delete'])
+                    ->middleware('idempotency:appointments.delete')
+                    ->name('appointments.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

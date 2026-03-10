@@ -133,10 +133,15 @@
   - `in_progress -> completed`
   - `scheduled|confirmed -> canceled|no_show|rescheduled`
   - `canceled|no_show|rescheduled -> scheduled` through `restore` while the original slot has not fully elapsed
+- `POST /appointments` creates draft appointments only. Generic `PATCH` and `DELETE` routes remain draft-only so later workflow action routes stay authoritative for scheduling transitions.
+- Appointment CRUD payloads currently own `patient_id`, `provider_id`, optional `clinic_id`, optional `room_id`, `scheduled_start_at`, `scheduled_end_at`, and `timezone`.
+- Appointment search supports `q`, `status`, `patient_id`, `provider_id`, `clinic_id`, `room_id`, `scheduled_from`, `scheduled_to`, `created_from`, `created_to`, and `limit`.
+- Appointment exports reuse the active search filter set, support `format=csv`, store a private export artifact, and write `appointments.exported`.
+- Appointment audit views read immutable audit events with `object_type = appointment`, return newest first, and remain available for soft-deleted draft appointments inside tenant scope.
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.
-- Appointment occupancy is still out of the slot cache until appointment persistence and booking flows are introduced in later tasks.
+- Draft appointment persistence in `T038` does not consume slot capacity yet. Appointment occupancy is still out of the slot cache until later scheduling workflow tasks introduce booked state transitions.
 - Provider calendar export reuses the calendar read model, stores a private CSV through the shared export storage contract, and records `providers.calendar_exported`.
 - Notifications may be invoked from appointment actions but remain in the Notifications module.
 - Lab provider traffic must still pass through integration contracts.

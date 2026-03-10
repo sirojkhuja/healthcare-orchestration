@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Modules\Scheduling\Application\Queries;
+
+use App\Modules\Scheduling\Application\Data\AppointmentSearchCriteria;
+
+final readonly class SearchAppointmentsQuery
+{
+    public function __construct(
+        public AppointmentSearchCriteria $criteria,
+    ) {}
+}
