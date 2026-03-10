@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Billing\Presentation\Http\Controllers\BillableServiceController;
+use App\Modules\Billing\Presentation\Http\Controllers\PriceListController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApiKeyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\DeviceController;
@@ -266,6 +268,11 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/prescriptions/export', [PrescriptionController::class, 'export'])->name('prescriptions.export');
                 Route::get('/prescriptions/{prescriptionId}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
             });
+            Route::middleware('permission:billing.view')->group(function (): void {
+                Route::get('/services', [BillableServiceController::class, 'list'])->name('services.list');
+                Route::get('/price-lists', [PriceListController::class, 'list'])->name('price-lists.list');
+                Route::get('/price-lists/{priceListId}', [PriceListController::class, 'show'])->name('price-lists.show');
+            });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
@@ -452,6 +459,29 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/prescriptions/{prescriptionId}:dispense', [PrescriptionWorkflowController::class, 'dispense'])
                     ->middleware('idempotency:prescriptions.dispense')
                     ->name('prescriptions.dispense');
+            });
+            Route::middleware('permission:billing.manage')->group(function (): void {
+                Route::post('/services', [BillableServiceController::class, 'create'])
+                    ->middleware('idempotency:services.create')
+                    ->name('services.create');
+                Route::patch('/services/{serviceId}', [BillableServiceController::class, 'update'])
+                    ->middleware('idempotency:services.update')
+                    ->name('services.update');
+                Route::delete('/services/{serviceId}', [BillableServiceController::class, 'delete'])
+                    ->middleware('idempotency:services.delete')
+                    ->name('services.delete');
+                Route::post('/price-lists', [PriceListController::class, 'create'])
+                    ->middleware('idempotency:price-lists.create')
+                    ->name('price-lists.create');
+                Route::patch('/price-lists/{priceListId}', [PriceListController::class, 'update'])
+                    ->middleware('idempotency:price-lists.update')
+                    ->name('price-lists.update');
+                Route::delete('/price-lists/{priceListId}', [PriceListController::class, 'delete'])
+                    ->middleware('idempotency:price-lists.delete')
+                    ->name('price-lists.delete');
+                Route::put('/price-lists/{priceListId}/items', [PriceListController::class, 'setItems'])
+                    ->middleware('idempotency:price-lists.items.replace')
+                    ->name('price-lists.items.replace');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])

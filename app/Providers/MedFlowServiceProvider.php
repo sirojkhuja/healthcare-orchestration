@@ -12,6 +12,10 @@ use App\Modules\AuditCompliance\Application\Services\ContextualSecurityEventWrit
 use App\Modules\AuditCompliance\Infrastructure\AuthAuditActorResolver;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditEventRepository;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseSecurityEventRepository;
+use App\Modules\Billing\Application\Contracts\BillableServiceRepository;
+use App\Modules\Billing\Application\Contracts\PriceListRepository;
+use App\Modules\Billing\Infrastructure\Persistence\DatabaseBillableServiceRepository;
+use App\Modules\Billing\Infrastructure\Persistence\DatabasePriceListRepository;
 use App\Modules\IdentityAccess\Application\Contracts\AccessTokenService;
 use App\Modules\IdentityAccess\Application\Contracts\ApiKeyRepository;
 use App\Modules\IdentityAccess\Application\Contracts\AuthenticatedRequestContext;
@@ -196,6 +200,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(AuditActorResolver::class, AuthAuditActorResolver::class);
         $this->app->bind(AuditEventRepository::class, DatabaseAuditEventRepository::class);
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
+        $this->app->bind(BillableServiceRepository::class, DatabaseBillableServiceRepository::class);
         $this->app->bind(ClinicRepository::class, DatabaseClinicRepository::class);
         $this->app->bind(LocationReferenceRepository::class, ConfigLocationReferenceRepository::class);
         $this->app->bind(LabOrderRepository::class, DatabaseLabOrderRepository::class);
@@ -233,6 +238,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->singleton(PermissionAuthorizer::class, CachedPermissionAuthorizer::class);
         $this->app->bind(PermissionProjectionInvalidationDispatcher::class, LaravelPermissionProjectionInvalidationDispatcher::class);
         $this->app->bind(PermissionProjectionRepository::class, DatabasePermissionProjectionRepository::class);
+        $this->app->bind(PriceListRepository::class, DatabasePriceListRepository::class);
         $this->app->bind(RoleRepository::class, DatabaseRoleRepository::class);
         $this->app->scoped(RequestMetadataContext::class, ContextBackedRequestMetadataContext::class);
         $this->app->bind(TenantConfigurationRepository::class, DatabaseTenantConfigurationRepository::class);

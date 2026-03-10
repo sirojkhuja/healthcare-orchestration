@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `65% (46/70 tasks completed)`
+Overall Progress: `67% (47/70 tasks completed)`
 
 Active Task: `None`
 
@@ -95,7 +95,7 @@ Active Task: `None`
 | --- | --- | --- | --- | --- | --- |
 | T046 | Done | Implement the prescription aggregate and prescription lifecycle. | T044 | Prescription domain, issue, cancel, dispense flows. | State transition and authorization tests pass. |
 | T047 | Done | Implement medication catalog, medication search, allergies, and patient medication views. | T046 | Medication endpoints, allergy management, patient medication queries. | Search, validation, and patient view tests pass. |
-| T048 | Todo | Implement billable services and price list management. | T027 | Billing catalog endpoints, price list item management. | CRUD and pricing rule tests pass. |
+| T048 | Done | Implement billable services and price list management. | T027 | Billing catalog endpoints, price list item management. | CRUD and pricing rule tests pass. |
 | T049 | Todo | Implement the invoice aggregate, invoice items, and invoice lifecycle. | T048, T029 | Invoice domain, item management, issue, void, finalize actions. | Invoice state and calculation tests pass. |
 | T050 | Todo | Implement the payment aggregate and payment state machine. | T049, T016 | Payment domain, initiation contract, transition rules. | Unit and feature tests cover payment lifecycle. |
 | T051 | Todo | Implement payment API operations for initiate, status, capture, cancel, and refund. | T050 | Payment endpoints and idempotent command handling. | Feature tests cover all payment actions. |

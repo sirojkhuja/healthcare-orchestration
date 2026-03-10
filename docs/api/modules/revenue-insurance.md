@@ -43,6 +43,20 @@
 - `POST /webhooks/click:verify` -> `VerifyClickWebhookCommand` -> Integrations
 - `POST /webhooks/uzum:verify` -> `VerifyUzumWebhookCommand` -> Integrations
 
+## Billing Notes
+
+- `T048` defines the billing catalog contract in ADR `035`.
+- Billable services are tenant-scoped catalog records with `code`, `name`, optional `category`, optional `unit`, optional `description`, and `is_active`.
+- Billable service `code` is required, normalized to uppercase, and unique per tenant.
+- `GET /services` supports `q`, `category`, `is_active`, and `limit`.
+- Referenced billable services cannot be deleted while any price-list item still points at them.
+- Price lists are tenant-scoped pricing containers with `code`, `name`, optional `description`, `currency`, `is_default`, `is_active`, optional `effective_from`, and optional `effective_to`.
+- Setting `is_default=true` on a price list clears any other tenant default price list.
+- `GET /price-lists` supports `q`, `is_active`, `is_default`, `active_on`, and `limit`.
+- `PUT /price-lists/{priceListId}/items` fully replaces the item set.
+- Price-list item payloads use `service_id` plus a positive decimal `amount`.
+- Empty item arrays are valid and clear the price list.
+
 ## Insurance Claims
 
 - `GET /insurance/payers` -> `ListPayersQuery` -> Insurance

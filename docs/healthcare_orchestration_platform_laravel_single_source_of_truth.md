@@ -1217,6 +1217,16 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - PATCH `/price-lists/{priceListId}` → `UpdatePriceListCommand` → Billing
 - DELETE `/price-lists/{priceListId}` → `DeletePriceListCommand` → Billing
 - PUT `/price-lists/{priceListId}/items` → `SetPriceListItemsCommand` → Billing
+- `T048` defines the billing catalog contract in ADR `035`
+- billable services are tenant-scoped records with `code`, `name`, optional `category`, optional `unit`, optional `description`, and `is_active`
+- billable service `code` is required, normalized to uppercase, and unique per tenant
+- referenced billable services cannot be deleted while price-list items still exist
+- `GET /services` supports filters `q`, `category`, `is_active`, and `limit`
+- price lists own `code`, `name`, optional `description`, `currency`, `is_default`, `is_active`, optional `effective_from`, and optional `effective_to`
+- setting `is_default=true` clears any prior tenant default list
+- `GET /price-lists` supports filters `q`, `is_active`, `is_default`, `active_on`, and `limit`
+- `PUT /price-lists/{priceListId}/items` fully replaces the item set and accepts `service_id` plus positive decimal `amount`
+- empty price-list item arrays are valid and clear the list
 
 ### Invoices
 - GET `/invoices` → `ListInvoicesQuery` → Billing

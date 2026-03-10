@@ -1,0 +1,781 @@
+openapi: 3.1.1
+info:
+  title: MedFlow Revenue and Insurance Fragment
+  version: 0.1.0
+paths:
+  /api/v1/services:
+    get:
+      operationId: ListBillableServicesQuery
+      tags: [Billing]
+      summary: List billable services in the current tenant
+      description: Returns tenant-scoped billable services filtered by category, activity, and free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/BillingServiceCategoryFilter'
+        - $ref: '#/components/parameters/BillingActiveFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Billable service directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillableServiceCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateBillableServiceCommand
+      tags: [Billing]
+      summary: Create a billable service
+      description: Creates a tenant-scoped billable service catalog record.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBillableServiceRequest'
+      responses:
+        '201':
+          description: Billable service created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillableServiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid or duplicate service payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/services/{serviceId}:
+    patch:
+      operationId: UpdateBillableServiceCommand
+      tags: [Billing]
+      summary: Update a billable service
+      description: Updates an existing tenant-scoped billable service.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ServiceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBillableServiceRequest'
+      responses:
+        '200':
+          description: Billable service updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillableServiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Billable service not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid or duplicate update payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteBillableServiceCommand
+      tags: [Billing]
+      summary: Delete a billable service
+      description: Hard-deletes an unreferenced billable service in the current tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ServiceIdPath'
+      responses:
+        '200':
+          description: Billable service deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillableServiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Billable service not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Billable service is still referenced by a price list item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/price-lists:
+    get:
+      operationId: ListPriceListsQuery
+      tags: [Billing]
+      summary: List price lists in the current tenant
+      description: Returns tenant-scoped price lists ordered by default and active status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/BillingActiveFilter'
+        - $ref: '#/components/parameters/BillingDefaultFilter'
+        - $ref: '#/components/parameters/PriceListActiveOnFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Price list directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreatePriceListCommand
+      tags: [Billing]
+      summary: Create a price list
+      description: Creates a tenant-scoped price list with currency, effective dates, and default-list handling.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePriceListRequest'
+      responses:
+        '201':
+          description: Price list created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid or duplicate price list payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/price-lists/{priceListId}:
+    get:
+      operationId: GetPriceListQuery
+      tags: [Billing]
+      summary: Get one price list and its items
+      description: Returns a tenant-scoped price list with the current replacement-based item set.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PriceListIdPath'
+      responses:
+        '200':
+          description: Price list with items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListShowResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Price list not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdatePriceListCommand
+      tags: [Billing]
+      summary: Update a price list
+      description: Updates price-list metadata and may move the tenant default flag.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PriceListIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePriceListRequest'
+      responses:
+        '200':
+          description: Price list updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Price list not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid or duplicate update payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeletePriceListCommand
+      tags: [Billing]
+      summary: Delete a price list
+      description: Hard-deletes a tenant-scoped price list and cascades the current item set.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PriceListIdPath'
+      responses:
+        '200':
+          description: Price list deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Price list not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/price-lists/{priceListId}/items:
+    put:
+      operationId: SetPriceListItemsCommand
+      tags: [Billing]
+      summary: Replace the full item set for a price list
+      description: Replaces every current price-list item. An empty item array is valid and clears the list.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PriceListIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplacePriceListItemsRequest'
+      responses:
+        '200':
+          description: Price list items replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Price list or referenced service not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid replacement payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantIdHeader:
+      name: X-Tenant-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 255
+    ServiceIdPath:
+      name: serviceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PriceListIdPath:
+      name: priceListId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BillingSearchQuery:
+      name: q
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    BillingServiceCategoryFilter:
+      name: category
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    BillingActiveFilter:
+      name: is_active
+      in: query
+      required: false
+      schema:
+        type: boolean
+    BillingDefaultFilter:
+      name: is_default
+      in: query
+      required: false
+      schema:
+        type: boolean
+    PriceListActiveOnFilter:
+      name: active_on
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    BillingLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+  schemas:
+    BillableService:
+      type: object
+      required: [id, tenant_id, code, name, is_active, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        category:
+          type: [string, 'null']
+        unit:
+          type: [string, 'null']
+        description:
+          type: [string, 'null']
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    BillableServiceCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillableService'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+    BillableServiceMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/BillableService'
+    CreateBillableServiceRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: [string, 'null']
+          maxLength: 120
+        unit:
+          type: [string, 'null']
+          maxLength: 64
+        description:
+          type: [string, 'null']
+        is_active:
+          type: boolean
+    UpdateBillableServiceRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        category:
+          type: [string, 'null']
+          maxLength: 120
+        unit:
+          type: [string, 'null']
+          maxLength: 64
+        description:
+          type: [string, 'null']
+        is_active:
+          type: boolean
+    PriceListItem:
+      type: object
+      required: [id, price_list_id, tenant_id, service, unit_price, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        price_list_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        service:
+          type: object
+          required: [id, code, name, is_active]
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            name:
+              type: string
+            category:
+              type: [string, 'null']
+            unit:
+              type: [string, 'null']
+            is_active:
+              type: boolean
+        unit_price:
+          $ref: '#/components/schemas/Money'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PriceList:
+      type: object
+      required: [id, tenant_id, code, name, currency, is_default, is_active, item_count, items, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        is_default:
+          type: boolean
+        is_active:
+          type: boolean
+        effective_from:
+          type: [string, 'null']
+          format: date
+        effective_to:
+          type: [string, 'null']
+          format: date
+        item_count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceListItem'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PriceListCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceList'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+    PriceListShowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PriceList'
+    PriceListMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/PriceList'
+    CreatePriceListRequest:
+      type: object
+      required: [code, name, currency]
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: [string, 'null']
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        is_default:
+          type: boolean
+        is_active:
+          type: boolean
+        effective_from:
+          type: [string, 'null']
+          format: date
+        effective_to:
+          type: [string, 'null']
+          format: date
+    UpdatePriceListRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: [string, 'null']
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        is_default:
+          type: boolean
+        is_active:
+          type: boolean
+        effective_from:
+          type: [string, 'null']
+          format: date
+        effective_to:
+          type: [string, 'null']
+          format: date
+    ReplacePriceListItemsRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [service_id, amount]
+            properties:
+              service_id:
+                type: string
+                format: uuid
+              amount:
+                type: string
+                pattern: '^\d{1,10}(\.\d{1,2})?$'
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: string
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+    ApiErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
