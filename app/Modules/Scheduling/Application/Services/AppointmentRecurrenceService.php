@@ -315,8 +315,9 @@ final class AppointmentRecurrenceService
         }
 
         $sourceDate = $sourceAppointment->scheduledStartAt->startOfDay();
-        $untilDate = CarbonImmutable::createFromFormat('Y-m-d', $this->requiredString($attributes['until_date'], 'Appointment recurrence until_date is required.'), $sourceAppointment->timezone)
-            ?: throw new UnprocessableEntityHttpException('Appointment recurrence until_date must use Y-m-d format.');
+        $untilDate = (CarbonImmutable::createFromFormat('Y-m-d', $this->requiredString($attributes['until_date'], 'Appointment recurrence until_date is required.'), $sourceAppointment->timezone)
+            ?: throw new UnprocessableEntityHttpException('Appointment recurrence until_date must use Y-m-d format.'))
+            ->startOfDay();
 
         if ($untilDate->lessThanOrEqualTo($sourceDate)) {
             throw new UnprocessableEntityHttpException('Appointment recurrence until_date must be after the source appointment date.');
@@ -330,7 +331,7 @@ final class AppointmentRecurrenceService
             'frequency' => $frequency,
             'interval' => $interval,
             'occurrence_count' => null,
-            'until_date' => $untilDate->startOfDay(),
+            'until_date' => $untilDate,
         ];
     }
 

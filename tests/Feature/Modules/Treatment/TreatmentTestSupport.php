@@ -9,6 +9,29 @@ function treatmentCreatePatient($testCase, string $token, string $tenantId, arra
     return schedulingCreatePatient($testCase, $token, $tenantId, $overrides);
 }
 
+function treatmentCreateEncounter($testCase, string $token, string $tenantId, array $overrides = [])
+{
+    $patientId = $overrides['patient_id'] ?? treatmentCreatePatient($testCase, $token, $tenantId)->json('data.id');
+    $providerId = $overrides['provider_id'] ?? treatmentCreateProvider($testCase, $token, $tenantId)->json('data.id');
+
+    return $testCase->withToken($token)
+        ->withHeader('X-Tenant-Id', $tenantId)
+        ->postJson('/api/v1/encounters', [
+            'patient_id' => $patientId,
+            'provider_id' => $providerId,
+            'treatment_plan_id' => $overrides['treatment_plan_id'] ?? null,
+            'appointment_id' => $overrides['appointment_id'] ?? null,
+            'clinic_id' => $overrides['clinic_id'] ?? null,
+            'room_id' => $overrides['room_id'] ?? null,
+            'encountered_at' => $overrides['encountered_at'] ?? '2026-03-10T09:00:00+05:00',
+            'timezone' => $overrides['timezone'] ?? 'Asia/Tashkent',
+            'chief_complaint' => $overrides['chief_complaint'] ?? null,
+            'summary' => $overrides['summary'] ?? null,
+            'notes' => $overrides['notes'] ?? null,
+            'follow_up_instructions' => $overrides['follow_up_instructions'] ?? null,
+        ]);
+}
+
 function treatmentCreatePlan($testCase, string $token, string $tenantId, array $overrides = [])
 {
     $patientId = $overrides['patient_id'] ?? treatmentCreatePatient($testCase, $token, $tenantId)->json('data.id');

@@ -239,7 +239,9 @@ final class DatabaseAvailabilityRuleRepository implements AvailabilityRuleReposi
             return CarbonImmutable::instance($value);
         }
 
-        return CarbonImmutable::createFromFormat('Y-m-d', $this->stringValue($value), 'UTC') ?: null;
+        $date = CarbonImmutable::createFromFormat('Y-m-d', $this->stringValue($value), 'UTC');
+
+        return $date instanceof CarbonImmutable ? $date->startOfDay() : null;
     }
 
     private function nullableString(mixed $value): ?string

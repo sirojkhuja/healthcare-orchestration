@@ -49,6 +49,10 @@ use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLifecycleCo
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLimitsController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantSettingsController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantUsageController;
+use App\Modules\Treatment\Presentation\Http\Controllers\EncounterBulkController;
+use App\Modules\Treatment\Presentation\Http\Controllers\EncounterController;
+use App\Modules\Treatment\Presentation\Http\Controllers\EncounterDiagnosisController;
+use App\Modules\Treatment\Presentation\Http\Controllers\EncounterProcedureController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanItemController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanWorkflowController;
@@ -220,6 +224,11 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/treatment-plans/search', [TreatmentPlanController::class, 'search'])->name('treatment-plans.search');
                 Route::get('/treatment-plans/{planId}/items', [TreatmentPlanItemController::class, 'list'])->name('treatment-plans.items.list');
                 Route::get('/treatment-plans/{planId}', [TreatmentPlanController::class, 'show'])->name('treatment-plans.show');
+                Route::get('/encounters', [EncounterController::class, 'list'])->name('encounters.list');
+                Route::get('/encounters/export', [EncounterController::class, 'export'])->name('encounters.export');
+                Route::get('/encounters/{encounterId}/diagnoses', [EncounterDiagnosisController::class, 'list'])->name('encounters.diagnoses.list');
+                Route::get('/encounters/{encounterId}/procedures', [EncounterProcedureController::class, 'list'])->name('encounters.procedures.list');
+                Route::get('/encounters/{encounterId}', [EncounterController::class, 'show'])->name('encounters.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -349,6 +358,16 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/treatment-plans/{planId}:resume', [TreatmentPlanWorkflowController::class, 'resume'])->name('treatment-plans.resume');
                 Route::post('/treatment-plans/{planId}:finish', [TreatmentPlanWorkflowController::class, 'finish'])->name('treatment-plans.finish');
                 Route::post('/treatment-plans/{planId}:reject', [TreatmentPlanWorkflowController::class, 'reject'])->name('treatment-plans.reject');
+                Route::post('/encounters', [EncounterController::class, 'create'])->name('encounters.create');
+                Route::patch('/encounters/{encounterId}', [EncounterController::class, 'update'])->name('encounters.update');
+                Route::delete('/encounters/{encounterId}', [EncounterController::class, 'delete'])->name('encounters.delete');
+                Route::post('/encounters/bulk', [EncounterBulkController::class, 'update'])
+                    ->middleware('idempotency:encounters.bulk.update')
+                    ->name('encounters.bulk.update');
+                Route::post('/encounters/{encounterId}/diagnoses', [EncounterDiagnosisController::class, 'create'])->name('encounters.diagnoses.create');
+                Route::delete('/encounters/{encounterId}/diagnoses/{dxId}', [EncounterDiagnosisController::class, 'delete'])->name('encounters.diagnoses.delete');
+                Route::post('/encounters/{encounterId}/procedures', [EncounterProcedureController::class, 'create'])->name('encounters.procedures.create');
+                Route::delete('/encounters/{encounterId}/procedures/{procId}', [EncounterProcedureController::class, 'delete'])->name('encounters.procedures.delete');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

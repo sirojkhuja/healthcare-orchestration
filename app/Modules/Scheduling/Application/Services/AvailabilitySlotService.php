@@ -104,6 +104,7 @@ final class AvailabilitySlotService
 
         $date = CarbonImmutable::createFromFormat('Y-m-d', $requestedStart->toDateString(), 'UTC')
             ?: throw new LogicException('Availability date could not be created.');
+        $date = $date->startOfDay();
         $rules = $this->availabilityRuleRepository->listRelevantForDateRange(
             tenantId: $tenantId,
             providerId: $provider->providerId,
@@ -181,10 +182,12 @@ final class AvailabilitySlotService
         $blockingAppointments = $this->appointmentRepository->listBlockingForProviderWindow(
             tenantId: $tenantId,
             providerId: $provider->providerId,
-            windowStart: CarbonImmutable::createFromFormat('Y-m-d', $window['date_from']->toDateString(), $timezone)
-                ?: throw new LogicException('Blocking window start could not be created.'),
-            windowEnd: (CarbonImmutable::createFromFormat('Y-m-d', $window['date_to']->toDateString(), $timezone)
+            windowStart: (CarbonImmutable::createFromFormat('Y-m-d', $window['date_from']->toDateString(), $timezone)
+                ?: throw new LogicException('Blocking window start could not be created.'))
+                ->startOfDay(),
+            windowEnd: ((CarbonImmutable::createFromFormat('Y-m-d', $window['date_to']->toDateString(), $timezone)
                 ?: throw new LogicException('Blocking window end could not be created.'))
+                ->startOfDay())
                 ->endOfDay(),
         );
         $workHours = $clinic !== null ? $this->clinicRepository->workHours($tenantId, $clinic->clinicId) : null;
@@ -298,8 +301,9 @@ final class AvailabilitySlotService
     private function blockingIntervalsForDate(array $appointments, CarbonImmutable $date, string $timezone): array
     {
         $intervals = [];
-        $dayStart = CarbonImmutable::createFromFormat('Y-m-d', $date->toDateString(), $timezone)
-            ?: throw new LogicException('Day start could not be created for blocking intervals.');
+        $dayStart = (CarbonImmutable::createFromFormat('Y-m-d', $date->toDateString(), $timezone)
+            ?: throw new LogicException('Day start could not be created for blocking intervals.'))
+            ->startOfDay();
         $dayEnd = $dayStart->addDay();
 
         foreach ($appointments as $appointment) {

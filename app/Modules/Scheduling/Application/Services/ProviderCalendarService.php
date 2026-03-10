@@ -108,10 +108,12 @@ final class ProviderCalendarService
         $rules = $this->availabilityRuleRepository->listRelevantForDateRange(
             tenantId: $tenantId,
             providerId: $provider->providerId,
-            dateFrom: CarbonImmutable::createFromFormat('Y-m-d', $window->dateFrom, 'UTC')
-                ?: throw new UnprocessableEntityHttpException('Calendar date_from must use Y-m-d format.'),
-            dateTo: CarbonImmutable::createFromFormat('Y-m-d', $window->dateTo, 'UTC')
-                ?: throw new UnprocessableEntityHttpException('Calendar date_to must use Y-m-d format.'),
+            dateFrom: (CarbonImmutable::createFromFormat('Y-m-d', $window->dateFrom, 'UTC')
+                ?: throw new UnprocessableEntityHttpException('Calendar date_from must use Y-m-d format.'))
+                ->startOfDay(),
+            dateTo: (CarbonImmutable::createFromFormat('Y-m-d', $window->dateTo, 'UTC')
+                ?: throw new UnprocessableEntityHttpException('Calendar date_to must use Y-m-d format.'))
+                ->startOfDay(),
         );
 
         return new ProviderCalendarData(
@@ -144,10 +146,12 @@ final class ProviderCalendarService
         $slotsByDate = $this->slotsByDate($slotResult->slots);
         $closedHolidayDates = $this->closedHolidayDates($tenantId, $provider);
         $days = [];
-        $startDate = CarbonImmutable::createFromFormat('Y-m-d', $slotResult->dateFrom, 'UTC')
-            ?: throw new UnprocessableEntityHttpException('Calendar date_from must use Y-m-d format.');
-        $endDate = CarbonImmutable::createFromFormat('Y-m-d', $slotResult->dateTo, 'UTC')
-            ?: throw new UnprocessableEntityHttpException('Calendar date_to must use Y-m-d format.');
+        $startDate = (CarbonImmutable::createFromFormat('Y-m-d', $slotResult->dateFrom, 'UTC')
+            ?: throw new UnprocessableEntityHttpException('Calendar date_from must use Y-m-d format.'))
+            ->startOfDay();
+        $endDate = (CarbonImmutable::createFromFormat('Y-m-d', $slotResult->dateTo, 'UTC')
+            ?: throw new UnprocessableEntityHttpException('Calendar date_to must use Y-m-d format.'))
+            ->startOfDay();
 
         for (
             $date = $startDate;
@@ -296,6 +300,9 @@ final class ProviderCalendarService
         if (! $from instanceof CarbonImmutable || ! $to instanceof CarbonImmutable) {
             throw new UnprocessableEntityHttpException('Calendar windows must use Y-m-d dates.');
         }
+
+        $from = $from->startOfDay();
+        $to = $to->startOfDay();
 
         if ($to->lessThan($from)) {
             throw new UnprocessableEntityHttpException('Calendar date_to must not be earlier than date_from.');

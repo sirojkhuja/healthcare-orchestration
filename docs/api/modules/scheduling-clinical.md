@@ -170,6 +170,14 @@
 - Treatment item writes are limited to parent plans in `draft|approved`; active, paused, finished, and rejected plans are item-read-only.
 - Creating, moving, and deleting treatment items reindex sibling `sort_order` values transactionally so each plan keeps a contiguous ordered sequence.
 - `T043` does not add a separate bulk treatment route because the canonical inventory defines only search plus item subresources in this phase.
+- `T044` makes encounters operational through ADR `031`.
+- Encounters are tenant-scoped visit records with patient and provider linkage, optional treatment-plan and appointment linkage, optional clinic and room linkage, `open|completed|entered_in_error` status, `encountered_at`, `timezone`, optional `chief_complaint`, optional `summary`, optional `notes`, optional `follow_up_instructions`, and soft-delete retention.
+- `GET /encounters` is the filterable directory route. It supports `q`, `status`, `patient_id`, `provider_id`, `treatment_plan_id`, `appointment_id`, `clinic_id`, `encounter_from`, `encounter_to`, `created_from`, `created_to`, and `limit`, and it returns `meta.filters`.
+- Encounter exports reuse the active encounter list filter set, support `format=csv`, store a private export artifact, and write `encounters.exported`.
+- Diagnosis subresources use `code`, `display_name`, `diagnosis_type = primary|secondary`, and optional `notes`. Each encounter may have at most one primary diagnosis.
+- Procedure subresources use optional `treatment_item_id`, optional `code`, `display_name`, optional `performed_at`, and optional `notes`.
+- Procedure linkage to treatment items is allowed only when the encounter already links to a treatment plan and the referenced treatment item belongs to that plan with `item_type = procedure`.
+- `POST /encounters/bulk` is the generic shared-change bulk route for encounters. It requires `Idempotency-Key`, accepts `encounter_ids` plus a shared `changes` object, supports `1..100` distinct ids, is all-or-nothing, and may update only `status`, `provider_id`, `clinic_id`, `room_id`, `encountered_at`, and `timezone`.
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.

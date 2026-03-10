@@ -313,8 +313,9 @@ final class AvailabilityRuleService
             return null;
         }
 
-        return CarbonImmutable::createFromFormat('Y-m-d', $string, 'UTC')
-            ?: throw new UnprocessableEntityHttpException('`specific_date` must use `Y-m-d` format.');
+        return (CarbonImmutable::createFromFormat('Y-m-d', $string, 'UTC')
+            ?: throw new UnprocessableEntityHttpException('`specific_date` must use `Y-m-d` format.'))
+            ->startOfDay();
     }
 
     /**

@@ -106,8 +106,14 @@ use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantConfig
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantMetricsRepository;
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantRepository;
 use App\Modules\TenantManagement\Infrastructure\Reference\ConfigLocationReferenceRepository;
+use App\Modules\Treatment\Application\Contracts\EncounterDiagnosisRepository;
+use App\Modules\Treatment\Application\Contracts\EncounterProcedureRepository;
+use App\Modules\Treatment\Application\Contracts\EncounterRepository;
 use App\Modules\Treatment\Application\Contracts\TreatmentItemRepository;
 use App\Modules\Treatment\Application\Contracts\TreatmentPlanRepository;
+use App\Modules\Treatment\Infrastructure\Persistence\DatabaseEncounterDiagnosisRepository;
+use App\Modules\Treatment\Infrastructure\Persistence\DatabaseEncounterProcedureRepository;
+use App\Modules\Treatment\Infrastructure\Persistence\DatabaseEncounterRepository;
 use App\Modules\Treatment\Infrastructure\Persistence\DatabaseTreatmentItemRepository;
 use App\Modules\Treatment\Infrastructure\Persistence\DatabaseTreatmentPlanRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
@@ -206,6 +212,9 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(TenantIpAllowlistRepository::class, DatabaseTenantIpAllowlistRepository::class);
         $this->app->bind(TenantMetricsRepository::class, DatabaseTenantMetricsRepository::class);
         $this->app->bind(TenantRepository::class, DatabaseTenantRepository::class);
+        $this->app->bind(EncounterDiagnosisRepository::class, DatabaseEncounterDiagnosisRepository::class);
+        $this->app->bind(EncounterProcedureRepository::class, DatabaseEncounterProcedureRepository::class);
+        $this->app->bind(EncounterRepository::class, DatabaseEncounterRepository::class);
         $this->app->bind(TreatmentItemRepository::class, DatabaseTreatmentItemRepository::class);
         $this->app->bind(TreatmentPlanRepository::class, DatabaseTreatmentPlanRepository::class);
         $this->app->bind(UserRoleAssignmentRepository::class, DatabaseUserRoleAssignmentRepository::class);
