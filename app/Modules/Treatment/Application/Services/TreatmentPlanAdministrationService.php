@@ -6,6 +6,7 @@ use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
 use App\Modules\Treatment\Application\Contracts\TreatmentPlanRepository;
 use App\Modules\Treatment\Application\Data\TreatmentPlanData;
+use App\Modules\Treatment\Application\Data\TreatmentPlanSearchCriteria;
 use App\Modules\Treatment\Domain\TreatmentPlans\TreatmentPlanStatus;
 use App\Shared\Application\Contracts\TenantContext;
 use Carbon\CarbonImmutable;
@@ -92,6 +93,14 @@ final class TreatmentPlanAdministrationService
     public function list(): array
     {
         return $this->treatmentPlanRepository->listForTenant($this->tenantContext->requireTenantId());
+    }
+
+    /**
+     * @return list<TreatmentPlanData>
+     */
+    public function search(TreatmentPlanSearchCriteria $criteria): array
+    {
+        return $this->treatmentPlanRepository->search($this->tenantContext->requireTenantId(), $criteria);
     }
 
     /**

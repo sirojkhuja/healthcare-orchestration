@@ -9,6 +9,24 @@ function treatmentCreatePatient($testCase, string $token, string $tenantId, arra
     return schedulingCreatePatient($testCase, $token, $tenantId, $overrides);
 }
 
+function treatmentCreatePlan($testCase, string $token, string $tenantId, array $overrides = [])
+{
+    $patientId = $overrides['patient_id'] ?? treatmentCreatePatient($testCase, $token, $tenantId)->json('data.id');
+    $providerId = $overrides['provider_id'] ?? treatmentCreateProvider($testCase, $token, $tenantId)->json('data.id');
+
+    return $testCase->withToken($token)
+        ->withHeader('X-Tenant-Id', $tenantId)
+        ->postJson('/api/v1/treatment-plans', [
+            'patient_id' => $patientId,
+            'provider_id' => $providerId,
+            'title' => $overrides['title'] ?? 'Default treatment plan',
+            'summary' => $overrides['summary'] ?? null,
+            'goals' => $overrides['goals'] ?? null,
+            'planned_start_date' => $overrides['planned_start_date'] ?? null,
+            'planned_end_date' => $overrides['planned_end_date'] ?? null,
+        ]);
+}
+
 function treatmentCreateProvider($testCase, string $token, string $tenantId, array $overrides = [])
 {
     return schedulingCreateProvider($testCase, $token, $tenantId, $overrides);

@@ -1547,7 +1547,7 @@ paths:
       operationId: ListTreatmentPlansQuery
       tags: [Treatment Plans]
       summary: List active treatment plans in the current tenant
-      description: Returns active tenant-scoped treatment plans ordered newest first. Search and item routes are deferred to later tasks.
+      description: Returns active tenant-scoped treatment plans ordered newest first and includes the current treatment item count per plan.
       security:
         - bearerAuth: []
       parameters:
@@ -1606,6 +1606,50 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
         '422':
           description: Invalid payload or cross-reference mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/treatment-plans/search:
+    get:
+      operationId: SearchTreatmentPlansQuery
+      tags: [Treatment Plans]
+      summary: Search active treatment plans in tenant scope
+      description: Searches treatment-plan ids, titles, patient names, provider names, and treatment-item titles with structured tenant-scoped filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/TreatmentPlanSearchQuery'
+        - $ref: '#/components/parameters/TreatmentPlanStatusFilter'
+        - $ref: '#/components/parameters/TreatmentPlanPatientFilter'
+        - $ref: '#/components/parameters/TreatmentPlanProviderFilter'
+        - $ref: '#/components/parameters/TreatmentPlanPlannedFromFilter'
+        - $ref: '#/components/parameters/TreatmentPlanPlannedToFilter'
+        - $ref: '#/components/parameters/TreatmentPlanCreatedFromFilter'
+        - $ref: '#/components/parameters/TreatmentPlanCreatedToFilter'
+        - $ref: '#/components/parameters/TreatmentPlanSearchLimit'
+      responses:
+        '200':
+          description: Matching treatment plans ordered newest first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlanSearchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or treatment-plan read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid search filter combination
           content:
             application/json:
               schema:
@@ -1733,6 +1777,188 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
         '409':
           description: Treatment plan is not deletable in its current lifecycle state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/treatment-plans/{planId}/items:
+    get:
+      operationId: ListTreatmentItemsQuery
+      tags: [Treatment Plans]
+      summary: List ordered treatment items for one plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TreatmentPlanIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Ordered treatment items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlanItemCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or treatment-plan read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Treatment plan not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddTreatmentItemCommand
+      tags: [Treatment Plans]
+      summary: Add one ordered treatment item to a draft or approved plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TreatmentPlanIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTreatmentPlanItemRequest'
+      responses:
+        '201':
+          description: Treatment item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlanItemMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or treatment-plan write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Treatment plan not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Treatment items are read-only in the current plan lifecycle state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid treatment-item payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/treatment-plans/{planId}/items/{itemId}:
+    patch:
+      operationId: UpdateTreatmentItemCommand
+      tags: [Treatment Plans]
+      summary: Update one ordered treatment item inside a draft or approved plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TreatmentPlanIdPath'
+        - $ref: '#/components/parameters/TreatmentPlanItemIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTreatmentPlanItemRequest'
+      responses:
+        '200':
+          description: Treatment item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlanItemMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or treatment-plan write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Treatment plan or item not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Treatment items are read-only in the current plan lifecycle state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid treatment-item patch payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: RemoveTreatmentItemCommand
+      tags: [Treatment Plans]
+      summary: Delete one ordered treatment item from a draft or approved plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TreatmentPlanIdPath'
+        - $ref: '#/components/parameters/TreatmentPlanItemIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Treatment item deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreatmentPlanItemMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or treatment-plan write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Treatment plan or item not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Treatment items are read-only in the current plan lifecycle state
           content:
             application/json:
               schema:
@@ -1889,6 +2115,13 @@ components:
       schema:
         type: string
         format: uuid
+    TreatmentPlanItemIdPath:
+      in: path
+      name: itemId
+      required: true
+      schema:
+        type: string
+        format: uuid
     AppointmentParticipantIdPath:
       in: path
       name: participantId
@@ -2013,6 +2246,71 @@ components:
         type: string
         enum: [csv]
         default: csv
+    TreatmentPlanSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    TreatmentPlanStatusFilter:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [draft, approved, active, paused, finished, rejected]
+    TreatmentPlanPatientFilter:
+      in: query
+      name: patient_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    TreatmentPlanProviderFilter:
+      in: query
+      name: provider_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    TreatmentPlanPlannedFromFilter:
+      in: query
+      name: planned_from
+      required: false
+      schema:
+        type: string
+        format: date
+    TreatmentPlanPlannedToFilter:
+      in: query
+      name: planned_to
+      required: false
+      schema:
+        type: string
+        format: date
+    TreatmentPlanCreatedFromFilter:
+      in: query
+      name: created_from
+      required: false
+      schema:
+        type: string
+        format: date
+    TreatmentPlanCreatedToFilter:
+      in: query
+      name: created_to
+      required: false
+      schema:
+        type: string
+        format: date
+    TreatmentPlanSearchLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
     AppointmentAuditLimit:
       in: query
       name: limit
@@ -2155,6 +2453,9 @@ components:
           type: string
           format: date
           nullable: true
+        item_count:
+          type: integer
+          minimum: 0
         status:
           type: string
           enum: [draft, approved, active, paused, finished, rejected]
@@ -2200,6 +2501,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TreatmentPlan'
+    TreatmentPlanSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreatmentPlan'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/TreatmentPlanSearchFilters'
     TreatmentPlanResponse:
       type: object
       required: [data]
@@ -2224,6 +2539,59 @@ components:
             - treatment_plan_rejected
         data:
           $ref: '#/components/schemas/TreatmentPlan'
+    TreatmentPlanItem:
+      type: object
+      required: [id, plan_id, tenant_id, item_type, title, sort_order, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        plan_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        item_type:
+          type: string
+          enum: [assessment, procedure, medication, therapy, lab, follow_up, other]
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        instructions:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TreatmentPlanItemCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreatmentPlanItem'
+    TreatmentPlanItemMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum:
+            - treatment_plan_item_created
+            - treatment_plan_item_updated
+            - treatment_plan_item_deleted
+        data:
+          $ref: '#/components/schemas/TreatmentPlanItem'
     CreateTreatmentPlanRequest:
       type: object
       required: [patient_id, provider_id, title]
@@ -2253,6 +2621,62 @@ components:
           type: string
           format: date
           nullable: true
+    TreatmentPlanSearchFilters:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        patient_id:
+          type: string
+          format: uuid
+          nullable: true
+        provider_id:
+          type: string
+          format: uuid
+          nullable: true
+        planned_from:
+          type: string
+          format: date
+          nullable: true
+        planned_to:
+          type: string
+          format: date
+          nullable: true
+        created_from:
+          type: string
+          format: date
+          nullable: true
+        created_to:
+          type: string
+          format: date
+          nullable: true
+        limit:
+          type: integer
+    CreateTreatmentPlanItemRequest:
+      type: object
+      required: [item_type, title]
+      properties:
+        item_type:
+          type: string
+          enum: [assessment, procedure, medication, therapy, lab, follow_up, other]
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        instructions:
+          type: string
+          maxLength: 5000
+          nullable: true
+        sort_order:
+          type: integer
+          minimum: 1
     UpdateTreatmentPlanRequest:
       type: object
       properties:
@@ -2281,6 +2705,26 @@ components:
           type: string
           format: date
           nullable: true
+    UpdateTreatmentPlanItemRequest:
+      type: object
+      properties:
+        item_type:
+          type: string
+          enum: [assessment, procedure, medication, therapy, lab, follow_up, other]
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        instructions:
+          type: string
+          maxLength: 5000
+          nullable: true
+        sort_order:
+          type: integer
+          minimum: 1
     TreatmentPlanReasonRequest:
       type: object
       required: [reason]

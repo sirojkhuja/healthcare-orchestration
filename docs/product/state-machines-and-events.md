@@ -82,7 +82,7 @@
 - treatment plan CRUD uses draft creation with explicit action routes for lifecycle transitions
 - generic patch remains limited to `draft|approved`
 - delete is soft-delete and limited to `draft|rejected`
-- treatment plan items and route-level search behavior are deferred to later tasks but must reuse this lifecycle
+- treatment-plan search and item subresources are implemented in `T043` and must continue to reuse this lifecycle; item writes remain limited to parent plans in `draft|approved`
 
 ## Insurance Claim State Machine
 

@@ -495,11 +495,17 @@ Standard error:
 
 ### 12.7 Treatments
 - CRUD treatment plans
+- search treatment plans
+- manage ordered treatment-plan items
 - actions: approve, start, pause, resume, finish, reject
 - treatment plans own patient linkage, provider linkage, title, optional summary and goals, optional planned start and end dates, status, transition metadata, and lifecycle timestamps
 - `POST /treatment-plans` creates `draft` plans; generic `PATCH` is limited to `draft|approved`
 - treatment-plan delete is a soft delete limited to `draft|rejected`
 - treatment plan lifecycle is `draft -> approved -> active -> paused -> active -> finished`, with `draft|approved -> rejected`
+- treatment plans expose `item_count` in read models once treatment items are enabled
+- treatment items are ordered plan subresources with `item_type`, title, optional description, optional instructions, and one-based `sort_order`
+- treatment item writes are limited to parent plans in `draft|approved`; started or terminal plans are read-only for item changes
+- treatment-item insert, move, and delete operations reindex sibling order transactionally to keep a contiguous ordered list
 
 ### 12.8 Labs
 - CRUD lab orders
@@ -1079,7 +1085,7 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/treatment-plans/{planId}:resume` → `ResumeTreatmentPlanCommand` → Treatment
 - POST `/treatment-plans/{planId}:finish` → `FinishTreatmentPlanCommand` → Treatment
 - POST `/treatment-plans/{planId}:reject` → `RejectTreatmentPlanCommand` → Treatment
-- `T042` implements treatment-plan CRUD plus lifecycle routes; search and treatment-item route behavior remain deferred to `T043`
+- `T043` implements treatment-plan search plus ordered treatment-item routes defined in ADR `030`; no separate bulk treatment route is introduced because the canonical route inventory does not define one in this phase
 
 ### Encounters / visits
 - GET `/encounters` → `ListEncountersQuery` → Treatment

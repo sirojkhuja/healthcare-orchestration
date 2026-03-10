@@ -163,7 +163,13 @@
   - `active|paused -> finished`
   - `draft|approved -> rejected`
 - `pause` and `reject` require a non-empty `reason`.
-- `T042` fixes the future treatment-plan search contract as `q`, `status`, `patient_id`, `provider_id`, `planned_from`, `planned_to`, `created_from`, `created_to`, and `limit`, but the search route and treatment-item routes remain deferred to `T043`.
+- `T043` makes treatment-plan search and treatment-item subresources operational with ADR `030`.
+- Treatment-plan search supports `q`, `status`, `patient_id`, `provider_id`, `planned_from`, `planned_to`, `created_from`, `created_to`, and `limit`, returns `meta.filters`, excludes soft-deleted plans, and matches item titles in addition to plan, patient, and provider fields.
+- Treatment plans now expose `item_count` in list, detail, and search read models.
+- Treatment items are ordered tenant-scoped plan subresources with `item_type`, `title`, optional `description`, optional `instructions`, and one-based `sort_order`.
+- Treatment item writes are limited to parent plans in `draft|approved`; active, paused, finished, and rejected plans are item-read-only.
+- Creating, moving, and deleting treatment items reindex sibling `sort_order` values transactionally so each plan keeps a contiguous ordered sequence.
+- `T043` does not add a separate bulk treatment route because the canonical inventory defines only search plus item subresources in this phase.
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.

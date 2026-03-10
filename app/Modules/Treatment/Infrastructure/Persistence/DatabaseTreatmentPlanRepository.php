@@ -104,10 +104,17 @@ final class DatabaseTreatmentPlanRepository implements TreatmentPlanRepository
             $pattern = '%'.mb_strtolower($criteria->query).'%';
             $query->where(function (Builder $builder) use ($pattern): void {
                 $builder
-                    ->whereRaw('LOWER(treatment_plans.id::text) LIKE ?', [$pattern])
+                    ->whereRaw('LOWER(CAST(treatment_plans.id AS TEXT)) LIKE ?', [$pattern])
                     ->orWhereRaw('LOWER(treatment_plans.title) LIKE ?', [$pattern])
                     ->orWhereRaw('LOWER(COALESCE(patients.preferred_name, patients.first_name, \'\') || \' \' || patients.last_name) LIKE ?', [$pattern])
-                    ->orWhereRaw('LOWER(COALESCE(providers.preferred_name, providers.first_name, \'\') || \' \' || providers.last_name) LIKE ?', [$pattern]);
+                    ->orWhereRaw('LOWER(COALESCE(providers.preferred_name, providers.first_name, \'\') || \' \' || providers.last_name) LIKE ?', [$pattern])
+                    ->orWhereExists(function (Builder $itemQuery) use ($pattern): void {
+                        $itemQuery->selectRaw('1')
+                            ->from('treatment_plan_items')
+                            ->whereColumn('treatment_plan_items.plan_id', 'treatment_plans.id')
+                            ->whereColumn('treatment_plan_items.tenant_id', 'treatment_plans.tenant_id')
+                            ->whereRaw('LOWER(treatment_plan_items.title) LIKE ?', [$pattern]);
+                    });
             });
         }
 
@@ -184,6 +191,7 @@ final class DatabaseTreatmentPlanRepository implements TreatmentPlanRepository
                 'treatment_plans.goals',
                 'treatment_plans.planned_start_date',
                 'treatment_plans.planned_end_date',
+                DB::raw('(select count(*) from treatment_plan_items where treatment_plan_items.plan_id = treatment_plans.id and treatment_plan_items.tenant_id = treatment_plans.tenant_id) as item_count'),
                 'treatment_plans.status',
                 'treatment_plans.last_transition',
                 'treatment_plans.approved_at',
@@ -274,6 +282,11 @@ final class DatabaseTreatmentPlanRepository implements TreatmentPlanRepository
         return is_string($value) ? $value : '';
     }
 
+    private function intValue(mixed $value): int
+    {
+        return is_numeric($value) ? (int) $value : 0;
+    }
+
     private function toData(stdClass $row): TreatmentPlanData
     {
         return new TreatmentPlanData(
@@ -298,6 +311,7 @@ final class DatabaseTreatmentPlanRepository implements TreatmentPlanRepository
             goals: $this->nullableString($row->goals ?? null),
             plannedStartDate: $this->nullableString($row->planned_start_date ?? null),
             plannedEndDate: $this->nullableString($row->planned_end_date ?? null),
+            itemCount: $this->intValue($row->item_count ?? null),
             status: $this->stringValue($row->status ?? null),
             lastTransition: $this->lastTransition($row->last_transition ?? null),
             approvedAt: $this->nullableDateTime($row->approved_at ?? null),

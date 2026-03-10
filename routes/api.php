@@ -50,6 +50,7 @@ use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLimitsContr
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantSettingsController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantUsageController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanController;
+use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanItemController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanWorkflowController;
 use Illuminate\Support\Facades\Route;
 
@@ -216,6 +217,8 @@ Route::prefix('v1')->group(function (): void {
             });
             Route::middleware('permission:treatments.view')->group(function (): void {
                 Route::get('/treatment-plans', [TreatmentPlanController::class, 'list'])->name('treatment-plans.list');
+                Route::get('/treatment-plans/search', [TreatmentPlanController::class, 'search'])->name('treatment-plans.search');
+                Route::get('/treatment-plans/{planId}/items', [TreatmentPlanItemController::class, 'list'])->name('treatment-plans.items.list');
                 Route::get('/treatment-plans/{planId}', [TreatmentPlanController::class, 'show'])->name('treatment-plans.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
@@ -337,6 +340,9 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/treatment-plans', [TreatmentPlanController::class, 'create'])->name('treatment-plans.create');
                 Route::patch('/treatment-plans/{planId}', [TreatmentPlanController::class, 'update'])->name('treatment-plans.update');
                 Route::delete('/treatment-plans/{planId}', [TreatmentPlanController::class, 'delete'])->name('treatment-plans.delete');
+                Route::post('/treatment-plans/{planId}/items', [TreatmentPlanItemController::class, 'create'])->name('treatment-plans.items.create');
+                Route::patch('/treatment-plans/{planId}/items/{itemId}', [TreatmentPlanItemController::class, 'update'])->name('treatment-plans.items.update');
+                Route::delete('/treatment-plans/{planId}/items/{itemId}', [TreatmentPlanItemController::class, 'delete'])->name('treatment-plans.items.delete');
                 Route::post('/treatment-plans/{planId}:approve', [TreatmentPlanWorkflowController::class, 'approve'])->name('treatment-plans.approve');
                 Route::post('/treatment-plans/{planId}:start', [TreatmentPlanWorkflowController::class, 'start'])->name('treatment-plans.start');
                 Route::post('/treatment-plans/{planId}:pause', [TreatmentPlanWorkflowController::class, 'pause'])->name('treatment-plans.pause');
