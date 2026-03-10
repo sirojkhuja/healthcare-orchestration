@@ -29,6 +29,19 @@
 - cannot complete without first being `in_progress`
 - cannot transition from terminal states without an explicit recovery path
 
+### Allowed Transitions
+
+- `draft -> scheduled`
+- `scheduled -> confirmed`
+- `confirmed -> checked_in`
+- `scheduled -> checked_in` when an admin override is recorded
+- `checked_in -> in_progress`
+- `in_progress -> completed`
+- `scheduled|confirmed -> canceled`
+- `scheduled|confirmed -> no_show` after the scheduled start time
+- `scheduled|confirmed -> rescheduled`
+- `canceled|no_show|rescheduled -> scheduled` through `restore` while the original slot has not fully elapsed
+
 ### Operational Notes
 
 - rescheduling must preserve audit history and previous slot reference
@@ -76,7 +89,13 @@ At minimum the platform must support events for:
 
 - `AppointmentScheduled`
 - `AppointmentConfirmed`
+- `AppointmentCheckedIn`
+- `AppointmentStarted`
+- `AppointmentCompleted`
 - `AppointmentCanceled`
+- `AppointmentNoShow`
+- `AppointmentRescheduled`
+- `AppointmentRestored`
 - `TreatmentPlanApproved`
 - `LabOrderCreated`
 - `LabResultReceived`

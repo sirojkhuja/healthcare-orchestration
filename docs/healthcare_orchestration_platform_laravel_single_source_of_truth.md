@@ -224,7 +224,13 @@ docs/
 ### 5.3 Domain Events (examples)
 - AppointmentScheduled
 - AppointmentConfirmed
+- AppointmentCheckedIn
+- AppointmentStarted
+- AppointmentCompleted
 - AppointmentCanceled
+- AppointmentNoShow
+- AppointmentRescheduled
+- AppointmentRestored
 - TreatmentPlanApproved
 - LabOrderCreated
 - LabResultReceived
@@ -245,6 +251,31 @@ Guards:
 - cannot confirm past appointment
 - cannot check-in without confirmation (unless admin override)
 - cannot complete unless in_progress
+- terminal states may only recover through explicit `restore`
+
+Transition rules:
+- `schedule`: `draft -> scheduled`
+- `confirm`: `scheduled -> confirmed`
+- `check-in`: `confirmed -> checked_in`, or `scheduled -> checked_in` only with recorded admin override
+- `start`: `checked_in -> in_progress`
+- `complete`: `in_progress -> completed`
+- `cancel`: `scheduled|confirmed -> canceled`, reason required
+- `no-show`: `scheduled|confirmed -> no_show`, reason required, only after scheduled start
+- `reschedule`: `scheduled|confirmed -> rescheduled`, reason required, replacement slot reference required
+- `restore`: `canceled|no_show|rescheduled -> scheduled`, only while the original slot has not fully elapsed
+
+Aggregate minimum fields:
+- `appointment_id`
+- `tenant_id`
+- `patient_id`
+- `provider_id`
+- optional `clinic_id`
+- optional `room_id`
+- `scheduled_start_at`
+- `scheduled_end_at`
+- `timezone`
+- `status`
+- latest transition metadata including actor, timestamp, reason, admin override, restored-from status, and replacement-slot reference where applicable
 
 Transitions produce events for Kafka + audit.
 
@@ -453,6 +484,8 @@ Standard error:
 ### 12.6 Scheduling (Appointments)
 - CRUD appointments
 - actions: schedule, confirm, check-in, start, complete, cancel, no-show, reschedule
+- appointment booking owns patient, provider, optional clinic and room assignment, scheduled slot, status, and transition metadata
+- reschedule closes the current appointment as `rescheduled` and preserves the original slot history for the replacement booking
 
 ### 12.7 Treatments
 - CRUD treatment plans

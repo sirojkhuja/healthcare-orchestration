@@ -122,9 +122,21 @@
 ## API Notes
 
 - Scheduling owns availability and slot decisions.
+- The appointment aggregate owns `appointment_id`, tenant scope, patient and provider linkage, optional clinic and room assignment, the scheduled slot, status, and the latest transition metadata.
+- Appointment state transitions are pure domain behavior in `T037`; persistence-backed CRUD, search, export, audit views, and action endpoints arrive in later tasks.
+- The documented appointment transition matrix is:
+  - `draft -> scheduled`
+  - `scheduled -> confirmed`
+  - `confirmed -> checked_in`
+  - `scheduled -> checked_in` with admin override
+  - `checked_in -> in_progress`
+  - `in_progress -> completed`
+  - `scheduled|confirmed -> canceled|no_show|rescheduled`
+  - `canceled|no_show|rescheduled -> scheduled` through `restore` while the original slot has not fully elapsed
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.
+- Appointment occupancy is still out of the slot cache until appointment persistence and booking flows are introduced in later tasks.
 - Provider calendar export reuses the calendar read model, stores a private CSV through the shared export storage contract, and records `providers.calendar_exported`.
 - Notifications may be invoked from appointment actions but remain in the Notifications module.
 - Lab provider traffic must still pass through integration contracts.
