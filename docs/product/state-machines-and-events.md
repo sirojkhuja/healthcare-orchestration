@@ -165,6 +165,38 @@
 - reopening must preserve the prior adjudication record
 - every decision transition requires actor, reason, and source evidence
 
+## Invoice State Machine
+
+### States
+
+- `draft`
+- `issued`
+- `finalized`
+- `void`
+
+### Allowed Transitions
+
+- `draft -> issued`
+- `issued -> finalized`
+- `draft|issued|finalized -> void`
+
+### Required Guards
+
+- only draft invoices may be edited through generic CRUD routes
+- only draft invoices may mutate invoice items
+- issue requires at least one item and a positive total
+- only issued invoices may be finalized
+- voiding requires a non-empty reason
+- void is terminal
+
+### Operational Notes
+
+- invoice create starts in `draft`
+- delete is soft-delete and limited to `draft|void`
+- issue emits `InvoiceIssued`
+- invoice item and total recalculation remain transactionally consistent
+- taxes, discounts, and payment allocations are deferred beyond `T049`
+
 ## Payment State Machine
 
 ### States

@@ -412,6 +412,632 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices:
+    get:
+      operationId: ListInvoicesQuery
+      tags: [Billing]
+      summary: List invoices in the current tenant
+      description: Returns tenant-scoped invoices ordered by lifecycle timestamps and invoice number.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/InvoiceStatusFilter'
+        - $ref: '#/components/parameters/InvoicePatientFilter'
+        - $ref: '#/components/parameters/InvoiceIssuedFromFilter'
+        - $ref: '#/components/parameters/InvoiceIssuedToFilter'
+        - $ref: '#/components/parameters/InvoiceDueFromFilter'
+        - $ref: '#/components/parameters/InvoiceDueToFilter'
+        - $ref: '#/components/parameters/InvoiceCreatedFromFilter'
+        - $ref: '#/components/parameters/InvoiceCreatedToFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Invoice directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateInvoiceCommand
+      tags: [Billing]
+      summary: Create a draft invoice
+      description: Creates a tenant-scoped draft invoice with monotonic invoice numbering.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceRequest'
+      responses:
+        '201':
+          description: Invoice created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid invoice payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/search:
+    get:
+      operationId: SearchInvoicesQuery
+      tags: [Billing]
+      summary: Search invoices in the current tenant
+      description: Searches invoices by invoice number, patient display name, notes, and invoice filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/InvoiceStatusFilter'
+        - $ref: '#/components/parameters/InvoicePatientFilter'
+        - $ref: '#/components/parameters/InvoiceIssuedFromFilter'
+        - $ref: '#/components/parameters/InvoiceIssuedToFilter'
+        - $ref: '#/components/parameters/InvoiceDueFromFilter'
+        - $ref: '#/components/parameters/InvoiceDueToFilter'
+        - $ref: '#/components/parameters/InvoiceCreatedFromFilter'
+        - $ref: '#/components/parameters/InvoiceCreatedToFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Invoice search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/export:
+    get:
+      operationId: ExportInvoicesQuery
+      tags: [Billing]
+      summary: Export invoices as CSV
+      description: Generates a CSV export for the current tenant invoice search filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/InvoiceStatusFilter'
+        - $ref: '#/components/parameters/InvoicePatientFilter'
+        - $ref: '#/components/parameters/InvoiceIssuedFromFilter'
+        - $ref: '#/components/parameters/InvoiceIssuedToFilter'
+        - $ref: '#/components/parameters/InvoiceDueFromFilter'
+        - $ref: '#/components/parameters/InvoiceDueToFilter'
+        - $ref: '#/components/parameters/InvoiceCreatedFromFilter'
+        - $ref: '#/components/parameters/InvoiceCreatedToFilter'
+        - $ref: '#/components/parameters/BillingExportLimit'
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [csv]
+      responses:
+        '200':
+          description: Invoice export metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported export format or invalid filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/{invoiceId}:
+    get:
+      operationId: GetInvoiceQuery
+      tags: [Billing]
+      summary: Get one invoice
+      description: Returns a tenant-scoped invoice with current item snapshots and totals.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      responses:
+        '200':
+          description: Invoice detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceShowResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateInvoiceCommand
+      tags: [Billing]
+      summary: Update a draft invoice
+      description: Updates draft invoice metadata. Currency and price-list changes are rejected after items exist.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvoiceRequest'
+      responses:
+        '200':
+          description: Invoice updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice can no longer be changed through the draft CRUD route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid invoice update payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteInvoiceCommand
+      tags: [Billing]
+      summary: Soft-delete a draft or void invoice
+      description: Soft-deletes a draft or void invoice while preserving audit history and invoice numbering gaps.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      responses:
+        '200':
+          description: Invoice deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice cannot be deleted in its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/{invoiceId}/items:
+    get:
+      operationId: ListInvoiceItemsQuery
+      tags: [Billing]
+      summary: List invoice items
+      description: Returns the current item set for one invoice.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      responses:
+        '200':
+          description: Invoice item collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceItemCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddInvoiceItemCommand
+      tags: [Billing]
+      summary: Add one invoice item
+      description: Adds a draft invoice item using a current service snapshot and either explicit or price-list derived pricing.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceItemRequest'
+      responses:
+        '201':
+          description: Invoice item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice items are no longer writable in the current invoice state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid invoice item payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/{invoiceId}/items/{itemId}:
+    patch:
+      operationId: UpdateInvoiceItemCommand
+      tags: [Billing]
+      summary: Update one invoice item
+      description: Updates a draft invoice item and recalculates invoice totals in the same transaction.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+        - $ref: '#/components/parameters/InvoiceItemIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvoiceItemRequest'
+      responses:
+        '200':
+          description: Invoice item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice or item not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice items are no longer writable in the current invoice state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid invoice item update payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: RemoveInvoiceItemCommand
+      tags: [Billing]
+      summary: Delete one invoice item
+      description: Deletes a draft invoice item and recalculates invoice totals in the same transaction.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+        - $ref: '#/components/parameters/InvoiceItemIdPath'
+      responses:
+        '200':
+          description: Invoice item deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice or item not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice items are no longer writable in the current invoice state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/{invoiceId}:issue:
+    post:
+      operationId: IssueInvoiceCommand
+      tags: [Billing]
+      summary: Issue a draft invoice
+      description: Marks a draft invoice as issued. The invoice must already have at least one item and a positive total.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      responses:
+        '200':
+          description: Invoice issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice cannot be issued in its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/{invoiceId}:finalize:
+    post:
+      operationId: FinalizeInvoiceCommand
+      tags: [Billing]
+      summary: Finalize an issued invoice
+      description: Marks an issued invoice as finalized and leaves it read-only except for voiding.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      responses:
+        '200':
+          description: Invoice finalized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice cannot be finalized in its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/invoices/{invoiceId}:void:
+    post:
+      operationId: VoidInvoiceCommand
+      tags: [Billing]
+      summary: Void an invoice
+      description: Voids a draft, issued, or finalized invoice. Void is terminal and requires a reason.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/InvoiceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidInvoiceRequest'
+      responses:
+        '200':
+          description: Invoice voided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Invoice cannot be voided in its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -448,6 +1074,20 @@ components:
       schema:
         type: string
         format: uuid
+    InvoiceIdPath:
+      name: invoiceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    InvoiceItemIdPath:
+      name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     BillingSearchQuery:
       name: q
       in: query
@@ -455,6 +1095,62 @@ components:
       schema:
         type: string
         maxLength: 120
+    InvoiceStatusFilter:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [draft, issued, finalized, void]
+    InvoicePatientFilter:
+      name: patient_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    InvoiceIssuedFromFilter:
+      name: issued_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    InvoiceIssuedToFilter:
+      name: issued_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    InvoiceDueFromFilter:
+      name: due_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    InvoiceDueToFilter:
+      name: due_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    InvoiceCreatedFromFilter:
+      name: created_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    InvoiceCreatedToFilter:
+      name: created_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
     BillingServiceCategoryFilter:
       name: category
       in: query
@@ -489,6 +1185,15 @@ components:
         type: integer
         minimum: 1
         maximum: 100
+        default: 25
+    BillingExportLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
         default: 25
   schemas:
     BillableService:
@@ -755,6 +1460,283 @@ components:
               amount:
                 type: string
                 pattern: '^\d{1,10}(\.\d{1,2})?$'
+    InvoiceItem:
+      type: object
+      required: [id, invoice_id, tenant_id, service, quantity, unit_price, line_subtotal, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        invoice_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        service:
+          type: object
+          required: [id, code, name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            name:
+              type: string
+            category:
+              type: [string, 'null']
+            unit:
+              type: [string, 'null']
+        description:
+          type: [string, 'null']
+        quantity:
+          type: string
+        unit_price:
+          $ref: '#/components/schemas/Money'
+        line_subtotal:
+          $ref: '#/components/schemas/Money'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Invoice:
+      type: object
+      required: [id, tenant_id, invoice_number, patient, currency, invoice_date, status, item_count, totals, items, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        invoice_number:
+          type: string
+        patient:
+          type: object
+          required: [id, display_name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            display_name:
+              type: string
+        price_list:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: [string, 'null']
+            name:
+              type: [string, 'null']
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        invoice_date:
+          type: string
+          format: date
+        due_on:
+          type: [string, 'null']
+          format: date
+        notes:
+          type: [string, 'null']
+        status:
+          type: string
+          enum: [draft, issued, finalized, void]
+        item_count:
+          type: integer
+        totals:
+          type: object
+          required: [subtotal, total]
+          properties:
+            subtotal:
+              $ref: '#/components/schemas/Money'
+            total:
+              $ref: '#/components/schemas/Money'
+        issued_at:
+          type: [string, 'null']
+          format: date-time
+        finalized_at:
+          type: [string, 'null']
+          format: date-time
+        voided_at:
+          type: [string, 'null']
+          format: date-time
+        void_reason:
+          type: [string, 'null']
+        last_transition:
+          type:
+            - object
+            - 'null'
+        deleted_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+    InvoiceCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+    InvoiceShowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Invoice'
+    InvoiceMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/Invoice'
+    InvoiceItemCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+    InvoiceExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          required: [export_id, format, file_name, row_count, generated_at, filters, storage]
+          properties:
+            export_id:
+              type: string
+              format: uuid
+            format:
+              type: string
+              enum: [csv]
+            file_name:
+              type: string
+            row_count:
+              type: integer
+            generated_at:
+              type: string
+              format: date-time
+            filters:
+              type: object
+            storage:
+              type: object
+              required: [disk, path, visibility]
+              properties:
+                disk:
+                  type: string
+                path:
+                  type: string
+                visibility:
+                  type: string
+    CreateInvoiceRequest:
+      type: object
+      required: [patient_id]
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        price_list_id:
+          type: [string, 'null']
+          format: uuid
+        currency:
+          type: [string, 'null']
+          minLength: 3
+          maxLength: 3
+        invoice_date:
+          type: [string, 'null']
+          format: date
+        due_on:
+          type: [string, 'null']
+          format: date
+        notes:
+          type: [string, 'null']
+    UpdateInvoiceRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        price_list_id:
+          type: [string, 'null']
+          format: uuid
+        currency:
+          type: [string, 'null']
+          minLength: 3
+          maxLength: 3
+        invoice_date:
+          type: [string, 'null']
+          format: date
+        due_on:
+          type: [string, 'null']
+          format: date
+        notes:
+          type: [string, 'null']
+    CreateInvoiceItemRequest:
+      type: object
+      required: [service_id, quantity]
+      properties:
+        service_id:
+          type: string
+          format: uuid
+        description:
+          type: [string, 'null']
+        quantity:
+          type: string
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        unit_price_amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+    UpdateInvoiceItemRequest:
+      type: object
+      properties:
+        service_id:
+          type: string
+          format: uuid
+        description:
+          type: [string, 'null']
+        quantity:
+          type: string
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        unit_price_amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+    VoidInvoiceRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
     Money:
       type: object
       required: [amount, currency]

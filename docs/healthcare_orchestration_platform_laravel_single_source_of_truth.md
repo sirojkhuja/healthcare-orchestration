@@ -1243,6 +1243,18 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - DELETE `/invoices/{invoiceId}/items/{itemId}` → `RemoveInvoiceItemCommand` → Billing
 - GET `/invoices/search` → `SearchInvoicesQuery` → Billing
 - GET `/invoices/export` → `ExportInvoicesQuery` → Billing
+- `T049` defines the invoice contract in ADR `036`
+- invoices are tenant-scoped aggregates with `invoice_number`, `patient_id`, optional `price_list_id`, `currency`, `invoice_date`, optional `due_on`, optional `notes`, status, totals, lifecycle timestamps, and soft-delete retention
+- invoice status values are `draft`, `issued`, `finalized`, and `void`
+- invoice numbering is tenant-scoped monotonic and formatted as `INV-000001`
+- create starts in `draft`; generic `PATCH /invoices/{invoiceId}` is draft-only; delete is soft-delete limited to `draft|void`
+- explicit lifecycle is `draft -> issued -> finalized`, with `draft|issued|finalized -> void`
+- `issue` requires at least one item and a positive total; `finalize` requires `issued`; `void` requires a non-empty reason
+- invoice items are draft-only subresources with service snapshots, quantity, unit price, line subtotal, and invoice currency
+- omitting invoice-item `unit_price_amount` requires the invoice to reference a price list containing the selected service
+- invoice totals equal the sum of item subtotals; taxes, discounts, credits, and payment allocations are deferred beyond `T049`
+- `GET /invoices` and `GET /invoices/search` support `q`, `status`, `patient_id`, `issued_from`, `issued_to`, `due_from`, `due_to`, `created_from`, `created_to`, and `limit`
+- `GET /invoices/export` supports CSV export for the same invoice filters
 
 ### Payments
 - GET `/payments` → `ListPaymentsQuery` → Billing

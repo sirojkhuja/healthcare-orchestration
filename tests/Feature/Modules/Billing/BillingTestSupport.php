@@ -39,6 +39,26 @@ function billingCreateTenant($testCase, string $token, string $name)
     return treatmentCreateTenant($testCase, $token, $name);
 }
 
+function billingCreatePatient($testCase, string $token, string $tenantId, array $overrides = [])
+{
+    return treatmentCreatePatient($testCase, $token, $tenantId, $overrides);
+}
+
+function billingCreateInvoice(
+    $testCase,
+    string $token,
+    string $tenantId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/invoices', $payload);
+}
+
 function billingDeletePriceList(
     $testCase,
     string $token,
@@ -52,6 +72,21 @@ function billingDeletePriceList(
             'Idempotency-Key' => $idempotencyKey,
         ])
         ->deleteJson('/api/v1/price-lists/'.$priceListId);
+}
+
+function billingDeleteInvoice(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->deleteJson('/api/v1/invoices/'.$invoiceId);
 }
 
 function billingDeleteService(
@@ -69,6 +104,22 @@ function billingDeleteService(
         ->deleteJson('/api/v1/services/'.$serviceId);
 }
 
+function billingAddInvoiceItem(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/invoices/'.$invoiceId.'/items', $payload);
+}
+
 function billingEnsureMembership(User $user, string $tenantId, string $status = 'active'): void
 {
     treatmentEnsureMembership($user, $tenantId, $status);
@@ -82,6 +133,52 @@ function billingGrantPermissions(User $user, string $tenantId, array $permission
 function billingIssueBearerToken($testCase, string $email, string $password = 'secret-password'): string
 {
     return treatmentIssueBearerToken($testCase, $email, $password);
+}
+
+function billingIssueInvoice(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/invoices/'.$invoiceId.':issue');
+}
+
+function billingFinalizeInvoice(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/invoices/'.$invoiceId.':finalize');
+}
+
+function billingVoidInvoice(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/invoices/'.$invoiceId.':void', $payload);
 }
 
 function billingSetPriceListItems(
@@ -98,6 +195,55 @@ function billingSetPriceListItems(
             'Idempotency-Key' => $idempotencyKey,
         ])
         ->putJson('/api/v1/price-lists/'.$priceListId.'/items', $payload);
+}
+
+function billingUpdateInvoice(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->patchJson('/api/v1/invoices/'.$invoiceId, $payload);
+}
+
+function billingUpdateInvoiceItem(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    string $itemId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->patchJson('/api/v1/invoices/'.$invoiceId.'/items/'.$itemId, $payload);
+}
+
+function billingDeleteInvoiceItem(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $invoiceId,
+    string $itemId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->deleteJson('/api/v1/invoices/'.$invoiceId.'/items/'.$itemId);
 }
 
 function billingUpdatePriceList(

@@ -1,6 +1,9 @@
 <?php
 
 use App\Modules\Billing\Presentation\Http\Controllers\BillableServiceController;
+use App\Modules\Billing\Presentation\Http\Controllers\InvoiceController;
+use App\Modules\Billing\Presentation\Http\Controllers\InvoiceItemController;
+use App\Modules\Billing\Presentation\Http\Controllers\InvoiceWorkflowController;
 use App\Modules\Billing\Presentation\Http\Controllers\PriceListController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApiKeyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthController;
@@ -272,6 +275,11 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/services', [BillableServiceController::class, 'list'])->name('services.list');
                 Route::get('/price-lists', [PriceListController::class, 'list'])->name('price-lists.list');
                 Route::get('/price-lists/{priceListId}', [PriceListController::class, 'show'])->name('price-lists.show');
+                Route::get('/invoices', [InvoiceController::class, 'list'])->name('invoices.list');
+                Route::get('/invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
+                Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
+                Route::get('/invoices/{invoiceId}/items', [InvoiceItemController::class, 'list'])->name('invoices.items.list');
+                Route::get('/invoices/{invoiceId}', [InvoiceController::class, 'show'])->name('invoices.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -482,6 +490,33 @@ Route::prefix('v1')->group(function (): void {
                 Route::put('/price-lists/{priceListId}/items', [PriceListController::class, 'setItems'])
                     ->middleware('idempotency:price-lists.items.replace')
                     ->name('price-lists.items.replace');
+                Route::post('/invoices', [InvoiceController::class, 'create'])
+                    ->middleware('idempotency:invoices.create')
+                    ->name('invoices.create');
+                Route::patch('/invoices/{invoiceId}', [InvoiceController::class, 'update'])
+                    ->middleware('idempotency:invoices.update')
+                    ->name('invoices.update');
+                Route::delete('/invoices/{invoiceId}', [InvoiceController::class, 'delete'])
+                    ->middleware('idempotency:invoices.delete')
+                    ->name('invoices.delete');
+                Route::post('/invoices/{invoiceId}/items', [InvoiceItemController::class, 'create'])
+                    ->middleware('idempotency:invoices.items.create')
+                    ->name('invoices.items.create');
+                Route::patch('/invoices/{invoiceId}/items/{itemId}', [InvoiceItemController::class, 'update'])
+                    ->middleware('idempotency:invoices.items.update')
+                    ->name('invoices.items.update');
+                Route::delete('/invoices/{invoiceId}/items/{itemId}', [InvoiceItemController::class, 'delete'])
+                    ->middleware('idempotency:invoices.items.delete')
+                    ->name('invoices.items.delete');
+                Route::post('/invoices/{invoiceId}:issue', [InvoiceWorkflowController::class, 'issue'])
+                    ->middleware('idempotency:invoices.issue')
+                    ->name('invoices.issue');
+                Route::post('/invoices/{invoiceId}:finalize', [InvoiceWorkflowController::class, 'finalize'])
+                    ->middleware('idempotency:invoices.finalize')
+                    ->name('invoices.finalize');
+                Route::post('/invoices/{invoiceId}:void', [InvoiceWorkflowController::class, 'void'])
+                    ->middleware('idempotency:invoices.void')
+                    ->name('invoices.void');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])

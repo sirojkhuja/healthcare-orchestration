@@ -13,8 +13,10 @@ use App\Modules\AuditCompliance\Infrastructure\AuthAuditActorResolver;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditEventRepository;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseSecurityEventRepository;
 use App\Modules\Billing\Application\Contracts\BillableServiceRepository;
+use App\Modules\Billing\Application\Contracts\InvoiceRepository;
 use App\Modules\Billing\Application\Contracts\PriceListRepository;
 use App\Modules\Billing\Infrastructure\Persistence\DatabaseBillableServiceRepository;
+use App\Modules\Billing\Infrastructure\Persistence\DatabaseInvoiceRepository;
 use App\Modules\Billing\Infrastructure\Persistence\DatabasePriceListRepository;
 use App\Modules\IdentityAccess\Application\Contracts\AccessTokenService;
 use App\Modules\IdentityAccess\Application\Contracts\ApiKeyRepository;
@@ -201,6 +203,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(AuditEventRepository::class, DatabaseAuditEventRepository::class);
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
         $this->app->bind(BillableServiceRepository::class, DatabaseBillableServiceRepository::class);
+        $this->app->bind(InvoiceRepository::class, DatabaseInvoiceRepository::class);
         $this->app->bind(ClinicRepository::class, DatabaseClinicRepository::class);
         $this->app->bind(LocationReferenceRepository::class, ConfigLocationReferenceRepository::class);
         $this->app->bind(LabOrderRepository::class, DatabaseLabOrderRepository::class);

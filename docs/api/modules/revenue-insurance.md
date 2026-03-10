@@ -56,6 +56,21 @@
 - `PUT /price-lists/{priceListId}/items` fully replaces the item set.
 - Price-list item payloads use `service_id` plus a positive decimal `amount`.
 - Empty item arrays are valid and clear the price list.
+- `T049` defines the invoice aggregate contract in ADR `036`.
+- Invoice status values are `draft`, `issued`, `finalized`, and `void`.
+- Invoice creation requires `patient_id`, uses optional `price_list_id`, and requires `currency` only when no price list is linked.
+- Invoice numbers are tenant-scoped monotonic values in the form `INV-000001`.
+- Generic `PATCH /invoices/{invoiceId}` is draft-only.
+- `DELETE /invoices/{invoiceId}` is a soft delete limited to `draft|void`.
+- Invoice item writes are draft-only and use service snapshots plus snapped unit pricing.
+- Invoice items accept `service_id`, optional `description`, `quantity`, and optional `unit_price_amount`.
+- Omitting `unit_price_amount` requires the invoice to reference a price list containing the selected service.
+- Invoice totals are calculated as the sum of line subtotals; taxes, discounts, and credits are deferred beyond `T049`.
+- `POST /invoices/{invoiceId}:issue` requires at least one item and a positive total.
+- `POST /invoices/{invoiceId}:finalize` requires the invoice to already be `issued`.
+- `POST /invoices/{invoiceId}:void` requires a non-empty reason and is terminal.
+- `GET /invoices` and `GET /invoices/search` support `q`, `status`, `patient_id`, `issued_from`, `issued_to`, `due_from`, `due_to`, `created_from`, `created_to`, and `limit`.
+- `GET /invoices/export` supports CSV export for the same invoice filters with a maximum limit of `1000`.
 
 ## Insurance Claims
 
