@@ -495,7 +495,11 @@ Standard error:
 
 ### 12.7 Treatments
 - CRUD treatment plans
-- actions: approve, pause, resume, finish
+- actions: approve, start, pause, resume, finish, reject
+- treatment plans own patient linkage, provider linkage, title, optional summary and goals, optional planned start and end dates, status, transition metadata, and lifecycle timestamps
+- `POST /treatment-plans` creates `draft` plans; generic `PATCH` is limited to `draft|approved`
+- treatment-plan delete is a soft delete limited to `draft|rejected`
+- treatment plan lifecycle is `draft -> approved -> active -> paused -> active -> finished`, with `draft|approved -> rejected`
 
 ### 12.8 Labs
 - CRUD lab orders
@@ -1075,6 +1079,7 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/treatment-plans/{planId}:resume` → `ResumeTreatmentPlanCommand` → Treatment
 - POST `/treatment-plans/{planId}:finish` → `FinishTreatmentPlanCommand` → Treatment
 - POST `/treatment-plans/{planId}:reject` → `RejectTreatmentPlanCommand` → Treatment
+- `T042` implements treatment-plan CRUD plus lifecycle routes; search and treatment-item route behavior remain deferred to `T043`
 
 ### Encounters / visits
 - GET `/encounters` → `ListEncountersQuery` → Treatment

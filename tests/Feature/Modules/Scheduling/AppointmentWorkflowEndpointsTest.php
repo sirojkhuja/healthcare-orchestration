@@ -213,6 +213,8 @@ it('supports no-show and restore while the original slot is still active', funct
     schedulingAppointmentAction($this, $fixture['token'], $fixture['tenant_id'], $appointmentId, 'schedule', 'workflow-no-show-schedule')
         ->assertOk();
 
+    CarbonImmutable::setTestNow('2026-03-10T07:30:00+05:00');
+
     schedulingAppointmentAction(
         $this,
         $fixture['token'],

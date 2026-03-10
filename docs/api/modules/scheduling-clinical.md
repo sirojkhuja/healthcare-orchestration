@@ -152,6 +152,18 @@
 - `POST /appointments/recurrences/{recurrenceId}:cancel` marks the recurrence itself as `canceled` and cancels only future generated appointments that are still `scheduled` or `confirmed`.
 - Waitlist entries are tenant-scoped records with `open|booked|removed` status, filterable through `GET /waitlist`, and `offer-slot` returns both the updated waitlist entry and the scheduled appointment created from it.
 - Waitlist slot offers must stay inside the requested date range and, when present, inside the preferred start/end time window.
+- `T042` makes treatment plans operational with tenant-scoped CRUD, explicit lifecycle actions, soft-delete retention, and audit coverage defined in ADR `029`.
+- The treatment-plan aggregate owns patient and provider linkage, title, summary, goals, optional planned start and end dates, status, transition metadata, and lifecycle timestamps.
+- `POST /treatment-plans` creates `draft` plans. Generic `PATCH /treatment-plans/{planId}` is limited to `draft|approved`, and generic `DELETE /treatment-plans/{planId}` soft-deletes only `draft|rejected` plans.
+- The treatment-plan state matrix is:
+  - `draft -> approved`
+  - `approved -> active`
+  - `active -> paused`
+  - `paused -> active`
+  - `active|paused -> finished`
+  - `draft|approved -> rejected`
+- `pause` and `reject` require a non-empty `reason`.
+- `T042` fixes the future treatment-plan search contract as `q`, `status`, `patient_id`, `provider_id`, `planned_from`, `planned_to`, `created_from`, `created_to`, and `limit`, but the search route and treatment-item routes remain deferred to `T043`.
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.

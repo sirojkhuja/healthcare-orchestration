@@ -106,6 +106,8 @@ use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantConfig
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantMetricsRepository;
 use App\Modules\TenantManagement\Infrastructure\Persistence\DatabaseTenantRepository;
 use App\Modules\TenantManagement\Infrastructure\Reference\ConfigLocationReferenceRepository;
+use App\Modules\Treatment\Application\Contracts\TreatmentPlanRepository;
+use App\Modules\Treatment\Infrastructure\Persistence\DatabaseTreatmentPlanRepository;
 use App\Shared\Application\Contracts\CacheKeyBuilder;
 use App\Shared\Application\Contracts\ConsumerReceiptStore;
 use App\Shared\Application\Contracts\EventContextFactory;
@@ -202,6 +204,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(TenantIpAllowlistRepository::class, DatabaseTenantIpAllowlistRepository::class);
         $this->app->bind(TenantMetricsRepository::class, DatabaseTenantMetricsRepository::class);
         $this->app->bind(TenantRepository::class, DatabaseTenantRepository::class);
+        $this->app->bind(TreatmentPlanRepository::class, DatabaseTreatmentPlanRepository::class);
         $this->app->bind(UserRoleAssignmentRepository::class, DatabaseUserRoleAssignmentRepository::class);
         $this->app->scoped(TenantContext::class, RequestTenantContext::class);
         $this->app->scoped(TenantScope::class, fn () => new TenantScope($this->app->make(TenantContext::class)));

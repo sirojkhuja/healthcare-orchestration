@@ -49,6 +49,8 @@ use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLifecycleCo
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantLimitsController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantSettingsController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\TenantUsageController;
+use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanController;
+use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanWorkflowController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -212,6 +214,10 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/appointments/{appointmentId}', [AppointmentController::class, 'show'])->name('appointments.show');
                 Route::get('/waitlist', [WaitlistController::class, 'list'])->name('waitlist.list');
             });
+            Route::middleware('permission:treatments.view')->group(function (): void {
+                Route::get('/treatment-plans', [TreatmentPlanController::class, 'list'])->name('treatment-plans.list');
+                Route::get('/treatment-plans/{planId}', [TreatmentPlanController::class, 'show'])->name('treatment-plans.show');
+            });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
@@ -326,6 +332,17 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/waitlist/{entryId}:offer-slot', [WaitlistController::class, 'offer'])
                     ->middleware('idempotency:waitlist.offer')
                     ->name('waitlist.offer');
+            });
+            Route::middleware('permission:treatments.manage')->group(function (): void {
+                Route::post('/treatment-plans', [TreatmentPlanController::class, 'create'])->name('treatment-plans.create');
+                Route::patch('/treatment-plans/{planId}', [TreatmentPlanController::class, 'update'])->name('treatment-plans.update');
+                Route::delete('/treatment-plans/{planId}', [TreatmentPlanController::class, 'delete'])->name('treatment-plans.delete');
+                Route::post('/treatment-plans/{planId}:approve', [TreatmentPlanWorkflowController::class, 'approve'])->name('treatment-plans.approve');
+                Route::post('/treatment-plans/{planId}:start', [TreatmentPlanWorkflowController::class, 'start'])->name('treatment-plans.start');
+                Route::post('/treatment-plans/{planId}:pause', [TreatmentPlanWorkflowController::class, 'pause'])->name('treatment-plans.pause');
+                Route::post('/treatment-plans/{planId}:resume', [TreatmentPlanWorkflowController::class, 'resume'])->name('treatment-plans.resume');
+                Route::post('/treatment-plans/{planId}:finish', [TreatmentPlanWorkflowController::class, 'finish'])->name('treatment-plans.finish');
+                Route::post('/treatment-plans/{planId}:reject', [TreatmentPlanWorkflowController::class, 'reject'])->name('treatment-plans.reject');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

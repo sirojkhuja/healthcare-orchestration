@@ -48,6 +48,42 @@
 - no-show and cancel transitions must capture actor, reason, and timestamp
 - reminder dispatch must be idempotent and based on scheduled state windows
 
+## Treatment Plan State Machine
+
+### States
+
+- `draft`
+- `approved`
+- `active`
+- `paused`
+- `finished`
+- `rejected`
+
+### Allowed Transitions
+
+- `draft -> approved`
+- `approved -> active`
+- `active -> paused`
+- `paused -> active`
+- `active|paused -> finished`
+- `draft|approved -> rejected`
+
+### Required Guards
+
+- only draft treatment plans may be approved
+- only approved treatment plans may be started
+- pausing requires a non-empty reason
+- only paused treatment plans may be resumed
+- only active or paused treatment plans may be finished
+- rejecting requires a non-empty reason and is limited to draft or approved plans
+
+### Operational Notes
+
+- treatment plan CRUD uses draft creation with explicit action routes for lifecycle transitions
+- generic patch remains limited to `draft|approved`
+- delete is soft-delete and limited to `draft|rejected`
+- treatment plan items and route-level search behavior are deferred to later tasks but must reuse this lifecycle
+
 ## Insurance Claim State Machine
 
 ### States
