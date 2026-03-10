@@ -5,6 +5,7 @@ namespace App\Modules\Scheduling\Infrastructure\Persistence;
 use App\Modules\Scheduling\Application\Contracts\AppointmentRepository;
 use App\Modules\Scheduling\Application\Data\AppointmentData;
 use App\Modules\Scheduling\Application\Data\AppointmentSearchCriteria;
+use App\Modules\Scheduling\Domain\Appointments\AppointmentStatus;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
@@ -18,7 +19,8 @@ final class DatabaseAppointmentRepository implements AppointmentRepository
     #[\Override]
     public function create(string $tenantId, array $attributes): AppointmentData
     {
-        $appointmentId = (string) Str::uuid();
+        $candidateId = $attributes['id'] ?? null;
+        $appointmentId = is_string($candidateId) ? $candidateId : (string) Str::uuid();
         $now = CarbonImmutable::now();
 
         DB::table('appointments')->insert([
@@ -28,6 +30,7 @@ final class DatabaseAppointmentRepository implements AppointmentRepository
             'provider_id' => $attributes['provider_id'],
             'clinic_id' => $attributes['clinic_id'],
             'room_id' => $attributes['room_id'],
+            'recurrence_id' => $attributes['recurrence_id'] ?? null,
             'status' => $attributes['status'],
             'scheduled_start_at' => $attributes['scheduled_start_at'],
             'scheduled_end_at' => $attributes['scheduled_end_at'],
@@ -49,6 +52,25 @@ final class DatabaseAppointmentRepository implements AppointmentRepository
             ->first();
 
         return $row instanceof stdClass ? $this->toData($row) : null;
+    }
+
+    #[\Override]
+    public function findManyInTenant(string $tenantId, array $appointmentIds, bool $withDeleted = false): array
+    {
+        if ($appointmentIds === []) {
+            return [];
+        }
+
+        /** @var list<stdClass> $rows */
+        $rows = $this->baseQuery($tenantId, $withDeleted)
+            ->whereIn('appointments.id', $appointmentIds)
+            ->orderBy('appointments.scheduled_start_at')
+            ->orderBy('appointments.created_at')
+            ->orderBy('appointments.id')
+            ->get()
+            ->all();
+
+        return array_map($this->toData(...), $rows);
     }
 
     #[\Override]
@@ -74,6 +96,47 @@ final class DatabaseAppointmentRepository implements AppointmentRepository
 
         /** @var list<stdClass> $rows */
         $rows = $query
+            ->orderBy('appointments.scheduled_start_at')
+            ->orderBy('appointments.created_at')
+            ->orderBy('appointments.id')
+            ->get()
+            ->all();
+
+        return array_map($this->toData(...), $rows);
+    }
+
+    #[\Override]
+    public function listBlockingForProviderWindow(
+        string $tenantId,
+        string $providerId,
+        CarbonImmutable $windowStart,
+        CarbonImmutable $windowEnd,
+    ): array {
+        /** @var list<stdClass> $rows */
+        $rows = $this->baseQuery($tenantId)
+            ->where('appointments.provider_id', $providerId)
+            ->whereIn('appointments.status', [
+                AppointmentStatus::SCHEDULED->value,
+                AppointmentStatus::CONFIRMED->value,
+                AppointmentStatus::CHECKED_IN->value,
+                AppointmentStatus::IN_PROGRESS->value,
+            ])
+            ->where('appointments.scheduled_end_at', '>', $windowStart)
+            ->where('appointments.scheduled_start_at', '<', $windowEnd)
+            ->orderBy('appointments.scheduled_start_at')
+            ->orderBy('appointments.id')
+            ->get()
+            ->all();
+
+        return array_map($this->toData(...), $rows);
+    }
+
+    #[\Override]
+    public function listForRecurrence(string $tenantId, string $recurrenceId, bool $withDeleted = false): array
+    {
+        /** @var list<stdClass> $rows */
+        $rows = $this->baseQuery($tenantId, $withDeleted)
+            ->where('appointments.recurrence_id', $recurrenceId)
             ->orderBy('appointments.scheduled_start_at')
             ->orderBy('appointments.created_at')
             ->orderBy('appointments.id')
@@ -197,6 +260,7 @@ final class DatabaseAppointmentRepository implements AppointmentRepository
                 'appointments.provider_id',
                 'appointments.clinic_id',
                 'appointments.room_id',
+                'appointments.recurrence_id',
                 'appointments.status',
                 'appointments.scheduled_start_at',
                 'appointments.scheduled_end_at',
@@ -247,6 +311,7 @@ final class DatabaseAppointmentRepository implements AppointmentRepository
             clinicName: $this->nullableString($row->clinic_name ?? null),
             roomId: $this->nullableString($row->room_id ?? null),
             roomName: $this->nullableString($row->room_name ?? null),
+            recurrenceId: $this->nullableString($row->recurrence_id ?? null),
             status: $this->stringValue($row->status ?? null),
             scheduledStartAt: $this->slotDateTime($row->scheduled_start_at ?? null, $timezone),
             scheduledEndAt: $this->slotDateTime($row->scheduled_end_at ?? null, $timezone),

@@ -20,6 +20,7 @@ final readonly class AppointmentData
         public ?string $clinicName,
         public ?string $roomId,
         public ?string $roomName,
+        public ?string $recurrenceId,
         public string $status,
         public CarbonImmutable $scheduledStartAt,
         public CarbonImmutable $scheduledEndAt,

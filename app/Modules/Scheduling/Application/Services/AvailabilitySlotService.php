@@ -6,8 +6,10 @@ use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
 use App\Modules\Provider\Application\Contracts\ProviderRepository;
 use App\Modules\Provider\Application\Data\ProviderData;
+use App\Modules\Scheduling\Application\Contracts\AppointmentRepository;
 use App\Modules\Scheduling\Application\Contracts\AvailabilityCacheInvalidator;
 use App\Modules\Scheduling\Application\Contracts\AvailabilityRuleRepository;
+use App\Modules\Scheduling\Application\Data\AppointmentData;
 use App\Modules\Scheduling\Application\Data\AvailabilityRuleData;
 use App\Modules\Scheduling\Application\Data\AvailabilitySlotData;
 use App\Modules\Scheduling\Application\Data\AvailabilitySlotResultData;
@@ -34,6 +36,7 @@ final class AvailabilitySlotService
         private readonly ProviderRepository $providerRepository,
         private readonly ClinicRepository $clinicRepository,
         private readonly TenantConfigurationRepository $tenantConfigurationRepository,
+        private readonly AppointmentRepository $appointmentRepository,
         private readonly AvailabilityRuleRepository $availabilityRuleRepository,
         private readonly AvailabilityCacheInvalidator $availabilityCacheInvalidator,
         private readonly AuditTrailWriter $auditTrailWriter,
@@ -72,6 +75,76 @@ final class AvailabilitySlotService
     }
 
     /**
+     * @param  list<string>  $excludedAppointmentIds
+     */
+    public function isSlotAvailable(
+        string $providerId,
+        CarbonImmutable $startAt,
+        CarbonImmutable $endAt,
+        string $timezone,
+        array $excludedAppointmentIds = [],
+    ): bool {
+        $tenantId = $this->tenantContext->requireTenantId();
+        $provider = $this->providerOrFail($tenantId, $providerId);
+        $clinic = $provider->clinicId !== null
+            ? $this->clinicRepository->findClinic($tenantId, $provider->clinicId)
+            : null;
+        $clinicSettings = $clinic !== null ? $this->clinicRepository->settings($tenantId, $clinic->clinicId) : null;
+        $resolvedTimezone = $this->resolvedTimezone($tenantId, $clinicSettings);
+        $requestedStart = $startAt->setTimezone($resolvedTimezone);
+        $requestedEnd = $endAt->setTimezone($resolvedTimezone);
+
+        if ($requestedStart->toDateString() !== $requestedEnd->toDateString()) {
+            return false;
+        }
+
+        if ($clinic !== null && $clinic->status !== ClinicStatus::ACTIVE) {
+            return false;
+        }
+
+        $date = CarbonImmutable::createFromFormat('Y-m-d', $requestedStart->toDateString(), 'UTC')
+            ?: throw new LogicException('Availability date could not be created.');
+        $rules = $this->availabilityRuleRepository->listRelevantForDateRange(
+            tenantId: $tenantId,
+            providerId: $provider->providerId,
+            dateFrom: $date,
+            dateTo: $date,
+        );
+        $blockingAppointments = array_values(array_filter(
+            $this->appointmentRepository->listBlockingForProviderWindow(
+                tenantId: $tenantId,
+                providerId: $provider->providerId,
+                windowStart: $requestedStart->startOfDay(),
+                windowEnd: $requestedStart->endOfDay(),
+            ),
+            static fn (AppointmentData $appointment): bool => ! in_array($appointment->appointmentId, $excludedAppointmentIds, true),
+        ));
+        $workHours = $clinic !== null ? $this->clinicRepository->workHours($tenantId, $clinic->clinicId) : null;
+        $holidays = $clinic !== null ? $this->clinicRepository->listHolidays($tenantId, $clinic->clinicId) : [];
+        $slotDuration = $clinicSettings !== null ? $clinicSettings->defaultAppointmentDurationMinutes : 30;
+        $slotInterval = $clinicSettings !== null ? $clinicSettings->slotIntervalMinutes : 15;
+        $candidateSlots = $this->buildDaySlots(
+            date: $date,
+            timezone: $resolvedTimezone,
+            slotDuration: $slotDuration,
+            slotInterval: $slotInterval,
+            rules: $rules,
+            blockingAppointments: $blockingAppointments,
+            workHours: $workHours,
+            holidays: $holidays,
+            limit: 1000,
+        );
+
+        foreach ($candidateSlots as $slot) {
+            if ($slot->startAt->equalTo($requestedStart) && $slot->endAt->equalTo($requestedEnd)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param  array{
      *      date_from: CarbonImmutable,
      *      date_to: CarbonImmutable,
@@ -105,6 +178,15 @@ final class AvailabilitySlotService
             dateFrom: $window['date_from'],
             dateTo: $window['date_to'],
         );
+        $blockingAppointments = $this->appointmentRepository->listBlockingForProviderWindow(
+            tenantId: $tenantId,
+            providerId: $provider->providerId,
+            windowStart: CarbonImmutable::createFromFormat('Y-m-d', $window['date_from']->toDateString(), $timezone)
+                ?: throw new LogicException('Blocking window start could not be created.'),
+            windowEnd: (CarbonImmutable::createFromFormat('Y-m-d', $window['date_to']->toDateString(), $timezone)
+                ?: throw new LogicException('Blocking window end could not be created.'))
+                ->endOfDay(),
+        );
         $workHours = $clinic !== null ? $this->clinicRepository->workHours($tenantId, $clinic->clinicId) : null;
         $holidays = $clinic !== null ? $this->clinicRepository->listHolidays($tenantId, $clinic->clinicId) : [];
         $slots = [];
@@ -122,6 +204,7 @@ final class AvailabilitySlotService
                 $slotDuration,
                 $slotInterval,
                 $rules,
+                $blockingAppointments,
                 $workHours,
                 $holidays,
                 $remaining,
@@ -150,6 +233,7 @@ final class AvailabilitySlotService
 
     /**
      * @param  list<AvailabilityRuleData>  $rules
+     * @param  list<AppointmentData>  $blockingAppointments
      * @param  list<ClinicHolidayData>  $holidays
      * @return list<AvailabilitySlotData>
      */
@@ -159,6 +243,7 @@ final class AvailabilitySlotService
         int $slotDuration,
         int $slotInterval,
         array $rules,
+        array $blockingAppointments,
         ?ClinicWorkHoursData $workHours,
         array $holidays,
         int $limit,
@@ -191,6 +276,10 @@ final class AvailabilitySlotService
 
         $effectiveIntervals = $this->mergeIntervals($availableIntervals);
         $effectiveIntervals = $this->subtractIntervals($effectiveIntervals, $this->mergeIntervals($unavailableIntervals));
+        $effectiveIntervals = $this->subtractIntervals(
+            $effectiveIntervals,
+            $this->mergeIntervals($this->blockingIntervalsForDate($blockingAppointments, $date, $timezone)),
+        );
 
         if ($workHours !== null) {
             $effectiveIntervals = $this->intersectIntervals(
@@ -200,6 +289,38 @@ final class AvailabilitySlotService
         }
 
         return $this->slotsFromIntervals($date, $timezone, $slotDuration, $slotInterval, $effectiveIntervals, $limit);
+    }
+
+    /**
+     * @param  list<AppointmentData>  $appointments
+     * @return list<array{start: int, end: int, source_rule_ids: list<string>}>
+     */
+    private function blockingIntervalsForDate(array $appointments, CarbonImmutable $date, string $timezone): array
+    {
+        $intervals = [];
+        $dayStart = CarbonImmutable::createFromFormat('Y-m-d', $date->toDateString(), $timezone)
+            ?: throw new LogicException('Day start could not be created for blocking intervals.');
+        $dayEnd = $dayStart->addDay();
+
+        foreach ($appointments as $appointment) {
+            $appointmentStart = $appointment->scheduledStartAt->setTimezone($timezone);
+            $appointmentEnd = $appointment->scheduledEndAt->setTimezone($timezone);
+
+            if ($appointmentEnd->lessThanOrEqualTo($dayStart) || $appointmentStart->greaterThanOrEqualTo($dayEnd)) {
+                continue;
+            }
+
+            $effectiveStart = $appointmentStart->greaterThan($dayStart) ? $appointmentStart : $dayStart;
+            $effectiveEnd = $appointmentEnd->lessThan($dayEnd) ? $appointmentEnd : $dayEnd;
+
+            $intervals[] = [
+                'start' => ($effectiveStart->hour * 60) + $effectiveStart->minute,
+                'end' => ($effectiveEnd->hour * 60) + $effectiveEnd->minute,
+                'source_rule_ids' => [],
+            ];
+        }
+
+        return $intervals;
     }
 
     /**

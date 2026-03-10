@@ -42,4 +42,27 @@ final readonly class AppointmentSlot
             'timezone' => $this->timezone,
         ];
     }
+
+    /**
+     * @param  array{start_at?: mixed, end_at?: mixed, timezone?: mixed}  $payload
+     */
+    public static function fromArray(array $payload): self
+    {
+        return new self(
+            startAt: new DateTimeImmutable(self::stringValue($payload, 'start_at', 'now')),
+            endAt: new DateTimeImmutable(self::stringValue($payload, 'end_at', 'now')),
+            timezone: self::stringValue($payload, 'timezone'),
+        );
+    }
+
+    /**
+     * @param  array{start_at?: mixed, end_at?: mixed, timezone?: mixed}  $payload
+     */
+    private static function stringValue(array $payload, string $key, string $fallback = ''): string
+    {
+        /** @var mixed $value */
+        $value = $payload[$key] ?? null;
+
+        return is_string($value) ? $value : $fallback;
+    }
 }

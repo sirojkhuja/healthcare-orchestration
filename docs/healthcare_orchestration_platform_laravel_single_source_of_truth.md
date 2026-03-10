@@ -1051,7 +1051,8 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - bulk draft updates are limited to active `draft` appointments so explicit state-transition routes remain authoritative for scheduled workflows
 - bulk draft updates return `operation_id`, `affected_count`, `updated_fields`, and the updated appointment payloads in input order
 - bulk draft updates write one summary `appointments.bulk_updated` audit event plus per-appointment `appointments.updated` events linked to the bulk operation
-- `POST /appointments:bulk-cancel` and `POST /appointments:bulk-reschedule` remain transition work for `T040`
+- `POST /appointments:bulk-cancel` and `POST /appointments:bulk-reschedule` are explicit workflow routes with all-or-nothing transition semantics documented in ADR `028`
+- `T040` implements the action-route contract, booked-slot blocking, recurrence materialization, waitlist booking, and bulk transition contracts documented in ADR `028`
 
 ---
 

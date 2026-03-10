@@ -145,7 +145,13 @@
 - `POST /appointments/bulk` in `T039` is the generic bulk draft update route. It requires `Idempotency-Key`, accepts `appointment_ids` plus a shared `changes` object, supports `1..100` distinct ids, and is all-or-nothing.
 - Bulk draft updates reuse the same mutable field set and validation rules as the single generic draft `PATCH /appointments/{appointmentId}` route and remain limited to active `draft` appointments.
 - Bulk draft updates return `operation_id`, `affected_count`, `updated_fields`, and the updated appointment payloads in input order, and they write a summary `appointments.bulk_updated` audit event plus linked per-appointment `appointments.updated` events.
-- `POST /appointments:bulk-cancel` and `POST /appointments:bulk-reschedule` are deferred to `T040` because they depend on explicit transition-route behavior.
+- `T040` makes the appointment workflow operational with explicit action routes, booked-slot blocking, materialized recurrence series, waitlist booking, and dedicated bulk cancel/reschedule contracts as defined in ADR `028`.
+- Single appointment workflow routes require `Idempotency-Key`, return the updated appointment payload, and keep reschedule explicit by returning both the source appointment and its replacement appointment.
+- `POST /appointments/{appointmentId}:make-recurring` creates one recurrence record plus the generated future scheduled appointments in one all-or-nothing mutation.
+- Monthly recurrence materialization preserves the local appointment wall-clock time and clamps shorter target months with no-overflow month arithmetic.
+- `POST /appointments/recurrences/{recurrenceId}:cancel` marks the recurrence itself as `canceled` and cancels only future generated appointments that are still `scheduled` or `confirmed`.
+- Waitlist entries are tenant-scoped records with `open|booked|removed` status, filterable through `GET /waitlist`, and `offer-slot` returns both the updated waitlist entry and the scheduled appointment created from it.
+- Waitlist slot offers must stay inside the requested date range and, when present, inside the preferred start/end time window.
 - Provider availability rules are the canonical low-level schedule source for `T035`. Later provider work-hours and time-off flows must project onto the same rule engine instead of introducing a second competing schedule store.
 - Availability slot reads are cache-aside in the tenant-scoped `availability` cache domain and must be explicitly invalidated when rules, clinic scheduling inputs, provider clinic assignment, or tenant timezone fallbacks change.
 - Provider calendar reads in `T036` are composed from the same low-level availability rules plus clinic constraints and time-off. The calendar response exposes the provider weekly template, date-specific time-off, and effective slots together without introducing a second schedule cache.

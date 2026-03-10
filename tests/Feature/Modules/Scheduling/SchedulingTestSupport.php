@@ -22,6 +22,38 @@ function schedulingCreateAppointment(
         ->postJson('/api/v1/appointments', $payload);
 }
 
+function schedulingAppointmentAction(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $appointmentId,
+    string $action,
+    string $idempotencyKey,
+    array $payload = [],
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/appointments/'.$appointmentId.':'.$action, $payload);
+}
+
+function schedulingCreateWaitlistEntry(
+    $testCase,
+    string $token,
+    string $tenantId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/waitlist', $payload);
+}
+
 function schedulingIssueBearerToken($testCase, string $email, string $password = 'secret-password'): string
 {
     return providerIssueBearerToken($testCase, $email, $password);

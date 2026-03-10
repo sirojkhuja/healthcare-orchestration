@@ -27,11 +27,15 @@ use App\Modules\Provider\Presentation\Http\Controllers\ProviderWorkHoursControll
 use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentAuditController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentBulkController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentBulkWorkflowController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentNoteController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentParticipantController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentRecurrenceController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentWorkflowController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\ProviderCalendarController;
+use App\Modules\Scheduling\Presentation\Http\Controllers\WaitlistController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicHolidayController;
 use App\Modules\TenantManagement\Presentation\Http\Controllers\ClinicLifecycleController;
@@ -206,6 +210,7 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/appointments/{appointmentId}/participants', [AppointmentParticipantController::class, 'list'])->name('appointments.participants.list');
                 Route::get('/appointments/{appointmentId}/notes', [AppointmentNoteController::class, 'list'])->name('appointments.notes.list');
                 Route::get('/appointments/{appointmentId}', [AppointmentController::class, 'show'])->name('appointments.show');
+                Route::get('/waitlist', [WaitlistController::class, 'list'])->name('waitlist.list');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -258,6 +263,18 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/appointments/bulk', [AppointmentBulkController::class, 'update'])
                     ->middleware('idempotency:appointments.bulk.update')
                     ->name('appointments.bulk.update');
+                Route::post('/appointments:bulk-cancel', [AppointmentBulkWorkflowController::class, 'cancel'])
+                    ->middleware('idempotency:appointments.bulk.cancel')
+                    ->name('appointments.bulk.cancel');
+                Route::post('/appointments:bulk-reschedule', [AppointmentBulkWorkflowController::class, 'reschedule'])
+                    ->middleware('idempotency:appointments.bulk.reschedule')
+                    ->name('appointments.bulk.reschedule');
+                Route::post('/appointments/{appointmentId}:make-recurring', [AppointmentRecurrenceController::class, 'create'])
+                    ->middleware('idempotency:appointments.recurrence.create')
+                    ->name('appointments.recurrence.create');
+                Route::post('/appointments/recurrences/{recurrenceId}:cancel', [AppointmentRecurrenceController::class, 'cancel'])
+                    ->middleware('idempotency:appointments.recurrence.cancel')
+                    ->name('appointments.recurrence.cancel');
                 Route::post('/appointments/{appointmentId}/participants', [AppointmentParticipantController::class, 'create'])
                     ->middleware('idempotency:appointments.participants.create')
                     ->name('appointments.participants.create');
@@ -273,6 +290,42 @@ Route::prefix('v1')->group(function (): void {
                 Route::delete('/appointments/{appointmentId}/notes/{noteId}', [AppointmentNoteController::class, 'delete'])
                     ->middleware('idempotency:appointments.notes.delete')
                     ->name('appointments.notes.delete');
+                Route::post('/appointments/{appointmentId}:schedule', [AppointmentWorkflowController::class, 'schedule'])
+                    ->middleware('idempotency:appointments.schedule')
+                    ->name('appointments.schedule');
+                Route::post('/appointments/{appointmentId}:confirm', [AppointmentWorkflowController::class, 'confirm'])
+                    ->middleware('idempotency:appointments.confirm')
+                    ->name('appointments.confirm');
+                Route::post('/appointments/{appointmentId}:check-in', [AppointmentWorkflowController::class, 'checkIn'])
+                    ->middleware('idempotency:appointments.check-in')
+                    ->name('appointments.check-in');
+                Route::post('/appointments/{appointmentId}:start', [AppointmentWorkflowController::class, 'start'])
+                    ->middleware('idempotency:appointments.start')
+                    ->name('appointments.start');
+                Route::post('/appointments/{appointmentId}:complete', [AppointmentWorkflowController::class, 'complete'])
+                    ->middleware('idempotency:appointments.complete')
+                    ->name('appointments.complete');
+                Route::post('/appointments/{appointmentId}:cancel', [AppointmentWorkflowController::class, 'cancel'])
+                    ->middleware('idempotency:appointments.cancel')
+                    ->name('appointments.cancel');
+                Route::post('/appointments/{appointmentId}:no-show', [AppointmentWorkflowController::class, 'noShow'])
+                    ->middleware('idempotency:appointments.no-show')
+                    ->name('appointments.no-show');
+                Route::post('/appointments/{appointmentId}:reschedule', [AppointmentWorkflowController::class, 'reschedule'])
+                    ->middleware('idempotency:appointments.reschedule')
+                    ->name('appointments.reschedule');
+                Route::post('/appointments/{appointmentId}:restore', [AppointmentWorkflowController::class, 'restore'])
+                    ->middleware('idempotency:appointments.restore')
+                    ->name('appointments.restore');
+                Route::post('/waitlist', [WaitlistController::class, 'create'])
+                    ->middleware('idempotency:waitlist.create')
+                    ->name('waitlist.create');
+                Route::delete('/waitlist/{entryId}', [WaitlistController::class, 'delete'])
+                    ->middleware('idempotency:waitlist.delete')
+                    ->name('waitlist.delete');
+                Route::post('/waitlist/{entryId}:offer-slot', [WaitlistController::class, 'offer'])
+                    ->middleware('idempotency:waitlist.offer')
+                    ->name('waitlist.offer');
             });
             Route::middleware('permission:rbac.view')->group(function (): void {
                 Route::get('/roles', [RoleController::class, 'list'])->name('roles.list');

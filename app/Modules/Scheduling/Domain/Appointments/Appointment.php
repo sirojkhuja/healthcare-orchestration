@@ -51,6 +51,36 @@ final class Appointment
         );
     }
 
+    public static function reconstitute(
+        string $appointmentId,
+        string $tenantId,
+        string $patientId,
+        string $providerId,
+        AppointmentSlot $scheduledSlot,
+        AppointmentStatus $status,
+        ?string $clinicId = null,
+        ?string $roomId = null,
+        ?AppointmentTransitionData $lastTransition = null,
+        ?string $replacementAppointmentId = null,
+        ?AppointmentSlot $replacementSlot = null,
+    ): self {
+        $appointment = new self(
+            appointmentId: $appointmentId,
+            tenantId: $tenantId,
+            patientId: $patientId,
+            providerId: $providerId,
+            clinicId: $clinicId,
+            roomId: $roomId,
+            scheduledSlot: $scheduledSlot,
+            status: $status,
+        );
+        $appointment->lastTransition = $lastTransition;
+        $appointment->replacementAppointmentId = $replacementAppointmentId;
+        $appointment->replacementSlot = $replacementSlot;
+
+        return $appointment;
+    }
+
     public function appointmentId(): string
     {
         return $this->appointmentId;

@@ -261,6 +261,819 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments:bulk-cancel:
+    post:
+      operationId: BulkCancelAppointmentsCommand
+      tags: [Appointments]
+      summary: Cancel multiple scheduled or confirmed appointments
+      description: Cancels `1..100` active tenant-scoped appointments in one all-or-nothing workflow mutation.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkCancelAppointmentsRequest'
+      responses:
+        '200':
+          description: Appointments canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAppointmentTransitionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: One or more appointments do not exist in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: One or more selected appointments cannot be canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments:bulk-reschedule:
+    post:
+      operationId: BulkRescheduleAppointmentsCommand
+      tags: [Appointments]
+      summary: Reschedule multiple scheduled or confirmed appointments
+      description: Reschedules `1..100` active tenant-scoped appointments in one all-or-nothing workflow mutation and returns both source and replacement appointments.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkRescheduleAppointmentsRequest'
+      responses:
+        '200':
+          description: Appointments rescheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkAppointmentTransitionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: One or more appointments do not exist in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: One or more selected appointments cannot be rescheduled or a replacement slot is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:schedule:
+    post:
+      operationId: ScheduleAppointmentCommand
+      tags: [Appointments]
+      summary: Schedule one draft appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be scheduled or the slot is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:confirm:
+    post:
+      operationId: ConfirmAppointmentCommand
+      tags: [Appointments]
+      summary: Confirm one scheduled appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:check-in:
+    post:
+      operationId: CheckInAppointmentCommand
+      tags: [Appointments]
+      summary: Check in one appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCheckInRequest'
+      responses:
+        '200':
+          description: Appointment checked in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be checked in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:start:
+    post:
+      operationId: StartAppointmentCommand
+      tags: [Appointments]
+      summary: Start one checked-in appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:complete:
+    post:
+      operationId: CompleteAppointmentCommand
+      tags: [Appointments]
+      summary: Complete one in-progress appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:cancel:
+    post:
+      operationId: CancelAppointmentCommand
+      tags: [Appointments]
+      summary: Cancel one scheduled or confirmed appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentReasonRequest'
+      responses:
+        '200':
+          description: Appointment canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid cancellation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:no-show:
+    post:
+      operationId: MarkNoShowCommand
+      tags: [Appointments]
+      summary: Mark one scheduled or confirmed appointment as no-show
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentReasonRequest'
+      responses:
+        '200':
+          description: Appointment marked as no-show
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be marked as no-show
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid no-show payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:reschedule:
+    post:
+      operationId: RescheduleAppointmentCommand
+      tags: [Appointments]
+      summary: Reschedule one scheduled or confirmed appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentRescheduleRequest'
+      responses:
+        '200':
+          description: Appointment rescheduled and replacement appointment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentRescheduleResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be rescheduled or the replacement slot is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reschedule payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:restore:
+    post:
+      operationId: RestoreAppointmentCommand
+      tags: [Appointments]
+      summary: Restore one canceled, no-show, or rescheduled appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentWorkflowMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot be restored or the original slot is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:make-recurring:
+    post:
+      operationId: MakeAppointmentRecurringCommand
+      tags: [Appointments]
+      summary: Materialize a recurring series from one scheduled or confirmed appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringAppointmentRequest'
+      responses:
+        '201':
+          description: Recurrence created and future appointments materialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentRecurrenceMaterializationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot become recurring or a future slot is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid recurrence payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/recurrences/{recurrenceId}:cancel:
+    post:
+      operationId: CancelRecurrenceCommand
+      tags: [Appointments]
+      summary: Cancel one active appointment recurrence
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecurrenceIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentReasonRequest'
+      responses:
+        '200':
+          description: Recurrence canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentRecurrenceMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Recurrence not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Recurrence cannot be canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid recurrence cancellation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/waitlist:
+    get:
+      operationId: ListWaitlistQuery
+      tags: [Appointments]
+      summary: List waitlist entries in the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/WaitlistStatusFilter'
+        - $ref: '#/components/parameters/WaitlistPatientFilter'
+        - $ref: '#/components/parameters/WaitlistProviderFilter'
+        - $ref: '#/components/parameters/WaitlistClinicFilter'
+        - $ref: '#/components/parameters/WaitlistDesiredFromFilter'
+        - $ref: '#/components/parameters/WaitlistDesiredToFilter'
+        - $ref: '#/components/parameters/WaitlistLimit'
+      responses:
+        '200':
+          description: Waitlist entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid waitlist filter combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: AddToWaitlistCommand
+      tags: [Appointments]
+      summary: Add one patient to the waitlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitlistCreateRequest'
+      responses:
+        '201':
+          description: Waitlist entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid waitlist payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/waitlist/{entryId}:
+    delete:
+      operationId: RemoveFromWaitlistCommand
+      tags: [Appointments]
+      summary: Remove one open waitlist entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WaitlistEntryIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Waitlist entry removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Waitlist entry not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Waitlist entry cannot be removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/waitlist/{entryId}:offer-slot:
+    post:
+      operationId: OfferWaitlistSlotCommand
+      tags: [Appointments]
+      summary: Offer one available slot to an open waitlist entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WaitlistEntryIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitlistOfferRequest'
+      responses:
+        '200':
+          description: Waitlist entry booked and appointment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistOfferResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Waitlist entry not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Waitlist entry cannot be booked or the slot is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid offered slot payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/appointments/{appointmentId}:
     get:
       operationId: GetAppointmentQuery
@@ -774,6 +1587,20 @@ components:
       schema:
         type: string
         format: uuid
+    RecurrenceIdPath:
+      in: path
+      name: recurrenceId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    WaitlistEntryIdPath:
+      in: path
+      name: entryId
+      required: true
+      schema:
+        type: string
+        format: uuid
     AppointmentSearchQuery:
       in: query
       name: q
@@ -871,6 +1698,57 @@ components:
         enum: [csv]
         default: csv
     AppointmentAuditLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    WaitlistStatusFilter:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [open, booked, removed]
+    WaitlistPatientFilter:
+      in: query
+      name: patient_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    WaitlistProviderFilter:
+      in: query
+      name: provider_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    WaitlistClinicFilter:
+      in: query
+      name: clinic_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    WaitlistDesiredFromFilter:
+      in: query
+      name: desired_from
+      required: false
+      schema:
+        type: string
+        format: date
+    WaitlistDesiredToFilter:
+      in: query
+      name: desired_to
+      required: false
+      schema:
+        type: string
+        format: date
+    WaitlistLimit:
       in: query
       name: limit
       required: false
@@ -1032,6 +1910,128 @@ components:
           enum: [appointment_created, appointment_updated, appointment_deleted]
         data:
           $ref: '#/components/schemas/Appointment'
+    AppointmentWorkflowMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum:
+            - appointment_scheduled
+            - appointment_confirmed
+            - appointment_checked_in
+            - appointment_started
+            - appointment_completed
+            - appointment_canceled
+            - appointment_no_show
+            - appointment_restored
+        data:
+          $ref: '#/components/schemas/Appointment'
+    AppointmentReschedule:
+      type: object
+      required: [appointment, replacement_appointment]
+      properties:
+        appointment:
+          $ref: '#/components/schemas/Appointment'
+        replacement_appointment:
+          $ref: '#/components/schemas/Appointment'
+    AppointmentRescheduleResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_rescheduled]
+        data:
+          $ref: '#/components/schemas/AppointmentReschedule'
+    AppointmentRecurrence:
+      type: object
+      required:
+        - id
+        - source_appointment_id
+        - patient_id
+        - provider_id
+        - frequency
+        - interval
+        - timezone
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        source_appointment_id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+        frequency:
+          type: string
+          enum: [daily, weekly, monthly]
+        interval:
+          type: integer
+        occurrence_count:
+          type: integer
+          nullable: true
+        until_date:
+          type: string
+          format: date
+          nullable: true
+        timezone:
+          type: string
+        status:
+          type: string
+          enum: [active, canceled]
+        canceled_reason:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AppointmentRecurrenceMaterialization:
+      type: object
+      required: [recurrence, appointments]
+      properties:
+        recurrence:
+          $ref: '#/components/schemas/AppointmentRecurrence'
+        appointments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+    AppointmentRecurrenceMaterializationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_recurrence_created]
+        data:
+          $ref: '#/components/schemas/AppointmentRecurrenceMaterialization'
+    AppointmentRecurrenceMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_recurrence_canceled]
+        data:
+          $ref: '#/components/schemas/AppointmentRecurrence'
     AppointmentParticipant:
       type: object
       required:
@@ -1171,6 +2171,32 @@ components:
           enum: [appointments_bulk_updated]
         data:
           $ref: '#/components/schemas/BulkAppointmentUpdate'
+    BulkAppointmentTransition:
+      type: object
+      required: [operation_id, affected_count, appointments, replacement_appointments]
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+        affected_count:
+          type: integer
+        appointments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+        replacement_appointments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+    BulkAppointmentTransitionResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointments_bulk_canceled, appointments_bulk_rescheduled]
+        data:
+          $ref: '#/components/schemas/BulkAppointmentTransition'
     AppointmentSearchFilters:
       type: object
       properties:
@@ -1345,6 +2371,129 @@ components:
           properties:
             limit:
               type: integer
+    WaitlistEntry:
+      type: object
+      required:
+        - id
+        - patient
+        - provider
+        - desired_date_from
+        - desired_date_to
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient:
+          $ref: '#/components/schemas/AppointmentReference'
+        provider:
+          $ref: '#/components/schemas/AppointmentReference'
+        clinic:
+          $ref: '#/components/schemas/AppointmentLocationReference'
+        room:
+          $ref: '#/components/schemas/AppointmentLocationReference'
+        desired_date_from:
+          type: string
+          format: date
+        desired_date_to:
+          type: string
+          format: date
+        preferred_start_time:
+          type: string
+          nullable: true
+        preferred_end_time:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [open, booked, removed]
+        booked_appointment_id:
+          type: string
+          format: uuid
+          nullable: true
+        offered_slot:
+          oneOf:
+            - $ref: '#/components/schemas/AppointmentSlot'
+            - type: 'null'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    WaitlistCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WaitlistEntry'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              $ref: '#/components/schemas/WaitlistFilters'
+    WaitlistMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [waitlist_entry_created, waitlist_entry_removed]
+        data:
+          $ref: '#/components/schemas/WaitlistEntry'
+    WaitlistOffer:
+      type: object
+      required: [entry, appointment]
+      properties:
+        entry:
+          $ref: '#/components/schemas/WaitlistEntry'
+        appointment:
+          $ref: '#/components/schemas/Appointment'
+    WaitlistOfferResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [waitlist_slot_offered]
+        data:
+          $ref: '#/components/schemas/WaitlistOffer'
+    WaitlistFilters:
+      type: object
+      properties:
+        status:
+          type: string
+          nullable: true
+        patient_id:
+          type: string
+          format: uuid
+          nullable: true
+        provider_id:
+          type: string
+          format: uuid
+          nullable: true
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        desired_from:
+          type: string
+          format: date
+          nullable: true
+        desired_to:
+          type: string
+          format: date
+          nullable: true
+        limit:
+          type: integer
     CreateAppointmentRequest:
       type: object
       required:
@@ -1439,6 +2588,62 @@ components:
         body:
           type: string
           maxLength: 10000
+    AppointmentCheckInRequest:
+      type: object
+      properties:
+        admin_override:
+          type: boolean
+          default: false
+    AppointmentReasonRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          maxLength: 5000
+    AppointmentRescheduleRequest:
+      type: object
+      required: [reason, replacement_start_at, replacement_end_at, timezone]
+      properties:
+        reason:
+          type: string
+          maxLength: 5000
+        replacement_start_at:
+          type: string
+          format: date-time
+        replacement_end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+    RecurringAppointmentRequest:
+      type: object
+      required: [frequency, interval]
+      properties:
+        frequency:
+          type: string
+          enum: [daily, weekly, monthly]
+        interval:
+          type: integer
+          minimum: 1
+          maximum: 12
+        occurrence_count:
+          type: integer
+          minimum: 2
+          maximum: 24
+          nullable: true
+        until_date:
+          type: string
+          format: date
+          nullable: true
     BulkUpdateAppointmentsRequest:
       type: object
       required: [appointment_ids, changes]
@@ -1479,3 +2684,114 @@ components:
               format: date-time
             timezone:
               type: string
+    BulkCancelAppointmentsRequest:
+      type: object
+      required: [appointment_ids, reason]
+      properties:
+        appointment_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        reason:
+          type: string
+          maxLength: 5000
+    BulkRescheduleAppointmentsRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - appointment_id
+              - reason
+              - replacement_start_at
+              - replacement_end_at
+              - timezone
+            properties:
+              appointment_id:
+                type: string
+                format: uuid
+              reason:
+                type: string
+                maxLength: 5000
+              replacement_start_at:
+                type: string
+                format: date-time
+              replacement_end_at:
+                type: string
+                format: date-time
+              timezone:
+                type: string
+              clinic_id:
+                type: string
+                format: uuid
+                nullable: true
+              room_id:
+                type: string
+                format: uuid
+                nullable: true
+    WaitlistCreateRequest:
+      type: object
+      required:
+        - patient_id
+        - provider_id
+        - desired_date_from
+        - desired_date_to
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
+        desired_date_from:
+          type: string
+          format: date
+        desired_date_to:
+          type: string
+          format: date
+        preferred_start_time:
+          type: string
+          nullable: true
+        preferred_end_time:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+    WaitlistOfferRequest:
+      type: object
+      required: [scheduled_start_at, scheduled_end_at, timezone]
+      properties:
+        scheduled_start_at:
+          type: string
+          format: date-time
+        scheduled_end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        clinic_id:
+          type: string
+          format: uuid
+          nullable: true
+        room_id:
+          type: string
+          format: uuid
+          nullable: true
