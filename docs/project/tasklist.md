@@ -1,8 +1,8 @@
 # Project Task List
 
-Last Updated: `2026-03-11`
+Last Updated: `2026-03-12`
 
-Overall Progress: `77% (54/70 tasks completed)`
+Overall Progress: `78% (55/70 tasks completed)`
 
 Active Task: `None`
 
@@ -108,7 +108,7 @@ Active Task: `None`
 
 | ID | Status | Task | Depends On | Deliverables | Verification |
 | --- | --- | --- | --- | --- | --- |
-| T056 | Todo | Implement template management and test-render endpoints for notification content. | T010 | Template CRUD, render engine, versioned template storage. | Render tests and CRUD feature tests pass. |
+| T056 | Done | Implement template management and test-render endpoints for notification content. | T010 | Template CRUD, render engine, versioned template storage. | Render tests and CRUD feature tests pass. |
 | T057 | Todo | Implement notification dispatch, listing, retry, and cancel flows. | T056, T019 | Dispatch service, retries, status tracking, notification queries. | Retry, cancellation, and audit tests pass. |
 | T058 | Todo | Implement SMS routing and failover using Eskiz, Play Mobile, and TextUp. | T057, T019 | SMS strategy, provider adapters, routing policy. | Contract tests prove routing and failover behavior. |
 | T059 | Todo | Implement Telegram bot broadcast, inbound webhook handling, and bot sync flows. | T057, T019 | Telegram adapter, webhook processing, broadcast command. | Integration tests cover inbound and outbound Telegram flows. |

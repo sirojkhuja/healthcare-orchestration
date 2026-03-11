@@ -1,0 +1,577 @@
+openapi: 3.1.1
+info:
+  title: MedFlow Platform, Notifications, Integrations, and Ops Fragment
+  version: 0.1.0
+paths:
+  /api/v1/templates:
+    get:
+      operationId: ListTemplatesQuery
+      tags: [Notifications]
+      summary: List notification templates in the current tenant
+      description: Returns tenant-scoped notification templates filtered by free-text, channel, and activity state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/TemplateSearchQuery'
+        - $ref: '#/components/parameters/TemplateChannelFilter'
+        - $ref: '#/components/parameters/TemplateActiveFilter'
+        - $ref: '#/components/parameters/TemplateLimit'
+      responses:
+        '200':
+          description: Template directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateTemplateCommand
+      tags: [Notifications]
+      summary: Create a notification template
+      description: Creates a tenant-scoped notification template and initializes immutable version `1`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNotificationTemplateRequest'
+            example:
+              code: appointment-reminder
+              name: Appointment reminder
+              channel: email
+              description: Reminder before the visit.
+              subject_template: Reminder for {{patient.first_name}}
+              body_template: |-
+                Hello {{patient.first_name}},
+
+                Your visit at {{clinic.name}} starts at {{appointment.start_at}}.
+      responses:
+        '201':
+          description: Notification template created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid, duplicate, or channel-incompatible template payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/templates/{templateId}:
+    get:
+      operationId: GetTemplateQuery
+      tags: [Notifications]
+      summary: Get one notification template and its version history
+      description: Returns the current template projection plus immutable versions in descending version order.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/TemplateIdPath'
+      responses:
+        '200':
+          description: Notification template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateDetailsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Template not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateTemplateCommand
+      tags: [Notifications]
+      summary: Update a notification template
+      description: Applies a partial update to the current template projection and creates a new immutable version when content changes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/TemplateIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationTemplateRequest'
+            example:
+              body_template: |-
+                Hello {{patient.first_name}},
+
+                Your visit at {{clinic.name}} with {{provider.name}} starts at {{appointment.start_at}}.
+              is_active: false
+      responses:
+        '200':
+          description: Notification template updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Template not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid, duplicate, or channel-incompatible update payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteTemplateCommand
+      tags: [Notifications]
+      summary: Delete a notification template
+      description: Soft-deletes the current template projection and keeps immutable version history.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/TemplateIdPath'
+      responses:
+        '200':
+          description: Notification template deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Template not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/templates/{templateId}:test-render:
+    post:
+      operationId: TestRenderTemplateCommand
+      tags: [Notifications]
+      summary: Render a notification template with sample variables
+      description: Renders the current template projection using strict `{{path.to.value}}` placeholders and a caller-provided `variables` object.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/TemplateIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestRenderNotificationTemplateRequest'
+            example:
+              variables:
+                patient:
+                  first_name: Amina
+                clinic:
+                  name: Downtown Clinic
+                appointment:
+                  start_at: 2026-03-12 09:00
+      responses:
+        '200':
+          description: Rendered notification template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderedNotificationTemplateResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Template not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Missing placeholder data or non scalar render value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantIdHeader:
+      in: header
+      name: X-Tenant-Id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKeyHeader:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema:
+        type: string
+        maxLength: 255
+    TemplateIdPath:
+      in: path
+      name: templateId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TemplateSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    TemplateChannelFilter:
+      in: query
+      name: channel
+      required: false
+      schema:
+        type: string
+        enum: [email, sms, telegram]
+    TemplateActiveFilter:
+      in: query
+      name: is_active
+      required: false
+      schema:
+        type: boolean
+    TemplateLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+  schemas:
+    ApiErrorResponse:
+      type: object
+      required: [code, message, details, trace_id, correlation_id]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        trace_id:
+          type: string
+        correlation_id:
+          type: string
+    NotificationTemplate:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - code
+        - name
+        - channel
+        - is_active
+        - current_version
+        - body_template
+        - placeholders
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        channel:
+          type: string
+          enum: [email, sms, telegram]
+        description:
+          type: [string, 'null']
+        is_active:
+          type: boolean
+        current_version:
+          type: integer
+          minimum: 1
+        subject_template:
+          type: [string, 'null']
+        body_template:
+          type: string
+        placeholders:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: [string, 'null']
+          format: date-time
+    NotificationTemplateVersion:
+      type: object
+      required:
+        - version
+        - code
+        - name
+        - channel
+        - is_active
+        - body_template
+        - placeholders
+        - created_at
+        - updated_at
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        code:
+          type: string
+        name:
+          type: string
+        channel:
+          type: string
+          enum: [email, sms, telegram]
+        description:
+          type: [string, 'null']
+        is_active:
+          type: boolean
+        subject_template:
+          type: [string, 'null']
+        body_template:
+          type: string
+        placeholders:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    NotificationTemplateCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationTemplate'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    NotificationTemplateMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum:
+            - notification_template_created
+            - notification_template_updated
+            - notification_template_deleted
+        data:
+          $ref: '#/components/schemas/NotificationTemplate'
+    NotificationTemplateDetailsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/NotificationTemplate'
+            - type: object
+              required: [versions]
+              properties:
+                versions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/NotificationTemplateVersion'
+    CreateNotificationTemplateRequest:
+      type: object
+      required: [code, name, channel, body_template]
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        channel:
+          type: string
+          enum: [email, sms, telegram]
+        description:
+          type: [string, 'null']
+          maxLength: 5000
+        is_active:
+          type: boolean
+        subject_template:
+          type: [string, 'null']
+          maxLength: 5000
+        body_template:
+          type: string
+          maxLength: 50000
+    UpdateNotificationTemplateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 255
+        channel:
+          type: string
+          enum: [email, sms, telegram]
+        description:
+          type: [string, 'null']
+          maxLength: 5000
+        is_active:
+          type: boolean
+        subject_template:
+          type: [string, 'null']
+          maxLength: 5000
+        body_template:
+          type: string
+          maxLength: 50000
+    TestRenderNotificationTemplateRequest:
+      type: object
+      required: [variables]
+      properties:
+        variables:
+          type: object
+          additionalProperties: true
+    RenderedNotificationTemplateResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [notification_template_rendered]
+        data:
+          type: object
+          required:
+            - template_id
+            - code
+            - channel
+            - current_version
+            - placeholders
+            - variables
+            - rendered_body
+            - rendered_at
+          properties:
+            template_id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            channel:
+              type: string
+              enum: [email, sms, telegram]
+            current_version:
+              type: integer
+              minimum: 1
+            placeholders:
+              type: array
+              items:
+                type: string
+            variables:
+              type: object
+              additionalProperties: true
+            rendered_subject:
+              type: [string, 'null']
+            rendered_body:
+              type: string
+            rendered_at:
+              type: string
+              format: date-time

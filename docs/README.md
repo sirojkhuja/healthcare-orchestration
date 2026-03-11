@@ -65,6 +65,7 @@ The split documents in this repository are derived from that source and exist to
 - [openapi-guidelines.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi-guidelines.md)
 - [openapi/identity-access-auth.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/identity-access-auth.yaml)
 - [openapi/patients-providers.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/patients-providers.yaml)
+- [openapi/platform-integrations-ops.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/platform-integrations-ops.yaml)
 - [openapi/revenue-insurance.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/revenue-insurance.yaml)
 - [openapi/scheduling-clinical.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/scheduling-clinical.yaml)
 - [error-catalog.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/error-catalog.md)

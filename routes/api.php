@@ -34,6 +34,7 @@ use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabResultController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabTestController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabWebhookController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTemplateController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
@@ -311,6 +312,10 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/claims/export', [ClaimController::class, 'export'])->name('claims.export');
                 Route::get('/claims/{claimId}/attachments', [ClaimAttachmentController::class, 'list'])->name('claims.attachments.list');
                 Route::get('/claims/{claimId}', [ClaimController::class, 'show'])->name('claims.show');
+            });
+            Route::middleware('permission:notifications.view')->group(function (): void {
+                Route::get('/templates', [NotificationTemplateController::class, 'list'])->name('templates.list');
+                Route::get('/templates/{templateId}', [NotificationTemplateController::class, 'show'])->name('templates.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -615,6 +620,19 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/claims/{claimId}:reopen', [ClaimWorkflowController::class, 'reopen'])
                     ->middleware('idempotency:claims.reopen')
                     ->name('claims.reopen');
+            });
+            Route::middleware('permission:notifications.manage')->group(function (): void {
+                Route::post('/templates', [NotificationTemplateController::class, 'create'])
+                    ->middleware('idempotency:templates.create')
+                    ->name('templates.create');
+                Route::patch('/templates/{templateId}', [NotificationTemplateController::class, 'update'])
+                    ->middleware('idempotency:templates.update')
+                    ->name('templates.update');
+                Route::delete('/templates/{templateId}', [NotificationTemplateController::class, 'delete'])
+                    ->middleware('idempotency:templates.delete')
+                    ->name('templates.delete');
+                Route::post('/templates/{templateId}:test-render', [NotificationTemplateController::class, 'testRender'])
+                    ->name('templates.test-render');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])

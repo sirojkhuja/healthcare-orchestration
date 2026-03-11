@@ -31,6 +31,20 @@
 - `POST /email:send` -> `SendEmailCommand` -> Notifications
 - `GET /email/events` -> `ListEmailEventsQuery` -> Notifications
 
+## Notification Notes
+
+- `T056` defines the template contract in ADR `043`.
+- Templates are tenant-scoped, soft-deletable records with immutable version history.
+- Supported channels are `email`, `sms`, and `telegram`.
+- Template `code` is required, normalized to uppercase, and unique per tenant among non-deleted templates.
+- `email` templates require both `subject_template` and `body_template`.
+- `sms` and `telegram` templates require `body_template` and persist `subject_template = null`.
+- `GET /templates` supports `q`, `channel`, `is_active`, and `limit`.
+- `GET /templates/{templateId}` returns the current projection plus all versions in descending version order.
+- Placeholder syntax is `{{path.to.value}}` with dot-path lookup into the `variables` object.
+- Test-render accepts only scalar, boolean, or `null` final values; arrays and objects at the final placeholder path return `422`.
+- Missing placeholder paths during test-render return `422`.
+
 ## Integrations Hub
 
 - `GET /integrations` -> `ListIntegrationsQuery` -> Integrations

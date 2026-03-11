@@ -531,6 +531,9 @@ Standard error:
 ### 12.12 Notifications
 - email/sms/telegram templates
 - send test
+- templates are tenant-scoped, versioned, and soft-deletable
+- email templates require subject + body; sms and telegram use body only
+- test-render uses strict `{{path.to.value}}` placeholders and rejects missing or non-scalar final values
 
 ### 12.13 Integrations
 - manage credentials per tenant
@@ -1381,6 +1384,13 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - PATCH `/templates/{templateId}` → `UpdateTemplateCommand` → Notifications
 - DELETE `/templates/{templateId}` → `DeleteTemplateCommand` → Notifications
 - POST `/templates/{templateId}:test-render` → `TestRenderTemplateCommand` → Notifications
+- template `code` is uppercase and unique per tenant among non-deleted templates
+- `GET /templates` supports `q`, `channel`, `is_active`, and `limit`
+- `GET /templates/{templateId}` returns the current projection plus immutable versions in descending version order
+- email templates require `subject_template` and `body_template`
+- sms and telegram templates require `body_template` and persist `subject_template = null`
+- render placeholders use `{{path.to.value}}` lookup against the `variables` object
+- missing placeholders and non-scalar final values return `422`
 
 ### Channels
 - POST `/notifications:test/sms` → `SendTestSmsCommand` → Notifications
