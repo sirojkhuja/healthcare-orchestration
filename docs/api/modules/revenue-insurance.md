@@ -156,6 +156,34 @@
 - `PATCH /insurance/rules/{ruleId}` -> `UpdateInsuranceRuleCommand` -> Insurance
 - `DELETE /insurance/rules/{ruleId}` -> `DeleteInsuranceRuleCommand` -> Insurance
 
+## Claim Notes
+
+- `T055` defines the insurance contract in ADR `042`.
+- Payers are tenant-scoped catalog records with `code`, `name`, `insurance_code`, optional contact details, `is_active`, and optional `notes`.
+- Payer `code` is required, normalized to uppercase, and unique per tenant.
+- Payer `insurance_code` is required, normalized to lowercase, unique per tenant, and aligns with patient insurance links.
+- Payers referenced by any non-deleted claim cannot be deleted.
+- Insurance rules are tenant-scoped and always belong to one payer.
+- Rule payloads use `payer_id`, `code`, `name`, optional `service_category`, `requires_primary_policy`, `requires_attachment`, optional `max_claim_amount`, optional `submission_window_days`, optional `notes`, and optional `is_active`.
+- Rule `code` is required, normalized to uppercase, and unique per tenant.
+- Rule `service_category` is optional and, when present, applies only when the claim invoice snapshot contains a matching service category.
+- Claim status values are `draft`, `submitted`, `under_review`, `approved`, `denied`, and `paid`.
+- Claim numbers are tenant-scoped monotonic values in the form `CLM-000001`.
+- `POST /claims` requires `invoice_id` and `payer_id`; optional fields are `patient_policy_id`, `service_date`, `billed_amount`, and `notes`.
+- Claims may be created only from invoices in `issued|finalized`.
+- Claim `billed_amount` defaults to the invoice total, must be positive, and may not exceed the linked invoice total.
+- When `patient_policy_id` is supplied, the policy must belong to the invoice patient and its `insurance_code` must match the payer `insurance_code`.
+- Generic `PATCH /claims/{claimId}` is limited to `draft` claims and may update `payer_id`, `patient_policy_id`, `service_date`, `billed_amount`, and `notes`.
+- Generic `DELETE /claims/{claimId}` is a soft delete limited to `draft`.
+- `submit` enforces all active payer rules that match the claim service categories.
+- Rule enforcement checks attachment presence, current primary-policy status, billed-amount caps, and submission window age.
+- `start-review`, `approve`, `deny`, `mark-paid`, and `reopen` each require `reason` and `source_evidence`.
+- `approve` also requires `approved_amount` and `mark-paid` requires `paid_amount`.
+- `reopen` returns the claim to `submitted`, preserves adjudication history, and clears current decision-only fields.
+- Claim attachments use the shared attachment storage abstraction and remain writable for any non-deleted claim.
+- `GET /claims` and `GET /claims/search` support `q`, `status`, `payer_id`, `patient_id`, `invoice_id`, `service_date_from`, `service_date_to`, `created_from`, `created_to`, and `limit`.
+- `GET /claims/export` supports CSV export for the same filters with a maximum limit of `1000`.
+
 ## API Notes
 
 - Payment and claim workflows are state-machine driven and idempotent.

@@ -1357,6 +1357,20 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - PATCH `/insurance/rules/{ruleId}` → `UpdateInsuranceRuleCommand` → Insurance
 - DELETE `/insurance/rules/{ruleId}` → `DeleteInsuranceRuleCommand` → Insurance
 
+### Claim notes
+- payer `code` is tenant-unique uppercase and payer `insurance_code` is tenant-unique lowercase
+- insurance rules are payer-owned and may enforce service-category matching, attachment requirements, primary-policy requirements, billed-amount caps, and submission windows
+- claims are tenant-scoped aggregates with monotonic claim numbers in the form `CLM-000001`
+- claim creation requires `invoice_id` and `payer_id`, may reference one patient insurance policy, and is limited to invoices in `issued|finalized`
+- claim billed amount must be positive and may not exceed the linked invoice total
+- generic claim patch and delete are draft-only
+- claim states are `draft`, `submitted`, `under_review`, `approved`, `denied`, and `paid`
+- allowed claim transitions are `draft -> submitted`, `submitted -> under_review`, `under_review -> approved|denied`, `approved -> paid`, and `approved|denied|paid -> submitted` through reopen
+- `start-review`, `approve`, `deny`, `mark-paid`, and `reopen` require `reason` and `source_evidence`
+- claim attachments use shared attachment storage and can be added or removed for any non-deleted claim
+- claim list and search support `q`, `status`, `payer_id`, `patient_id`, `invoice_id`, `service_date_from`, `service_date_to`, `created_from`, `created_to`, and `limit`
+- claim export uses CSV with a maximum limit of `1000`
+
 ---
 
 ## A.13 Notifications: SMS/Email/Telegram (34)

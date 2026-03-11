@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Modules\Insurance\Application\Handlers;
+
+use App\Modules\Insurance\Application\Commands\DenyClaimCommand;
+use App\Modules\Insurance\Application\Data\ClaimData;
+use App\Modules\Insurance\Application\Services\ClaimWorkflowService;
+
+final readonly class DenyClaimCommandHandler
+{
+    public function __construct(
+        private ClaimWorkflowService $service,
+    ) {}
+
+    public function handle(DenyClaimCommand $command): ClaimData
+    {
+        return $this->service->deny($command->claimId, $command->reason, $command->sourceEvidence);
+    }
+}

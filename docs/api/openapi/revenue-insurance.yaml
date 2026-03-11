@@ -1656,6 +1656,905 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/insurance/payers:
+    get:
+      operationId: ListPayersQuery
+      tags: [Insurance]
+      summary: List insurance payers in the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/PayerInsuranceCodeFilter'
+        - $ref: '#/components/parameters/BillingActiveFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Payer directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreatePayerCommand
+      tags: [Insurance]
+      summary: Create one insurance payer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePayerRequest'
+      responses:
+        '201':
+          description: Payer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate payer code or insurance code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/insurance/payers/{payerId}:
+    patch:
+      operationId: UpdatePayerCommand
+      tags: [Insurance]
+      summary: Update one insurance payer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PayerIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePayerRequest'
+      responses:
+        '200':
+          description: Payer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payer not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate payer code or insurance code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeletePayerCommand
+      tags: [Insurance]
+      summary: Delete one unreferenced insurance payer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PayerIdPath'
+      responses:
+        '200':
+          description: Payer deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payer not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Payer is referenced by an active claim
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/insurance/rules:
+    get:
+      operationId: ListInsuranceRulesQuery
+      tags: [Insurance]
+      summary: List insurance rules in the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/ClaimPayerFilter'
+        - $ref: '#/components/parameters/RuleServiceCategoryFilter'
+        - $ref: '#/components/parameters/BillingActiveFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Insurance rule directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceRuleCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateInsuranceRuleCommand
+      tags: [Insurance]
+      summary: Create one insurance rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInsuranceRuleRequest'
+      responses:
+        '201':
+          description: Insurance rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceRuleMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payer not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate insurance rule code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/insurance/rules/{ruleId}:
+    patch:
+      operationId: UpdateInsuranceRuleCommand
+      tags: [Insurance]
+      summary: Update one insurance rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RuleIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInsuranceRuleRequest'
+      responses:
+        '200':
+          description: Insurance rule updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceRuleMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Insurance rule or payer not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Duplicate insurance rule code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteInsuranceRuleCommand
+      tags: [Insurance]
+      summary: Delete one insurance rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/RuleIdPath'
+      responses:
+        '200':
+          description: Insurance rule deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceRuleMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Insurance rule not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims:
+    get:
+      operationId: ListClaimsQuery
+      tags: [Insurance]
+      summary: List claims in the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/ClaimStatusFilter'
+        - $ref: '#/components/parameters/ClaimPayerFilter'
+        - $ref: '#/components/parameters/ClaimPatientFilter'
+        - $ref: '#/components/parameters/ClaimInvoiceFilter'
+        - $ref: '#/components/parameters/ClaimServiceDateFromFilter'
+        - $ref: '#/components/parameters/ClaimServiceDateToFilter'
+        - $ref: '#/components/parameters/ClaimCreatedFromFilter'
+        - $ref: '#/components/parameters/ClaimCreatedToFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Claim directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateClaimCommand
+      tags: [Insurance]
+      summary: Create one draft claim
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClaimRequest'
+      responses:
+        '201':
+          description: Claim created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Invoice, payer, or policy not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid claim payload or business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/search:
+    get:
+      operationId: SearchClaimsQuery
+      tags: [Insurance]
+      summary: Search claims in the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/ClaimStatusFilter'
+        - $ref: '#/components/parameters/ClaimPayerFilter'
+        - $ref: '#/components/parameters/ClaimPatientFilter'
+        - $ref: '#/components/parameters/ClaimInvoiceFilter'
+        - $ref: '#/components/parameters/ClaimServiceDateFromFilter'
+        - $ref: '#/components/parameters/ClaimServiceDateToFilter'
+        - $ref: '#/components/parameters/ClaimCreatedFromFilter'
+        - $ref: '#/components/parameters/ClaimCreatedToFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Claim search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/export:
+    get:
+      operationId: ExportClaimsQuery
+      tags: [Insurance]
+      summary: Export claims as CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/ClaimStatusFilter'
+        - $ref: '#/components/parameters/ClaimPayerFilter'
+        - $ref: '#/components/parameters/ClaimPatientFilter'
+        - $ref: '#/components/parameters/ClaimInvoiceFilter'
+        - $ref: '#/components/parameters/ClaimServiceDateFromFilter'
+        - $ref: '#/components/parameters/ClaimServiceDateToFilter'
+        - $ref: '#/components/parameters/ClaimCreatedFromFilter'
+        - $ref: '#/components/parameters/ClaimCreatedToFilter'
+        - $ref: '#/components/parameters/BillingExportLimit'
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [csv]
+      responses:
+        '200':
+          description: Claim export metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/{claimId}:
+    get:
+      operationId: GetClaimQuery
+      tags: [Insurance]
+      summary: Get one claim
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      responses:
+        '200':
+          description: Claim details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimShowResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    patch:
+      operationId: UpdateClaimCommand
+      tags: [Insurance]
+      summary: Update one draft claim
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClaimRequest'
+      responses:
+        '200':
+          description: Claim updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim, payer, or policy not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Claim is no longer editable through generic CRUD routes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid claim payload or business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteClaimCommand
+      tags: [Insurance]
+      summary: Soft-delete one draft claim
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      responses:
+        '200':
+          description: Claim deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Claim is no longer deletable through generic CRUD routes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/{claimId}/attachments:
+    get:
+      operationId: ListClaimAttachmentsQuery
+      tags: [Insurance]
+      summary: List claim attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      responses:
+        '200':
+          description: Claim attachment directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimAttachmentCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: UploadClaimAttachmentCommand
+      tags: [Insurance]
+      summary: Upload one claim attachment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadClaimAttachmentRequest'
+      responses:
+        '201':
+          description: Claim attachment uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimAttachmentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/{claimId}/attachments/{attachmentId}:
+    delete:
+      operationId: DeleteClaimAttachmentCommand
+      tags: [Insurance]
+      summary: Delete one claim attachment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+        - $ref: '#/components/parameters/ClaimAttachmentIdPath'
+      responses:
+        '200':
+          description: Claim attachment deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimAttachmentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim or attachment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/{claimId}:submit:
+    post:
+      operationId: SubmitClaimCommand
+      tags: [Insurance]
+      summary: Submit one draft claim
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      responses:
+        '200':
+          description: Claim submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claims write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Claim not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Claim cannot be submitted from its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Rule enforcement failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/claims/{claimId}:start-review:
+    post:
+      operationId: StartClaimReviewCommand
+      tags: [Insurance]
+      summary: Move one submitted claim into review
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimDecisionRequest'
+      responses:
+        '200':
+          description: Claim review started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+  /api/v1/claims/{claimId}:approve:
+    post:
+      operationId: ApproveClaimCommand
+      tags: [Insurance]
+      summary: Approve one claim under review
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveClaimRequest'
+      responses:
+        '200':
+          description: Claim approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+  /api/v1/claims/{claimId}:deny:
+    post:
+      operationId: DenyClaimCommand
+      tags: [Insurance]
+      summary: Deny one claim under review
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimDecisionRequest'
+      responses:
+        '200':
+          description: Claim denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+  /api/v1/claims/{claimId}:mark-paid:
+    post:
+      operationId: MarkClaimPaidCommand
+      tags: [Insurance]
+      summary: Mark one approved claim paid
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkClaimPaidRequest'
+      responses:
+        '200':
+          description: Claim paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
+  /api/v1/claims/{claimId}:reopen:
+    post:
+      operationId: ReopenClaimCommand
+      tags: [Insurance]
+      summary: Reopen one adjudicated claim
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ClaimIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimDecisionRequest'
+      responses:
+        '200':
+          description: Claim reopened
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimMutationResponse'
 components:
   securitySchemes:
     bearerAuth:

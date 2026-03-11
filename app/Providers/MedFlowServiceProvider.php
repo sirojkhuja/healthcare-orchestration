@@ -68,8 +68,16 @@ use App\Modules\IdentityAccess\Infrastructure\Profiles\Storage\AttachmentBackedP
 use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
+use App\Modules\Insurance\Application\Contracts\ClaimAttachmentStore;
+use App\Modules\Insurance\Application\Contracts\ClaimRepository;
+use App\Modules\Insurance\Application\Contracts\InsuranceRuleRepository;
 use App\Modules\Insurance\Application\Contracts\PatientInsurancePolicyRepository;
+use App\Modules\Insurance\Application\Contracts\PayerRepository;
+use App\Modules\Insurance\Infrastructure\Persistence\DatabaseClaimRepository;
+use App\Modules\Insurance\Infrastructure\Persistence\DatabaseInsuranceRuleRepository;
 use App\Modules\Insurance\Infrastructure\Persistence\DatabasePatientInsurancePolicyRepository;
+use App\Modules\Insurance\Infrastructure\Persistence\DatabasePayerRepository;
+use App\Modules\Insurance\Infrastructure\Storage\AttachmentBackedClaimAttachmentStore;
 use App\Modules\Integrations\Application\Contracts\PatientExternalReferenceRepository;
 use App\Modules\Integrations\Application\Contracts\PaymentWebhookDeliveryRepository;
 use App\Modules\Integrations\Infrastructure\Persistence\DatabasePatientExternalReferenceRepository;
@@ -228,7 +236,11 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(PatientDocumentRepository::class, DatabasePatientDocumentRepository::class);
         $this->app->bind(PatientDocumentStore::class, AttachmentBackedPatientDocumentStore::class);
         $this->app->bind(PatientTagRepository::class, DatabasePatientTagRepository::class);
+        $this->app->bind(ClaimAttachmentStore::class, AttachmentBackedClaimAttachmentStore::class);
+        $this->app->bind(ClaimRepository::class, DatabaseClaimRepository::class);
+        $this->app->bind(InsuranceRuleRepository::class, DatabaseInsuranceRuleRepository::class);
         $this->app->bind(PatientInsurancePolicyRepository::class, DatabasePatientInsurancePolicyRepository::class);
+        $this->app->bind(PayerRepository::class, DatabasePayerRepository::class);
         $this->app->bind(PatientExternalReferenceRepository::class, DatabasePatientExternalReferenceRepository::class);
         $this->app->bind(PaymentWebhookDeliveryRepository::class, DatabasePaymentWebhookDeliveryRepository::class);
         $this->app->bind(MedicationRepository::class, DatabaseMedicationRepository::class);

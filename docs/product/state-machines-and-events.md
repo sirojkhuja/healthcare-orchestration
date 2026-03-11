@@ -158,10 +158,22 @@
 - `denied`
 - `paid`
 
+### Allowed Transitions
+
+- `draft -> submitted`
+- `submitted -> under_review`
+- `under_review -> approved|denied`
+- `approved -> paid`
+- `approved|denied|paid -> submitted` through reopen
+
 ### Rules
 
+- only draft claims may use generic CRUD write routes
 - only submitted claims can enter review
+- only under-review claims can be approved or denied
 - only approved claims can become paid
+- approve requires a positive amount not greater than billed
+- paid requires a positive amount not greater than approved
 - reopening must preserve the prior adjudication record
 - every decision transition requires actor, reason, and source evidence
 

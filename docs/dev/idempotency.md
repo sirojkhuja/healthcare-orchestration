@@ -4,7 +4,7 @@ This document defines the shared idempotency contract for protected MedFlow comm
 
 ## Core Rules
 
-- Idempotency is mandatory for payment initiation, appointment scheduling, and webhook processing.
+- Idempotency is mandatory for payment initiation, appointment scheduling, claim mutations and lifecycle actions, and webhook processing.
 - Client-initiated protected routes opt in through the shared `idempotency:<operation>` middleware contract.
 - Idempotency requires a client-supplied request key when the caller controls request headers.
 - Duplicate requests must never execute the protected command twice within the active retention window.
@@ -17,6 +17,14 @@ Current provider-native replay anchors:
 - Payme uses provider transaction id plus method.
 - Click uses `click_trans_id` plus Shop API stage (`prepare` or `complete`).
 - Uzum uses `transId` plus Merchant API `operation`.
+
+Current header-key claim operations:
+
+- payer create, update, and delete
+- insurance-rule create, update, and delete
+- claim create, update, and delete
+- claim attachment upload and delete
+- claim submit, start-review, approve, deny, mark-paid, and reopen
 
 ## HTTP Contract
 

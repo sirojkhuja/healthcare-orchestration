@@ -18,7 +18,12 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\RoleController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\SecurityController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
+use App\Modules\Insurance\Presentation\Http\Controllers\ClaimAttachmentController;
+use App\Modules\Insurance\Presentation\Http\Controllers\ClaimController;
+use App\Modules\Insurance\Presentation\Http\Controllers\ClaimWorkflowController;
+use App\Modules\Insurance\Presentation\Http\Controllers\InsuranceRuleController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceController;
+use App\Modules\Insurance\Presentation\Http\Controllers\PayerController;
 use App\Modules\Integrations\Presentation\Http\Controllers\ClickWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
@@ -298,6 +303,15 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/payments/{paymentId}', [PaymentController::class, 'show'])->name('payments.show');
                 Route::get('/payments/{paymentId}/status', [PaymentController::class, 'status'])->name('payments.status');
             });
+            Route::middleware('permission:claims.view')->group(function (): void {
+                Route::get('/insurance/payers', [PayerController::class, 'list'])->name('insurance.payers.list');
+                Route::get('/insurance/rules', [InsuranceRuleController::class, 'list'])->name('insurance.rules.list');
+                Route::get('/claims', [ClaimController::class, 'list'])->name('claims.list');
+                Route::get('/claims/search', [ClaimController::class, 'search'])->name('claims.search');
+                Route::get('/claims/export', [ClaimController::class, 'export'])->name('claims.export');
+                Route::get('/claims/{claimId}/attachments', [ClaimAttachmentController::class, 'list'])->name('claims.attachments.list');
+                Route::get('/claims/{claimId}', [ClaimController::class, 'show'])->name('claims.show');
+            });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
                 Route::patch('/providers/{providerId}', [ProviderController::class, 'update'])->name('providers.update');
@@ -548,6 +562,59 @@ Route::prefix('v1')->group(function (): void {
                     ->name('payments.refund');
                 Route::post('/payments:reconcile', [PaymentReconciliationController::class, 'reconcile'])
                     ->name('payments.reconcile');
+            });
+            Route::middleware('permission:claims.manage')->group(function (): void {
+                Route::post('/insurance/payers', [PayerController::class, 'create'])
+                    ->middleware('idempotency:insurance.payers.create')
+                    ->name('insurance.payers.create');
+                Route::patch('/insurance/payers/{payerId}', [PayerController::class, 'update'])
+                    ->middleware('idempotency:insurance.payers.update')
+                    ->name('insurance.payers.update');
+                Route::delete('/insurance/payers/{payerId}', [PayerController::class, 'delete'])
+                    ->middleware('idempotency:insurance.payers.delete')
+                    ->name('insurance.payers.delete');
+                Route::post('/insurance/rules', [InsuranceRuleController::class, 'create'])
+                    ->middleware('idempotency:insurance.rules.create')
+                    ->name('insurance.rules.create');
+                Route::patch('/insurance/rules/{ruleId}', [InsuranceRuleController::class, 'update'])
+                    ->middleware('idempotency:insurance.rules.update')
+                    ->name('insurance.rules.update');
+                Route::delete('/insurance/rules/{ruleId}', [InsuranceRuleController::class, 'delete'])
+                    ->middleware('idempotency:insurance.rules.delete')
+                    ->name('insurance.rules.delete');
+                Route::post('/claims', [ClaimController::class, 'create'])
+                    ->middleware('idempotency:claims.create')
+                    ->name('claims.create');
+                Route::patch('/claims/{claimId}', [ClaimController::class, 'update'])
+                    ->middleware('idempotency:claims.update')
+                    ->name('claims.update');
+                Route::delete('/claims/{claimId}', [ClaimController::class, 'delete'])
+                    ->middleware('idempotency:claims.delete')
+                    ->name('claims.delete');
+                Route::post('/claims/{claimId}/attachments', [ClaimAttachmentController::class, 'upload'])
+                    ->middleware('idempotency:claims.attachments.upload')
+                    ->name('claims.attachments.upload');
+                Route::delete('/claims/{claimId}/attachments/{attachmentId}', [ClaimAttachmentController::class, 'delete'])
+                    ->middleware('idempotency:claims.attachments.delete')
+                    ->name('claims.attachments.delete');
+                Route::post('/claims/{claimId}:submit', [ClaimWorkflowController::class, 'submit'])
+                    ->middleware('idempotency:claims.submit')
+                    ->name('claims.submit');
+                Route::post('/claims/{claimId}:start-review', [ClaimWorkflowController::class, 'startReview'])
+                    ->middleware('idempotency:claims.start-review')
+                    ->name('claims.start-review');
+                Route::post('/claims/{claimId}:approve', [ClaimWorkflowController::class, 'approve'])
+                    ->middleware('idempotency:claims.approve')
+                    ->name('claims.approve');
+                Route::post('/claims/{claimId}:deny', [ClaimWorkflowController::class, 'deny'])
+                    ->middleware('idempotency:claims.deny')
+                    ->name('claims.deny');
+                Route::post('/claims/{claimId}:mark-paid', [ClaimWorkflowController::class, 'markPaid'])
+                    ->middleware('idempotency:claims.mark-paid')
+                    ->name('claims.mark-paid');
+                Route::post('/claims/{claimId}:reopen', [ClaimWorkflowController::class, 'reopen'])
+                    ->middleware('idempotency:claims.reopen')
+                    ->name('claims.reopen');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
