@@ -394,6 +394,8 @@ Strategy pattern:
   - failover provider order
   - per-tenant provider
   - per-message type (OTP vs marketing)
+- supported SMS message types are `otp`, `reminder`, `transactional`, and `bulk`
+- queued SMS notifications are delivered asynchronously from `medflow.notifications.v1` and advance `queued -> sent|failed`
 
 ### 10.5 Telegram Bot
 - patient reminders
@@ -1432,6 +1434,10 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/integrations/eskiz:send` → `SendEskizSmsCommand` → Integrations
 - POST `/integrations/playmobile:send` → `SendPlayMobileSmsCommand` → Integrations
 - POST `/integrations/textup:send` → `SendTextUpSmsCommand` → Integrations
+- SMS routing is tenant-scoped per `message_type` with default priority `otp: eskiz -> playmobile -> textup`, `reminder: playmobile -> eskiz -> textup`, `transactional: eskiz -> playmobile -> textup`, and `bulk: textup -> playmobile -> eskiz`
+- `POST /notifications:test/sms` uses the same routing and failover engine as queued delivery but does not persist a notification row
+- provider-specific SMS routes force a single provider for diagnostics and do not persist a notification row
+- queued or retried SMS notifications are consumed from `medflow.notifications.v1`, count one attempt per provider try, and publish `notification.sent|notification.failed` after delivery processing
 
 ### Telegram
 - POST `/webhooks/telegram` → `HandleTelegramWebhookCommand` → Integrations

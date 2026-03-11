@@ -215,6 +215,7 @@ final class AppointmentNotificationService
                         'provider_id' => $appointment->providerId,
                         'clinic_id' => $appointment->clinicId,
                         'notification_type' => $type,
+                        'message_type' => $type === 'reminder' ? 'reminder' : 'transactional',
                         'window_key' => $windowKey,
                     ],
                 ]);

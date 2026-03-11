@@ -69,6 +69,18 @@ final class DatabaseNotificationRepository implements NotificationRepository
     }
 
     #[\Override]
+    public function findForUpdate(string $tenantId, string $notificationId): ?NotificationData
+    {
+        $row = DB::table('notifications')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $notificationId)
+            ->lockForUpdate()
+            ->first();
+
+        return $row instanceof stdClass ? $this->notificationRecordMapper->toData($row) : null;
+    }
+
+    #[\Override]
     public function search(string $tenantId, NotificationListCriteria $criteria): array
     {
         $query = DB::table('notifications')

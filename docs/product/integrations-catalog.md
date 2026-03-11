@@ -68,6 +68,9 @@ Controllers and domain objects must never call third-party clients directly.
 - TextUp
 
 SMS delivery uses a strategy interface with tenant-specific routing and failover ordering. Routing decisions may vary by message type, such as OTP, reminder, or bulk announcement.
+- The supported routing message types are `otp`, `reminder`, `transactional`, and `bulk`.
+- Tenant routing policies store ordered provider priorities per message type and fall back to a documented default route when no tenant override exists.
+- Diagnostic sends must reuse the same routing engine as queued notification delivery so provider-specific endpoints and queue consumers do not drift.
 
 ### Telegram
 

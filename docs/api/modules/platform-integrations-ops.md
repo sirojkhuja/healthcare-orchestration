@@ -56,6 +56,15 @@
 - `email` recipients require `recipient.email` and optional `recipient.name`.
 - `sms` recipients require `recipient.phone_number`.
 - `telegram` recipients require `recipient.chat_id`.
+- SMS routing message types are `otp`, `reminder`, `transactional`, and `bulk`.
+- `metadata.message_type` is the authoritative SMS routing hint when present; appointment reminder sends use `reminder` and appointment confirmation sends use `transactional`.
+- `GET /notification-providers/sms` returns configured providers plus the effective ordered provider list for each SMS message type with `source = default|custom`.
+- `PUT /notification-providers/sms` accepts a partial replacement set of `{ message_type, providers[] }` entries. Each route must contain unique configured provider keys and at least one provider.
+- Default SMS failover order is `otp: eskiz -> playmobile -> textup`, `reminder: playmobile -> eskiz -> textup`, `transactional: eskiz -> playmobile -> textup`, and `bulk: textup -> playmobile -> eskiz`.
+- `POST /notifications:test/sms` is a tenant-scoped diagnostic route. It uses the same routing and failover engine as queued SMS delivery, returns the ordered attempt list, and does not create a notification row.
+- `POST /integrations/eskiz:send`, `POST /integrations/playmobile:send`, and `POST /integrations/textup:send` are provider-specific diagnostics that force one provider, return the single-provider result, and do not create a notification row.
+- The SMS delivery consumer processes only `notification.queued|notification.retried` records whose channel is `sms`, advances them to `sent|failed`, and counts one `attempts` increment per provider attempt.
+- SMS delivery writes audit actions `notifications.sent|notifications.failed` and publishes outbox events `notification.sent|notification.failed`, including the ordered delivery-attempt list.
 - Appointment-linked scheduling actions in `T041` select active templates by exact code rather than by template id.
 - The reserved appointment-linked template codes are `APPOINTMENT-REMINDER-SMS`, `APPOINTMENT-REMINDER-EMAIL`, `APPOINTMENT-CONFIRMATION-SMS`, and `APPOINTMENT-CONFIRMATION-EMAIL`.
 - `T041` resolves appointment-linked recipients from patient `phone` and `email` first, then falls back to ordered patient contacts, and persists an appointment-to-notification linkage record for idempotent reminder windows and confirmation requests.

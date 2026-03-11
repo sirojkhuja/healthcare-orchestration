@@ -14,6 +14,8 @@ interface NotificationRepository
 
     public function findInTenant(string $tenantId, string $notificationId): ?NotificationData;
 
+    public function findForUpdate(string $tenantId, string $notificationId): ?NotificationData;
+
     /**
      * @return list<NotificationData>
      */

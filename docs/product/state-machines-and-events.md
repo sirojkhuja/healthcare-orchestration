@@ -259,7 +259,7 @@
 - `create -> queued`
 - `failed -> queued` through `retry`
 - `queued|failed -> canceled`
-- later provider tasks may advance `queued -> sent|failed`
+- `queued -> sent|failed` through provider delivery work
 
 ### Required Guards
 
@@ -273,6 +273,8 @@
 
 - `T057` establishes queue-first notification dispatch and does not call external providers directly
 - notification records snapshot rendered content and recipient payload at queue time
+- `T058` delivers SMS notifications by consuming `notification.queued|notification.retried` and attempting providers in tenant-configured failover order
+- SMS delivery attempts increment `attempts` once per provider call, not once per manual retry request
 - external provider tasks must reuse this lifecycle instead of introducing a second delivery model
 
 ## Domain Event Catalog
@@ -297,6 +299,8 @@ At minimum the platform must support events for:
 - `ClaimSubmitted`
 - `ClaimApproved`
 - `NotificationQueued`
+- `NotificationSent`
+- `NotificationFailed`
 - `NotificationRetried`
 - `NotificationCanceled`
 

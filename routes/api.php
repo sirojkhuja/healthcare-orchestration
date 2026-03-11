@@ -27,6 +27,7 @@ use App\Modules\Insurance\Presentation\Http\Controllers\PayerController;
 use App\Modules\Integrations\Presentation\Http\Controllers\ClickWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
+use App\Modules\Integrations\Presentation\Http\Controllers\SmsProviderSendController;
 use App\Modules\Integrations\Presentation\Http\Controllers\UzumWebhookController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderBulkController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderController;
@@ -34,7 +35,9 @@ use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabResultController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabTestController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabWebhookController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationChannelTestController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationSmsProviderController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTemplateController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationWorkflowController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
@@ -320,6 +323,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/templates/{templateId}', [NotificationTemplateController::class, 'show'])->name('templates.show');
                 Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
                 Route::get('/notifications/{notificationId}', [NotificationController::class, 'show'])->name('notifications.show');
+                Route::get('/notification-providers/sms', [NotificationSmsProviderController::class, 'list'])
+                    ->name('notification-providers.sms.list');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -652,8 +657,23 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/notifications/{notificationId}:cancel', [NotificationWorkflowController::class, 'cancel'])
                     ->middleware('idempotency:notifications.cancel')
                     ->name('notifications.cancel');
+                Route::post('/notifications:test/sms', [NotificationChannelTestController::class, 'sendSms'])
+                    ->middleware('idempotency:notifications.test.sms')
+                    ->name('notifications.test.sms');
+                Route::put('/notification-providers/sms', [NotificationSmsProviderController::class, 'update'])
+                    ->middleware('idempotency:notification-providers.sms.update')
+                    ->name('notification-providers.sms.update');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
+                Route::post('/integrations/eskiz:send', [SmsProviderSendController::class, 'sendEskiz'])
+                    ->middleware('idempotency:integrations.eskiz.send')
+                    ->name('integrations.eskiz.send');
+                Route::post('/integrations/playmobile:send', [SmsProviderSendController::class, 'sendPlayMobile'])
+                    ->middleware('idempotency:integrations.playmobile.send')
+                    ->name('integrations.playmobile.send');
+                Route::post('/integrations/textup:send', [SmsProviderSendController::class, 'sendTextUp'])
+                    ->middleware('idempotency:integrations.textup.send')
+                    ->name('integrations.textup.send');
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
                     ->where('provider', '[A-Za-z0-9_-]+')
                     ->name('webhooks.labs.verify');
