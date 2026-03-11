@@ -53,9 +53,20 @@ Verification or diagnostics helpers:
 - Make replay safe for idempotent handlers.
 - Alert on verification failure spikes and dead-letter growth.
 
+Provider-initiated routes that cannot supply `Idempotency-Key` must satisfy the same protection through provider-native replay identifiers plus persisted delivery records.
+
 ## Lab Webhook Notes
 
 - `POST /webhooks/lab/{provider}` requires `Idempotency-Key` and `X-Lab-Signature`.
 - Lab webhook payloads must include `delivery_id`, `external_order_id`, `status`, `occurred_at`, and optional normalized `results`.
 - Successful lab webhook processing must persist a delivery record with provider key, delivery id, payload hash, signature hash, resolved lab order, tenant linkage, and processing outcome.
 - `POST /webhooks/lab/{provider}:verify` is the authenticated diagnostics helper and must not mutate business state.
+
+## Payme Webhook Notes
+
+- `POST /webhooks/payme` is a public JSON-RPC 2.0 route and always returns HTTP `200` with a Payme `result` or `error` payload.
+- Payme verification uses the `Authorization` header with the configured Merchant API Basic-auth secret.
+- Payme request linkage uses `account.payment_id` for local payment lookup and Payme transaction id replay keys for mutating methods.
+- `CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, and `GetStatement` are supported.
+- `CreateTransaction`, `PerformTransaction`, and `CancelTransaction` must be duplicate-safe by provider transaction id without requiring `Idempotency-Key`.
+- `POST /webhooks/payme:verify` is the authenticated diagnostics helper and must not mutate business state.

@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-10`
 
-Overall Progress: `71% (50/70 tasks completed)`
+Overall Progress: `72% (51/70 tasks completed)`
 
 Active Task: `None`
 
@@ -99,7 +99,7 @@ Active Task: `None`
 | T049 | Done | Implement the invoice aggregate, invoice items, and invoice lifecycle. | T048, T029 | Invoice domain, item management, issue, void, finalize actions. | Invoice state and calculation tests pass. |
 | T050 | Done | Implement the payment aggregate and payment state machine. | T049, T016 | Payment domain, initiation contract, transition rules. | Unit and feature tests cover payment lifecycle. |
 | T051 | Done | Implement payment API operations for initiate, status, capture, cancel, and refund. | T050 | Payment endpoints and idempotent command handling. | Feature tests cover all payment actions. |
-| T052 | Todo | Implement the Payme adapter, webhook handling, verification, and error mapping. | T051, T019 | Payme contract, adapter, webhook verifier, mapper. | Sandbox or contract tests pass. |
+| T052 | Done | Implement the Payme adapter, webhook handling, verification, and error mapping. | T051, T019 | Payme contract, adapter, webhook verifier, mapper. | Sandbox or contract tests pass. |
 | T053 | Todo | Implement the Click adapter, webhook handling, verification, and error mapping. | T051, T019 | Click contract, adapter, webhook verifier, mapper. | Sandbox or contract tests pass. |
 | T054 | Todo | Implement the Uzum adapter, reconciliation flow, webhook handling, and verification. | T051, T019 | Uzum contract, adapter, reconciliation logic, verifier. | Sandbox or contract tests pass. |
 | T055 | Todo | Implement insurance payers, rules, claim aggregate, claim attachments, claim search and export, and claim state actions. | T029, T049, T010 | Payer APIs, rule APIs, claim domain, attachment handling, state machine. | Claim lifecycle and rule enforcement tests pass. |

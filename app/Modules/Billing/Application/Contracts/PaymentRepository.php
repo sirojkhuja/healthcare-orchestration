@@ -12,7 +12,11 @@ interface PaymentRepository
      */
     public function create(string $tenantId, array $attributes): PaymentData;
 
+    public function find(string $paymentId): ?PaymentData;
+
     public function findInTenant(string $tenantId, string $paymentId): ?PaymentData;
+
+    public function findByProviderPaymentId(string $providerKey, string $providerPaymentId): ?PaymentData;
 
     /**
      * @return list<PaymentData>

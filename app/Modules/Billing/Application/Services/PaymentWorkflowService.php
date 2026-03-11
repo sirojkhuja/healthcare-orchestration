@@ -27,17 +27,26 @@ final class PaymentWorkflowService
         private readonly PaymentOutboxPublisher $paymentOutboxPublisher,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
     public function cancel(
         string $paymentId,
         ?string $reason = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
+        ?CarbonImmutable $occurredAt = null,
+        array $metadata = [],
+        ?string $tenantId = null,
     ): PaymentData {
         return $this->transition(
             paymentId: $paymentId,
             auditAction: 'payments.canceled',
             eventType: 'payment.canceled',
             actor: $actor,
+            occurredAt: $occurredAt,
+            tenantId: $tenantId,
+            metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
                 'provider_status' => $providerStatus,
             ]),
@@ -47,16 +56,25 @@ final class PaymentWorkflowService
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
     public function capture(
         string $paymentId,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
+        ?CarbonImmutable $occurredAt = null,
+        array $metadata = [],
+        ?string $tenantId = null,
     ): PaymentData {
         return $this->transition(
             paymentId: $paymentId,
             auditAction: 'payments.captured',
             eventType: 'payment.captured',
             actor: $actor,
+            occurredAt: $occurredAt,
+            tenantId: $tenantId,
+            metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
                 'provider_status' => $providerStatus,
             ]),
@@ -66,18 +84,27 @@ final class PaymentWorkflowService
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
     public function fail(
         string $paymentId,
         ?string $failureCode = null,
         ?string $failureMessage = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
+        ?CarbonImmutable $occurredAt = null,
+        array $metadata = [],
+        ?string $tenantId = null,
     ): PaymentData {
         return $this->transition(
             paymentId: $paymentId,
             auditAction: 'payments.failed',
             eventType: 'payment.failed',
             actor: $actor,
+            occurredAt: $occurredAt,
+            tenantId: $tenantId,
+            metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
                 'provider_status' => $providerStatus,
             ]),
@@ -87,18 +114,27 @@ final class PaymentWorkflowService
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
     public function markPending(
         string $paymentId,
         ?string $providerPaymentId = null,
         ?string $providerStatus = null,
         ?string $checkoutUrl = null,
         ?PaymentActor $actor = null,
+        ?CarbonImmutable $occurredAt = null,
+        array $metadata = [],
+        ?string $tenantId = null,
     ): PaymentData {
         return $this->transition(
             paymentId: $paymentId,
             auditAction: 'payments.pending',
             eventType: 'payment.pending',
             actor: $actor,
+            occurredAt: $occurredAt,
+            tenantId: $tenantId,
+            metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
                 'provider_payment_id' => $providerPaymentId,
                 'provider_status' => $providerStatus,
@@ -110,18 +146,27 @@ final class PaymentWorkflowService
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
     public function refund(
         string $paymentId,
         bool $supportsRefunds,
         ?string $reason = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
+        ?CarbonImmutable $occurredAt = null,
+        array $metadata = [],
+        ?string $tenantId = null,
     ): PaymentData {
         return $this->transition(
             paymentId: $paymentId,
             auditAction: 'payments.refunded',
             eventType: 'payment.refunded',
             actor: $actor,
+            occurredAt: $occurredAt,
+            tenantId: $tenantId,
+            metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
                 'provider_status' => $providerStatus,
             ]),
@@ -133,6 +178,7 @@ final class PaymentWorkflowService
 
     /**
      * @param  array<string, mixed>  $additionalUpdates
+     * @param  array<string, mixed>  $metadata
      * @param  callable(Payment, CarbonImmutable, PaymentActor): void  $mutator
      */
     private function transition(
@@ -140,13 +186,16 @@ final class PaymentWorkflowService
         string $auditAction,
         string $eventType,
         ?PaymentActor $actor,
+        ?CarbonImmutable $occurredAt,
+        ?string $tenantId,
+        array $metadata,
         array $additionalUpdates,
         callable $mutator,
     ): PaymentData {
-        $tenantId = $this->tenantContext->requireTenantId();
+        $tenantId = $tenantId ?? $this->tenantContext->requireTenantId();
         $before = $this->paymentOrFail($tenantId, $paymentId);
         $resolvedActor = $actor ?? $this->paymentActorContext->current();
-        $occurredAt = CarbonImmutable::now();
+        $occurredAt = $occurredAt ?? CarbonImmutable::now();
 
         /** @var PaymentData $updated */
         $updated = DB::transaction(function () use ($tenantId, $before, $resolvedActor, $occurredAt, $additionalUpdates, $mutator): PaymentData {
@@ -177,8 +226,10 @@ final class PaymentWorkflowService
             objectId: $updated->paymentId,
             before: $before->toArray(),
             after: $updated->toArray(),
+            metadata: $metadata,
+            tenantId: $updated->tenantId,
         ));
-        $this->paymentOutboxPublisher->publishPaymentEvent($eventType, $updated);
+        $this->paymentOutboxPublisher->publishPaymentEvent($eventType, $updated, $metadata);
 
         return $updated;
     }

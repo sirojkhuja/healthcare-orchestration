@@ -433,7 +433,8 @@ Standard error:
 - Idempotency keys for:
   - payment creation
   - appointment scheduling
-  - webhook processing
+  - client-initiated webhook processing
+- provider-initiated webhooks that cannot send `Idempotency-Key` must use provider-native replay identifiers plus persisted delivery records
 
 ---
 
@@ -1278,6 +1279,8 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - refunds are allowed only when the gateway supports refunds and the payment is already `captured`
 - payment creation and transitions write audit records and billing outbox events
 - payment allocation and invoice balance mutation remain deferred in this phase
+- `provider_key = payme` returns a direct Payme checkout URL built from documented merchant checkout parameters
+- Payme generic capture, cancel, and refund action routes are not supported in this phase and return `409`
 
 ### Reconciliation
 - POST `/payments:reconcile` → `ReconcilePaymentsCommand` → Billing
@@ -1291,6 +1294,11 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/webhooks/payme:verify` → `VerifyPaymeWebhookCommand` → Integrations
 - POST `/webhooks/click:verify` → `VerifyClickWebhookCommand` → Integrations
 - POST `/webhooks/uzum:verify` → `VerifyUzumWebhookCommand` → Integrations
+- Payme webhook transport uses JSON-RPC 2.0 and always returns HTTP `200`
+- Payme verification uses the `Authorization` header with Merchant API Basic auth and the configured merchant key
+- Payme request linkage uses `account.payment_id` and amount matching in tiyin
+- Payme supports `CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, and `GetStatement`
+- Payme mutating methods are replay-safe by provider transaction id and do not require `Idempotency-Key`
 
 ---
 

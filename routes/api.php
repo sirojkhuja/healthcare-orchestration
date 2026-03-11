@@ -19,6 +19,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserRoleController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
+use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderBulkController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
@@ -89,6 +90,8 @@ Route::prefix('v1')->group(function (): void {
         ->where('provider', '[A-Za-z0-9_-]+')
         ->middleware('idempotency:lab.webhooks.process')
         ->name('webhooks.labs.process');
+    Route::post('/webhooks/payme', [PaymeWebhookController::class, 'process'])
+        ->name('webhooks.payme.process');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
@@ -539,6 +542,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
                     ->where('provider', '[A-Za-z0-9_-]+')
                     ->name('webhooks.labs.verify');
+                Route::post('/webhooks/payme:verify', [PaymeWebhookController::class, 'verify'])
+                    ->name('webhooks.payme.verify');
             });
             Route::middleware('permission:treatments.manage')->group(function (): void {
                 Route::post('/treatment-plans', [TreatmentPlanController::class, 'create'])->name('treatment-plans.create');

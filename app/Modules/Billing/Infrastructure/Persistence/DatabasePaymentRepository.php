@@ -56,11 +56,33 @@ final class DatabasePaymentRepository implements PaymentRepository
     }
 
     #[\Override]
+    public function find(string $paymentId): ?PaymentData
+    {
+        $row = DB::table('payments')
+            ->where('id', $paymentId)
+            ->first();
+
+        return $row instanceof stdClass ? $this->paymentRecordMapper->toData($row) : null;
+    }
+
+    #[\Override]
     public function findInTenant(string $tenantId, string $paymentId): ?PaymentData
     {
         $row = DB::table('payments')
             ->where('tenant_id', $tenantId)
             ->where('id', $paymentId)
+            ->first();
+
+        return $row instanceof stdClass ? $this->paymentRecordMapper->toData($row) : null;
+    }
+
+    #[\Override]
+    public function findByProviderPaymentId(string $providerKey, string $providerPaymentId): ?PaymentData
+    {
+        $row = DB::table('payments')
+            ->where('provider_key', $providerKey)
+            ->where('provider_payment_id', $providerPaymentId)
+            ->orderByDesc('updated_at')
             ->first();
 
         return $row instanceof stdClass ? $this->paymentRecordMapper->toData($row) : null;

@@ -92,6 +92,16 @@
 - Payment creation and transitions write audit records and billing-topic outbox events.
 - Payment records do not mutate invoice balances or settlement state in this phase.
 - Local development and CI use the configured `manual` and `manual_no_refund` gateways until provider-specific adapters are introduced.
+- `T052` defines the Payme Merchant API contract in ADR `039`.
+- `provider_key = payme` returns a direct Payme checkout URL built from the documented merchant checkout link parameters.
+- Payme public processing uses `POST /webhooks/payme` as a JSON-RPC 2.0 route and always responds with HTTP `200`.
+- Payme verification uses the `Authorization` header with Payme Merchant API Basic auth and the configured merchant key.
+- Payme links the provider request to MedFlow through `account.payment_id`, which must match the local payment UUID.
+- Payme compares amount in tiyin against the local payment amount converted to minor units.
+- `POST /webhooks/payme` supports `CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, and `GetStatement`.
+- Payme `CreateTransaction`, `PerformTransaction`, and `CancelTransaction` are replay-safe by provider transaction id and do not require `Idempotency-Key`.
+- Payme provider state `1` maps to local `pending`, `2` maps to `captured`, `-1` maps to `canceled`, and `-2` maps to `refunded`.
+- `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` are not supported for `provider_key = payme` in this phase and return `409`.
 
 ## Insurance Claims
 

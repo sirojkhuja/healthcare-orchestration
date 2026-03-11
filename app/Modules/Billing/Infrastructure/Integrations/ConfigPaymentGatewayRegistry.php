@@ -5,6 +5,7 @@ namespace App\Modules\Billing\Infrastructure\Integrations;
 use App\Modules\Billing\Application\Contracts\PaymentGateway;
 use App\Modules\Billing\Application\Contracts\PaymentGatewayRegistry;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 final class ConfigPaymentGatewayRegistry implements PaymentGatewayRegistry
@@ -29,12 +30,20 @@ final class ConfigPaymentGatewayRegistry implements PaymentGatewayRegistry
             throw new UnprocessableEntityHttpException('The configured payment gateway driver is invalid.');
         }
 
-        $gateway = $this->container->make($driver, [
-            'providerKey' => $providerKey,
-            'supportsRefunds' => is_bool($definition['supports_refunds'] ?? null)
-                ? $definition['supports_refunds']
-                : false,
-        ]);
+        /** @var array<string, mixed> $parameters */
+        $parameters = ['providerKey' => $providerKey];
+
+        /** @psalm-suppress MixedAssignment */
+        foreach ($definition as $key => $value) {
+            if ($key === 'driver') {
+                continue;
+            }
+
+            /** @psalm-suppress MixedAssignment */
+            $parameters[Str::camel($key)] = $value;
+        }
+
+        $gateway = $this->container->make($driver, $parameters);
 
         if (! $gateway instanceof PaymentGateway) {
             throw new UnprocessableEntityHttpException('The configured payment gateway driver is invalid.');

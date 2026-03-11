@@ -5,10 +5,12 @@ This document defines the shared idempotency contract for protected MedFlow comm
 ## Core Rules
 
 - Idempotency is mandatory for payment initiation, appointment scheduling, and webhook processing.
-- Protected routes opt in through the shared `idempotency:<operation>` middleware contract.
-- Idempotency requires a client-supplied request key.
+- Client-initiated protected routes opt in through the shared `idempotency:<operation>` middleware contract.
+- Idempotency requires a client-supplied request key when the caller controls request headers.
 - Duplicate requests must never execute the protected command twice within the active retention window.
 - Idempotency scope must stay tenant-aware and actor-aware when an authenticated actor exists.
+
+Provider-initiated webhook routes may satisfy the same guarantee through provider-native replay identifiers and delivery stores when the external provider cannot send `Idempotency-Key`.
 
 ## HTTP Contract
 
@@ -38,6 +40,7 @@ This document defines the shared idempotency contract for protected MedFlow comm
 - Requests that fail with server errors are not persisted as completed idempotent results.
 - Requests that are still processing reject duplicates with `409` and `IDEMPOTENCY_REPLAY`.
 - Replay responses must preserve the original application payload and status code while still emitting current request metadata headers.
+- Provider-native replay handling must preserve the provider-expected response contract even when the route does not use the shared idempotency middleware.
 
 ## Testing Requirements
 

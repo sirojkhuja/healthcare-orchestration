@@ -69,7 +69,9 @@ use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedU
 use App\Modules\Insurance\Application\Contracts\PatientInsurancePolicyRepository;
 use App\Modules\Insurance\Infrastructure\Persistence\DatabasePatientInsurancePolicyRepository;
 use App\Modules\Integrations\Application\Contracts\PatientExternalReferenceRepository;
+use App\Modules\Integrations\Application\Contracts\PaymentWebhookDeliveryRepository;
 use App\Modules\Integrations\Infrastructure\Persistence\DatabasePatientExternalReferenceRepository;
+use App\Modules\Integrations\Infrastructure\Persistence\DatabasePaymentWebhookDeliveryRepository;
 use App\Modules\Lab\Application\Contracts\LabOrderRepository;
 use App\Modules\Lab\Application\Contracts\LabProviderGatewayRegistry;
 use App\Modules\Lab\Application\Contracts\LabResultRepository;
@@ -225,6 +227,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(PatientTagRepository::class, DatabasePatientTagRepository::class);
         $this->app->bind(PatientInsurancePolicyRepository::class, DatabasePatientInsurancePolicyRepository::class);
         $this->app->bind(PatientExternalReferenceRepository::class, DatabasePatientExternalReferenceRepository::class);
+        $this->app->bind(PaymentWebhookDeliveryRepository::class, DatabasePaymentWebhookDeliveryRepository::class);
         $this->app->bind(MedicationRepository::class, DatabaseMedicationRepository::class);
         $this->app->bind(PatientAllergyRepository::class, DatabasePatientAllergyRepository::class);
         $this->app->bind(PatientMedicationViewRepository::class, DatabasePatientMedicationViewRepository::class);

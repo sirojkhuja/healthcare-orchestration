@@ -79,7 +79,7 @@ final class PaymentGatewayOperationService
         ?string $reason = null,
     ): PaymentData {
         return match ($snapshot->status) {
-            'initiated' => $payment,
+            'initiated' => $this->persistSnapshot($payment, $snapshot),
             'pending' => $this->paymentWorkflowService->markPending(
                 paymentId: $payment->paymentId,
                 providerPaymentId: $snapshot->providerPaymentId,
@@ -109,6 +109,20 @@ final class PaymentGatewayOperationService
             ),
             default => throw new ConflictHttpException('The payment gateway returned an unsupported payment status.'),
         };
+    }
+
+    private function persistSnapshot(PaymentData $payment, PaymentGatewaySnapshotData $snapshot): PaymentData
+    {
+        return $this->paymentRepository->update($payment->tenantId, $payment->paymentId, array_filter(
+            [
+                'provider_payment_id' => $snapshot->providerPaymentId,
+                'provider_status' => $snapshot->providerStatus,
+                'checkout_url' => $snapshot->checkoutUrl,
+                'failure_code' => $snapshot->failureCode,
+                'failure_message' => $snapshot->failureMessage,
+            ],
+            static fn (mixed $value): bool => $value !== null,
+        )) ?? $payment;
     }
 
     private function paymentOrFail(string $paymentId): PaymentData
