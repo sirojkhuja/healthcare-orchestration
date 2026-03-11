@@ -33,6 +33,7 @@ final class PaymentWorkflowService
     public function cancel(
         string $paymentId,
         ?string $reason = null,
+        ?string $providerPaymentId = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
         ?CarbonImmutable $occurredAt = null,
@@ -48,6 +49,7 @@ final class PaymentWorkflowService
             tenantId: $tenantId,
             metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
+                'provider_payment_id' => $providerPaymentId,
                 'provider_status' => $providerStatus,
             ]),
             mutator: static function (Payment $payment, CarbonImmutable $occurredAt, PaymentActor $resolvedActor) use ($reason): void {
@@ -61,6 +63,7 @@ final class PaymentWorkflowService
      */
     public function capture(
         string $paymentId,
+        ?string $providerPaymentId = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
         ?CarbonImmutable $occurredAt = null,
@@ -76,6 +79,7 @@ final class PaymentWorkflowService
             tenantId: $tenantId,
             metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
+                'provider_payment_id' => $providerPaymentId,
                 'provider_status' => $providerStatus,
             ]),
             mutator: static function (Payment $payment, CarbonImmutable $occurredAt, PaymentActor $resolvedActor): void {
@@ -91,6 +95,7 @@ final class PaymentWorkflowService
         string $paymentId,
         ?string $failureCode = null,
         ?string $failureMessage = null,
+        ?string $providerPaymentId = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
         ?CarbonImmutable $occurredAt = null,
@@ -106,6 +111,7 @@ final class PaymentWorkflowService
             tenantId: $tenantId,
             metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
+                'provider_payment_id' => $providerPaymentId,
                 'provider_status' => $providerStatus,
             ]),
             mutator: static function (Payment $payment, CarbonImmutable $occurredAt, PaymentActor $resolvedActor) use ($failureCode, $failureMessage): void {
@@ -153,6 +159,7 @@ final class PaymentWorkflowService
         string $paymentId,
         bool $supportsRefunds,
         ?string $reason = null,
+        ?string $providerPaymentId = null,
         ?string $providerStatus = null,
         ?PaymentActor $actor = null,
         ?CarbonImmutable $occurredAt = null,
@@ -168,6 +175,7 @@ final class PaymentWorkflowService
             tenantId: $tenantId,
             metadata: $metadata,
             additionalUpdates: $this->optionalUpdates([
+                'provider_payment_id' => $providerPaymentId,
                 'provider_status' => $providerStatus,
             ]),
             mutator: static function (Payment $payment, CarbonImmutable $occurredAt, PaymentActor $resolvedActor) use ($supportsRefunds, $reason): void {

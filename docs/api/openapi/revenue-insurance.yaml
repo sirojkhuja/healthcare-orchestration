@@ -1413,6 +1413,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/click:
+    post:
+      operationId: HandleClickWebhookCommand
+      tags: [Integrations]
+      summary: Process one Click Shop API callback
+      description: Accepts the Click Shop API callback contract for `Prepare` (`action = 0`) and `Complete` (`action = 1`).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClickWebhookRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClickWebhookRequest'
+      responses:
+        '200':
+          description: Click callback response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClickWebhookResponse'
+  /api/v1/webhooks/click:verify:
+    post:
+      operationId: VerifyClickWebhookCommand
+      tags: [Integrations]
+      summary: Verify Click webhook signature
+      description: Authenticated diagnostics helper that checks whether a Click Shop API payload matches the configured service and secret without mutating payment state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClickWebhookVerifyRequest'
+      responses:
+        '200':
+          description: Click webhook verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClickWebhookVerifyResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid verification payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -2244,6 +2307,45 @@ components:
           enum: [payme_webhook_verified]
         data:
           $ref: '#/components/schemas/PaymeWebhookVerification'
+    ClickWebhookResponse:
+      type: object
+      required: [error, error_note]
+      properties:
+        error:
+          type: integer
+        error_note:
+          type: string
+        click_trans_id:
+          type: [string, 'null']
+        merchant_trans_id:
+          type: [string, 'null']
+        merchant_prepare_id:
+          type: [string, 'null']
+        merchant_confirm_id:
+          type: [string, 'null']
+    ClickWebhookVerification:
+      type: object
+      required: [provider_key, valid]
+      properties:
+        provider_key:
+          type: string
+          enum: [click]
+        valid:
+          type: boolean
+        action:
+          type: [integer, 'null']
+          enum: [0, 1, null]
+        merchant_trans_id:
+          type: [string, 'null']
+    ClickWebhookVerifyResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [click_webhook_verified]
+        data:
+          $ref: '#/components/schemas/ClickWebhookVerification'
     InvoiceItemCollectionResponse:
       type: object
       required: [data]
@@ -2423,6 +2525,50 @@ components:
           type: string
         payload:
           $ref: '#/components/schemas/PaymeWebhookRequest'
+    ClickWebhookRequest:
+      type: object
+      required:
+        - click_trans_id
+        - service_id
+        - click_paydoc_id
+        - merchant_trans_id
+        - amount
+        - action
+        - error
+        - error_note
+        - sign_time
+        - sign_string
+      properties:
+        click_trans_id:
+          type: [string, integer]
+        service_id:
+          type: [string, integer]
+        click_paydoc_id:
+          type: [string, integer]
+        merchant_trans_id:
+          type: string
+        merchant_prepare_id:
+          type: [string, integer, 'null']
+        amount:
+          type: [string, number]
+        action:
+          type: [string, integer]
+          enum: ['0', '1', 0, 1]
+        error:
+          type: [string, integer]
+        error_note:
+          type: string
+        sign_time:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
+        sign_string:
+          type: string
+    ClickWebhookVerifyRequest:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          $ref: '#/components/schemas/ClickWebhookRequest'
     Money:
       type: object
       required: [amount, currency]

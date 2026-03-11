@@ -102,6 +102,16 @@
 - Payme `CreateTransaction`, `PerformTransaction`, and `CancelTransaction` are replay-safe by provider transaction id and do not require `Idempotency-Key`.
 - Payme provider state `1` maps to local `pending`, `2` maps to `captured`, `-1` maps to `canceled`, and `-2` maps to `refunded`.
 - `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` are not supported for `provider_key = payme` in this phase and return `409`.
+- `T053` defines the Click Shop API contract in ADR `040`.
+- `provider_key = click` returns a direct Click payment-button checkout URL built from `service_id`, `merchant_id`, `amount`, and `transaction_param`, with optional configured `merchant_user_id`, `return_url`, and `card_type`.
+- Click public processing uses `POST /webhooks/click` and accepts Shop API callback payloads for `action = 0` (`Prepare`) and `action = 1` (`Complete`).
+- Click request linkage uses `merchant_trans_id`, which must match the local payment UUID.
+- Click verification uses the documented MD5 `sign_string` over callback fields plus the configured Click secret key and service id.
+- Click `Prepare` is replay-safe by `click_trans_id` and maps local `initiated -> pending`.
+- Click `Complete` with `error = 0` is replay-safe by `click_trans_id` and maps local `pending -> captured`.
+- Click `Complete` with `error < 0` is replay-safe by `click_trans_id` and maps local `pending -> canceled`.
+- Click provider error mapping uses `-1`, `-2`, `-3`, `-4`, `-5`, `-6`, `-8`, and `-9` from the documented Shop API response contract, with `-7` reserved for unexpected local processing failure after verification.
+- `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` are not supported for `provider_key = click` in this phase and return `409`.
 
 ## Insurance Claims
 

@@ -20,6 +20,15 @@ The original SSoT carries the full route inventory. This document is the split n
 - Webhooks live under `/webhooks/*`.
 - Admin operations live under `/admin/*`.
 
+Revenue and insurance route inventory includes the Uzbek payment callback surface under:
+
+- `/webhooks/payme`
+- `/webhooks/click`
+- `/webhooks/uzum`
+- `/webhooks/payme:verify`
+- `/webhooks/click:verify`
+- `/webhooks/uzum:verify`
+
 ## Inventory Summary
 
 | Area | Approximate endpoints |

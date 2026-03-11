@@ -12,6 +12,11 @@ This document defines the shared idempotency contract for protected MedFlow comm
 
 Provider-initiated webhook routes may satisfy the same guarantee through provider-native replay identifiers and delivery stores when the external provider cannot send `Idempotency-Key`.
 
+Current provider-native replay anchors:
+
+- Payme uses provider transaction id plus method.
+- Click uses `click_trans_id` plus Shop API stage (`prepare` or `complete`).
+
 ## HTTP Contract
 
 - The request header is `Idempotency-Key`.

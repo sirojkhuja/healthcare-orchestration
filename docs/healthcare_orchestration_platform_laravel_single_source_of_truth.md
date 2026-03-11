@@ -1281,6 +1281,8 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - payment allocation and invoice balance mutation remain deferred in this phase
 - `provider_key = payme` returns a direct Payme checkout URL built from documented merchant checkout parameters
 - Payme generic capture, cancel, and refund action routes are not supported in this phase and return `409`
+- `provider_key = click` returns a direct Click payment-button checkout URL built from `service_id`, `merchant_id`, `amount`, and `transaction_param`, with optional configured `merchant_user_id`, `return_url`, and `card_type`
+- Click generic capture, cancel, and refund action routes are not supported in this phase and return `409`
 
 ### Reconciliation
 - POST `/payments:reconcile` → `ReconcilePaymentsCommand` → Billing
@@ -1299,6 +1301,13 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - Payme request linkage uses `account.payment_id` and amount matching in tiyin
 - Payme supports `CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, and `GetStatement`
 - Payme mutating methods are replay-safe by provider transaction id and do not require `Idempotency-Key`
+- Click webhook transport uses the documented Shop API callback JSON contract over `POST /webhooks/click`
+- Click verification uses the documented MD5 `sign_string` with the configured secret key and service id
+- Click request linkage uses `merchant_trans_id` for local payment lookup and `click_trans_id` for replay-safe processing
+- Click `Prepare` (`action = 0`) maps local `initiated -> pending`
+- Click `Complete` (`action = 1`) with `error = 0` maps local `pending -> captured`
+- Click `Complete` (`action = 1`) with `error < 0` maps local `pending -> canceled`
+- Click `Prepare` and `Complete` are replay-safe by `click_trans_id` and do not require `Idempotency-Key`
 
 ---
 

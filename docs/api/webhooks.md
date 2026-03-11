@@ -70,3 +70,12 @@ Provider-initiated routes that cannot supply `Idempotency-Key` must satisfy the 
 - `CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, and `GetStatement` are supported.
 - `CreateTransaction`, `PerformTransaction`, and `CancelTransaction` must be duplicate-safe by provider transaction id without requiring `Idempotency-Key`.
 - `POST /webhooks/payme:verify` is the authenticated diagnostics helper and must not mutate business state.
+
+## Click Webhook Notes
+
+- `POST /webhooks/click` is a public Shop API callback route and returns the provider-specific JSON response body expected by Click.
+- Click verification uses the documented `sign_string` MD5 digest built from callback fields plus the configured secret key.
+- Click request linkage uses `merchant_trans_id` for local payment lookup and `click_trans_id` as the replay-safe delivery key.
+- `action = 0` is `Prepare` and `action = 1` is `Complete`.
+- `Prepare` and `Complete` must be duplicate-safe by `click_trans_id` without requiring `Idempotency-Key`.
+- `POST /webhooks/click:verify` is the authenticated diagnostics helper and must not mutate business state.

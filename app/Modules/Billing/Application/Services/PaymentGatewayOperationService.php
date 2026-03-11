@@ -88,23 +88,27 @@ final class PaymentGatewayOperationService
             ),
             'captured' => $this->paymentWorkflowService->capture(
                 paymentId: $payment->paymentId,
+                providerPaymentId: $snapshot->providerPaymentId,
                 providerStatus: $snapshot->providerStatus,
             ),
             'failed' => $this->paymentWorkflowService->fail(
                 paymentId: $payment->paymentId,
                 failureCode: $snapshot->failureCode,
                 failureMessage: $snapshot->failureMessage,
+                providerPaymentId: $snapshot->providerPaymentId,
                 providerStatus: $snapshot->providerStatus,
             ),
             'canceled' => $this->paymentWorkflowService->cancel(
                 paymentId: $payment->paymentId,
                 reason: $snapshot->reason ?? $reason,
+                providerPaymentId: $snapshot->providerPaymentId,
                 providerStatus: $snapshot->providerStatus,
             ),
             'refunded' => $this->paymentWorkflowService->refund(
                 paymentId: $payment->paymentId,
                 supportsRefunds: $supportsRefunds,
                 reason: $snapshot->reason ?? $reason,
+                providerPaymentId: $snapshot->providerPaymentId,
                 providerStatus: $snapshot->providerStatus,
             ),
             default => throw new ConflictHttpException('The payment gateway returned an unsupported payment status.'),
