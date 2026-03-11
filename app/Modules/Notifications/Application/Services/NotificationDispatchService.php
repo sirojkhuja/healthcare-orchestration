@@ -4,6 +4,7 @@ namespace App\Modules\Notifications\Application\Services;
 
 use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
+use App\Modules\Notifications\Application\Contracts\NotificationQueueGateway;
 use App\Modules\Notifications\Application\Contracts\NotificationRepository;
 use App\Modules\Notifications\Application\Contracts\NotificationTemplateRenderer;
 use App\Modules\Notifications\Application\Contracts\NotificationTemplateRepository;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
-final class NotificationDispatchService
+final class NotificationDispatchService implements NotificationQueueGateway
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
@@ -32,6 +33,7 @@ final class NotificationDispatchService
     /**
      * @param  array<string, mixed>  $attributes
      */
+    #[\Override]
     public function queue(array $attributes): NotificationData
     {
         $tenantId = $this->tenantContext->requireTenantId();

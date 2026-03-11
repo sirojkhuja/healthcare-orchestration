@@ -184,6 +184,12 @@
 - Bulk draft updates return `operation_id`, `affected_count`, `updated_fields`, and the updated appointment payloads in input order, and they write a summary `appointments.bulk_updated` audit event plus linked per-appointment `appointments.updated` events.
 - `T040` makes the appointment workflow operational with explicit action routes, booked-slot blocking, materialized recurrence series, waitlist booking, and dedicated bulk cancel/reschedule contracts as defined in ADR `028`.
 - Single appointment workflow routes require `Idempotency-Key`, return the updated appointment payload, and keep reschedule explicit by returning both the source appointment and its replacement appointment.
+- `T041` makes appointment-linked reminder and confirmation sends operational through ADR `045`.
+- `POST /appointments/{appointmentId}:send-reminder` is allowed only for future `scheduled|confirmed` appointments. It resolves active tenant templates `APPOINTMENT-REMINDER-SMS` and `APPOINTMENT-REMINDER-EMAIL`, resolves recipients from patient master contact fields first and patient contacts second, and returns the appointment plus the queued-or-reused linked notifications.
+- Reminder dispatch computes a local appointment `window_key` of `advance`, `day_before`, or `same_day` and is idempotent per `appointment_id + channel + window_key`.
+- `POST /appointments/{appointmentId}:send-confirmation` is allowed only for future `scheduled` appointments whose clinic has `require_appointment_confirmation = true`.
+- Confirmation dispatch resolves active tenant templates `APPOINTMENT-CONFIRMATION-SMS` and `APPOINTMENT-CONFIRMATION-EMAIL` and is idempotent per `appointment_id + channel`.
+- Appointment-linked notifications persist a scheduling-owned linkage row so reminder windows and confirmation requests remain auditable without changing the notification queue lifecycle from ADR `044`.
 - `POST /appointments/{appointmentId}:make-recurring` creates one recurrence record plus the generated future scheduled appointments in one all-or-nothing mutation.
 - Monthly recurrence materialization preserves the local appointment wall-clock time and clamps shorter target months with no-overflow month arithmetic.
 - `POST /appointments/recurrences/{recurrenceId}:cancel` marks the recurrence itself as `canceled` and cancels only future generated appointments that are still `scheduled` or `confirmed`.

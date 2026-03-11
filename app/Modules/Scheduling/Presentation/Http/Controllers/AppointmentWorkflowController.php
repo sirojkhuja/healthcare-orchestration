@@ -10,6 +10,8 @@ use App\Modules\Scheduling\Application\Commands\MarkNoShowCommand;
 use App\Modules\Scheduling\Application\Commands\RescheduleAppointmentCommand;
 use App\Modules\Scheduling\Application\Commands\RestoreAppointmentCommand;
 use App\Modules\Scheduling\Application\Commands\ScheduleAppointmentCommand;
+use App\Modules\Scheduling\Application\Commands\SendAppointmentConfirmationCommand;
+use App\Modules\Scheduling\Application\Commands\SendAppointmentReminderCommand;
 use App\Modules\Scheduling\Application\Commands\StartAppointmentCommand;
 use App\Modules\Scheduling\Application\Handlers\CancelAppointmentCommandHandler;
 use App\Modules\Scheduling\Application\Handlers\CheckInAppointmentCommandHandler;
@@ -19,6 +21,8 @@ use App\Modules\Scheduling\Application\Handlers\MarkNoShowCommandHandler;
 use App\Modules\Scheduling\Application\Handlers\RescheduleAppointmentCommandHandler;
 use App\Modules\Scheduling\Application\Handlers\RestoreAppointmentCommandHandler;
 use App\Modules\Scheduling\Application\Handlers\ScheduleAppointmentCommandHandler;
+use App\Modules\Scheduling\Application\Handlers\SendAppointmentConfirmationCommandHandler;
+use App\Modules\Scheduling\Application\Handlers\SendAppointmentReminderCommandHandler;
 use App\Modules\Scheduling\Application\Handlers\StartAppointmentCommandHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -116,6 +120,28 @@ final class AppointmentWorkflowController
         return response()->json([
             'status' => 'appointment_restored',
             'data' => $appointment->toArray(),
+        ]);
+    }
+
+    public function sendConfirmation(
+        string $appointmentId,
+        SendAppointmentConfirmationCommandHandler $handler,
+    ): JsonResponse {
+        $result = $handler->handle(new SendAppointmentConfirmationCommand($appointmentId));
+
+        return response()->json([
+            'status' => 'appointment_confirmation_sent',
+            'data' => $result->toArray(),
+        ]);
+    }
+
+    public function sendReminder(string $appointmentId, SendAppointmentReminderCommandHandler $handler): JsonResponse
+    {
+        $result = $handler->handle(new SendAppointmentReminderCommand($appointmentId));
+
+        return response()->json([
+            'status' => 'appointment_reminder_sent',
+            'data' => $result->toArray(),
         ]);
     }
 

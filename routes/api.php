@@ -405,6 +405,12 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/appointments/{appointmentId}:confirm', [AppointmentWorkflowController::class, 'confirm'])
                     ->middleware('idempotency:appointments.confirm')
                     ->name('appointments.confirm');
+                Route::post('/appointments/{appointmentId}:send-reminder', [AppointmentWorkflowController::class, 'sendReminder'])
+                    ->middleware('idempotency:appointments.send-reminder')
+                    ->name('appointments.send-reminder');
+                Route::post('/appointments/{appointmentId}:send-confirmation', [AppointmentWorkflowController::class, 'sendConfirmation'])
+                    ->middleware('idempotency:appointments.send-confirmation')
+                    ->name('appointments.send-confirmation');
                 Route::post('/appointments/{appointmentId}:check-in', [AppointmentWorkflowController::class, 'checkIn'])
                     ->middleware('idempotency:appointments.check-in')
                     ->name('appointments.check-in');

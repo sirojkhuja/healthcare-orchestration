@@ -17,6 +17,8 @@ interface NotificationTemplateRepository
 
     public function findInTenant(string $tenantId, string $templateId): ?NotificationTemplateData;
 
+    public function findActiveByCode(string $tenantId, string $code): ?NotificationTemplateData;
+
     /**
      * @return list<NotificationTemplateData>
      */

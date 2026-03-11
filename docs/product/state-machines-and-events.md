@@ -47,6 +47,8 @@
 - rescheduling must preserve audit history and previous slot reference
 - no-show and cancel transitions must capture actor, reason, and timestamp
 - reminder dispatch must be idempotent and based on scheduled state windows
+- reminder windows are `advance`, `day_before`, and `same_day` in the appointment local timezone
+- confirmation requests are limited to future `scheduled` appointments whose clinic requires appointment confirmation
 
 ## Treatment Plan State Machine
 

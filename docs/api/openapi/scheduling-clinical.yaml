@@ -453,6 +453,104 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:send-reminder:
+    post:
+      operationId: SendAppointmentReminderCommand
+      tags: [Appointments]
+      summary: Queue or reuse appointment reminder notifications
+      description: Dispatches appointment-linked reminder notifications for a future `scheduled` or `confirmed` appointment and deduplicates sends within the current reminder window.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment reminder notifications queued or reused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentNotificationDispatchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot dispatch a reminder in its current workflow state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: No eligible appointment reminder template or recipient exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/appointments/{appointmentId}:send-confirmation:
+    post:
+      operationId: SendAppointmentConfirmationCommand
+      tags: [Appointments]
+      summary: Queue or reuse appointment confirmation notifications
+      description: Dispatches appointment-linked confirmation notifications for a future `scheduled` appointment when the linked clinic requires appointment confirmation.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AppointmentIdPath'
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Appointment confirmation notifications queued or reused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentNotificationDispatchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Appointment not found in the active tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Appointment cannot dispatch a confirmation request in its current workflow state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Appointment confirmation is disabled for the clinic or no eligible template and recipient exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/appointments/{appointmentId}:check-in:
     post:
       operationId: CheckInAppointmentCommand
@@ -7908,6 +8006,130 @@ components:
             - appointment_restored
         data:
           $ref: '#/components/schemas/Appointment'
+    AppointmentNotificationDispatch:
+      type: object
+      required: [appointment, notification_type, notifications]
+      properties:
+        appointment:
+          $ref: '#/components/schemas/Appointment'
+        notification_type:
+          type: string
+          enum: [reminder, confirmation]
+        window_key:
+          type: string
+          nullable: true
+          enum: [advance, day_before, same_day]
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppointmentLinkedNotification'
+    AppointmentNotificationDispatchResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [appointment_reminder_sent, appointment_confirmation_sent]
+        data:
+          $ref: '#/components/schemas/AppointmentNotificationDispatch'
+    AppointmentLinkedNotification:
+      type: object
+      required:
+        - id
+        - template
+        - recipient
+        - recipient_value
+        - rendered_body
+        - variables
+        - metadata
+        - status
+        - attempts
+        - queued_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        template:
+          type: object
+          required: [id, code, version, channel]
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            version:
+              type: integer
+            channel:
+              type: string
+              enum: [email, sms, telegram]
+        recipient:
+          type: object
+          additionalProperties: true
+        recipient_value:
+          type: string
+        rendered_subject:
+          type: string
+          nullable: true
+        rendered_body:
+          type: string
+        variables:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [queued, sent, failed, canceled]
+        attempts:
+          type: object
+          required: [used, max, remaining]
+          properties:
+            used:
+              type: integer
+            max:
+              type: integer
+            remaining:
+              type: integer
+        provider:
+          type: object
+          nullable: true
+          additionalProperties: true
+        failure:
+          type: object
+          nullable: true
+          additionalProperties: true
+        queued_at:
+          type: string
+          format: date-time
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+        failed_at:
+          type: string
+          format: date-time
+          nullable: true
+        canceled_at:
+          type: string
+          format: date-time
+          nullable: true
+        canceled_reason:
+          type: string
+          nullable: true
+        last_attempt_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
     AppointmentReschedule:
       type: object
       required: [appointment, replacement_appointment]

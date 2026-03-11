@@ -1047,6 +1047,11 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 ### Reminders & communications
 - POST `/appointments/{appointmentId}:send-reminder` → `SendAppointmentReminderCommand` → Notifications
 - POST `/appointments/{appointmentId}:send-confirmation` → `SendAppointmentConfirmationCommand` → Notifications
+- reminder sends are allowed only for future `scheduled|confirmed` appointments, compute a local `window_key` of `advance|day_before|same_day`, and are idempotent per appointment, channel, and window
+- confirmation sends are allowed only for future `scheduled` appointments whose clinic has `require_appointment_confirmation = true` and are idempotent per appointment and channel
+- appointment-linked sends resolve active tenant templates by exact code: `APPOINTMENT-REMINDER-SMS`, `APPOINTMENT-REMINDER-EMAIL`, `APPOINTMENT-CONFIRMATION-SMS`, and `APPOINTMENT-CONFIRMATION-EMAIL`
+- appointment-linked recipient resolution uses patient `phone` and `email` first, then falls back to ordered patient contacts
+- appointment-linked notifications persist a linkage record between the appointment and the queued notification row so reminder windows and confirmation requests remain auditable
 
 ### Recurrence (optional)
 - POST `/appointments/{appointmentId}:make-recurring` → `MakeAppointmentRecurringCommand` → Scheduling

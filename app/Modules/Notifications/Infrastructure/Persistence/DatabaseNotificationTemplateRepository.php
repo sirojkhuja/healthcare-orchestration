@@ -86,6 +86,17 @@ final class DatabaseNotificationTemplateRepository implements NotificationTempla
     }
 
     #[\Override]
+    public function findActiveByCode(string $tenantId, string $code): ?NotificationTemplateData
+    {
+        $row = $this->baseTemplateQuery($tenantId)
+            ->whereRaw('UPPER(code) = ?', [mb_strtoupper(trim($code))])
+            ->where('is_active', true)
+            ->first();
+
+        return $row instanceof stdClass ? $this->toTemplateData($row) : null;
+    }
+
+    #[\Override]
     public function listForTenant(string $tenantId, NotificationTemplateListCriteria $criteria): array
     {
         $query = $this->baseTemplateQuery($tenantId);

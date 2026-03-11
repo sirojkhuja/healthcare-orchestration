@@ -56,6 +56,9 @@
 - `email` recipients require `recipient.email` and optional `recipient.name`.
 - `sms` recipients require `recipient.phone_number`.
 - `telegram` recipients require `recipient.chat_id`.
+- Appointment-linked scheduling actions in `T041` select active templates by exact code rather than by template id.
+- The reserved appointment-linked template codes are `APPOINTMENT-REMINDER-SMS`, `APPOINTMENT-REMINDER-EMAIL`, `APPOINTMENT-CONFIRMATION-SMS`, and `APPOINTMENT-CONFIRMATION-EMAIL`.
+- `T041` resolves appointment-linked recipients from patient `phone` and `email` first, then falls back to ordered patient contacts, and persists an appointment-to-notification linkage record for idempotent reminder windows and confirmation requests.
 
 ## Integrations Hub
 
