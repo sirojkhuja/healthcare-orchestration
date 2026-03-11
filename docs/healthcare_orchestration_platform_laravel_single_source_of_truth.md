@@ -1271,6 +1271,9 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - initiation is allowed only for invoices in `issued|finalized`
 - payment `currency` must equal the linked invoice currency and `amount` must be positive and no greater than invoice `total_amount`
 - payment creation starts in `initiated`
+- `GET /payments` supports `q`, `status`, `invoice_id`, `provider_key`, `created_from`, `created_to`, and `limit`
+- `GET /payments/{paymentId}/status` returns a status-focused projection of the stored payment lifecycle
+- `POST /payments:initiate`, `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` require `Idempotency-Key`
 - allowed forward transitions are `initiated -> pending`, `pending -> captured|failed|canceled`, and `captured -> refunded`
 - refunds are allowed only when the gateway supports refunds and the payment is already `captured`
 - payment creation and transitions write audit records and billing outbox events

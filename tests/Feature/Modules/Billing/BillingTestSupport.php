@@ -186,6 +186,68 @@ function billingFinalizeInvoice(
         ->postJson('/api/v1/invoices/'.$invoiceId.':finalize');
 }
 
+function billingInitiatePayment(
+    $testCase,
+    string $token,
+    string $tenantId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/payments:initiate', $payload);
+}
+
+function billingCapturePayment(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $paymentId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/payments/'.$paymentId.':capture');
+}
+
+function billingCancelPayment(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $paymentId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/payments/'.$paymentId.':cancel', $payload);
+}
+
+function billingRefundPayment(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $paymentId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/payments/'.$paymentId.':refund', $payload);
+}
+
 function billingVoidInvoice(
     $testCase,
     string $token,

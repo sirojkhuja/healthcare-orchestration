@@ -1038,6 +1038,315 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments:
+    get:
+      operationId: ListPaymentsQuery
+      tags: [Billing]
+      summary: List payments in the current tenant
+      description: Returns tenant-scoped payments filtered by invoice, provider, lifecycle state, and creation date.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/BillingSearchQuery'
+        - $ref: '#/components/parameters/PaymentStatusFilter'
+        - $ref: '#/components/parameters/PaymentInvoiceFilter'
+        - $ref: '#/components/parameters/PaymentProviderKeyFilter'
+        - $ref: '#/components/parameters/PaymentCreatedFromFilter'
+        - $ref: '#/components/parameters/PaymentCreatedToFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Payment directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments:initiate:
+    post:
+      operationId: InitiatePaymentCommand
+      tags: [Billing]
+      summary: Initiate a payment
+      description: Creates a tenant-scoped payment attempt, resolves the configured payment gateway, and applies the normalized gateway snapshot.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiatePaymentRequest'
+      responses:
+        '201':
+          description: Payment initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Payment cannot be initiated for the selected invoice state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid payment initiation payload or unknown gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/{paymentId}:
+    get:
+      operationId: GetPaymentQuery
+      tags: [Billing]
+      summary: Get one payment
+      description: Returns the full tenant-scoped payment projection.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PaymentIdPath'
+      responses:
+        '200':
+          description: Payment detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentShowResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/{paymentId}/status:
+    get:
+      operationId: GetPaymentStatusQuery
+      tags: [Billing]
+      summary: Get payment status
+      description: Returns the status-focused tenant-scoped payment projection used by clients to monitor lifecycle changes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PaymentIdPath'
+      responses:
+        '200':
+          description: Payment status projection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusShowResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/{paymentId}:capture:
+    post:
+      operationId: CapturePaymentCommand
+      tags: [Billing]
+      summary: Capture a pending payment
+      description: Calls the configured gateway for one payment and applies the normalized result through the local payment state machine.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PaymentIdPath'
+      responses:
+        '200':
+          description: Payment captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Payment cannot be captured in its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/{paymentId}:cancel:
+    post:
+      operationId: CancelPaymentCommand
+      tags: [Billing]
+      summary: Cancel a pending payment
+      description: Calls the configured gateway for one payment and applies the normalized cancel result through the local state machine.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PaymentIdPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelPaymentRequest'
+      responses:
+        '200':
+          description: Payment canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Payment cannot be canceled in its current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid cancel payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/{paymentId}:refund:
+    post:
+      operationId: RefundPaymentCommand
+      tags: [Billing]
+      summary: Refund a captured payment
+      description: Calls the configured gateway for one payment and applies the normalized refund result through the local state machine.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/PaymentIdPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+      responses:
+        '200':
+          description: Payment refunded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Payment not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Payment cannot be refunded in its current state or the gateway does not support refunds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid refund payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -1088,6 +1397,13 @@ components:
       schema:
         type: string
         format: uuid
+    PaymentIdPath:
+      name: paymentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     BillingSearchQuery:
       name: q
       in: query
@@ -1095,6 +1411,41 @@ components:
       schema:
         type: string
         maxLength: 120
+    PaymentStatusFilter:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [initiated, pending, captured, failed, canceled, refunded]
+    PaymentInvoiceFilter:
+      name: invoice_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    PaymentProviderKeyFilter:
+      name: provider_key
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '^[a-z0-9._-]+$'
+    PaymentCreatedFromFilter:
+      name: created_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    PaymentCreatedToFilter:
+      name: created_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
     InvoiceStatusFilter:
       name: status
       in: query
@@ -1616,6 +1967,176 @@ components:
           type: string
         data:
           $ref: '#/components/schemas/Invoice'
+    Payment:
+      type: object
+      required: [id, tenant_id, invoice, provider, amount, status, initiated_at, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        invoice:
+          type: object
+          required: [id, number]
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+        provider:
+          type: object
+          required: [key]
+          properties:
+            key:
+              type: string
+            payment_id:
+              type: [string, 'null']
+            status:
+              type: [string, 'null']
+            checkout_url:
+              type: [string, 'null']
+        amount:
+          $ref: '#/components/schemas/Money'
+        description:
+          type: [string, 'null']
+        status:
+          type: string
+          enum: [initiated, pending, captured, failed, canceled, refunded]
+        failure:
+          type:
+            - object
+            - 'null'
+          properties:
+            code:
+              type: [string, 'null']
+            message:
+              type: [string, 'null']
+        cancel_reason:
+          type: [string, 'null']
+        refund_reason:
+          type: [string, 'null']
+        last_transition:
+          type:
+            - object
+            - 'null'
+        initiated_at:
+          type: string
+          format: date-time
+        pending_at:
+          type: [string, 'null']
+          format: date-time
+        captured_at:
+          type: [string, 'null']
+          format: date-time
+        failed_at:
+          type: [string, 'null']
+          format: date-time
+        canceled_at:
+          type: [string, 'null']
+          format: date-time
+        refunded_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PaymentStatusView:
+      type: object
+      required: [id, status, provider, initiated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [initiated, pending, captured, failed, canceled, refunded]
+        provider:
+          type: object
+          required: [key]
+          properties:
+            key:
+              type: string
+            payment_id:
+              type: [string, 'null']
+            status:
+              type: [string, 'null']
+            checkout_url:
+              type: [string, 'null']
+        last_transition:
+          type:
+            - object
+            - 'null'
+        failure:
+          type:
+            - object
+            - 'null'
+          properties:
+            code:
+              type: [string, 'null']
+            message:
+              type: [string, 'null']
+        cancel_reason:
+          type: [string, 'null']
+        refund_reason:
+          type: [string, 'null']
+        initiated_at:
+          type: string
+          format: date-time
+        pending_at:
+          type: [string, 'null']
+          format: date-time
+        captured_at:
+          type: [string, 'null']
+          format: date-time
+        failed_at:
+          type: [string, 'null']
+          format: date-time
+        canceled_at:
+          type: [string, 'null']
+          format: date-time
+        refunded_at:
+          type: [string, 'null']
+          format: date-time
+    PaymentCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+    PaymentShowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Payment'
+    PaymentStatusShowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentStatusView'
+    PaymentMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/Payment'
     InvoiceItemCollectionResponse:
       type: object
       required: [data]
@@ -1737,6 +2258,35 @@ components:
       properties:
         reason:
           type: string
+    InitiatePaymentRequest:
+      type: object
+      required: [invoice_id, provider_key, amount]
+      properties:
+        invoice_id:
+          type: string
+          format: uuid
+        provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        amount:
+          type: string
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        currency:
+          type: [string, 'null']
+          minLength: 3
+          maxLength: 3
+        description:
+          type: [string, 'null']
+    CancelPaymentRequest:
+      type: object
+      properties:
+        reason:
+          type: [string, 'null']
+    RefundPaymentRequest:
+      type: object
+      properties:
+        reason:
+          type: [string, 'null']
     Money:
       type: object
       required: [amount, currency]

@@ -2,19 +2,9 @@
 
 use App\Models\User;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\AuditEventRecord;
-use App\Modules\Billing\Application\Commands\CancelPaymentCommand;
-use App\Modules\Billing\Application\Commands\CapturePaymentCommand;
-use App\Modules\Billing\Application\Commands\FailPaymentCommand;
-use App\Modules\Billing\Application\Commands\InitiatePaymentCommand;
-use App\Modules\Billing\Application\Commands\MarkPaymentPendingCommand;
-use App\Modules\Billing\Application\Commands\RefundPaymentCommand;
 use App\Modules\Billing\Application\Contracts\PaymentRepository;
-use App\Modules\Billing\Application\Handlers\CancelPaymentCommandHandler;
-use App\Modules\Billing\Application\Handlers\CapturePaymentCommandHandler;
-use App\Modules\Billing\Application\Handlers\FailPaymentCommandHandler;
-use App\Modules\Billing\Application\Handlers\InitiatePaymentCommandHandler;
-use App\Modules\Billing\Application\Handlers\MarkPaymentPendingCommandHandler;
-use App\Modules\Billing\Application\Handlers\RefundPaymentCommandHandler;
+use App\Modules\Billing\Application\Services\PaymentAdministrationService;
+use App\Modules\Billing\Application\Services\PaymentWorkflowService;
 use App\Shared\Infrastructure\Messaging\Persistence\OutboxMessageRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -65,32 +55,32 @@ it('initiates and advances payments through pending capture and refund via handl
 
     billingInitializeApplicationContext($this, $admin, $tenantId, 'payment-session-1');
 
-    $initiated = app(InitiatePaymentCommandHandler::class)->handle(new InitiatePaymentCommand([
+    $initiated = app(PaymentAdministrationService::class)->initiate([
         'invoice_id' => $invoiceId,
         'provider_key' => 'manual',
         'amount' => '85000',
         'currency' => 'UZS',
         'description' => 'Reception terminal charge',
-    ]));
+    ]);
 
-    $pending = app(MarkPaymentPendingCommandHandler::class)->handle(new MarkPaymentPendingCommand(
+    $pending = app(PaymentWorkflowService::class)->markPending(
         paymentId: $initiated->paymentId,
         providerPaymentId: 'prov-pay-1',
         providerStatus: 'awaiting_capture',
         checkoutUrl: 'https://payments.example.test/checkout/prov-pay-1',
-    ));
+    );
 
-    $captured = app(CapturePaymentCommandHandler::class)->handle(new CapturePaymentCommand(
+    $captured = app(PaymentWorkflowService::class)->capture(
         paymentId: $initiated->paymentId,
         providerStatus: 'captured_remote',
-    ));
+    );
 
-    $refunded = app(RefundPaymentCommandHandler::class)->handle(new RefundPaymentCommand(
+    $refunded = app(PaymentWorkflowService::class)->refund(
         paymentId: $initiated->paymentId,
         supportsRefunds: true,
         reason: 'Patient paid twice',
         providerStatus: 'refunded_remote',
-    ));
+    );
 
     $stored = app(PaymentRepository::class)->findInTenant($tenantId, $initiated->paymentId);
 
@@ -137,11 +127,11 @@ it('enforces invoice-state and payment-lifecycle guards through the application 
 
     billingInitializeApplicationContext($this, $admin, $tenantId, 'payment-session-2');
 
-    expect(fn () => app(InitiatePaymentCommandHandler::class)->handle(new InitiatePaymentCommand([
+    expect(fn () => app(PaymentAdministrationService::class)->initiate([
         'invoice_id' => $draftInvoiceId,
         'provider_key' => 'manual',
         'amount' => '10000',
-    ])))->toThrow(ConflictHttpException::class);
+    ]))->toThrow(ConflictHttpException::class);
 
     $issuedInvoiceId = billingCreateInvoice($this, $adminToken, $tenantId, [
         'patient_id' => $patientId,
@@ -157,56 +147,56 @@ it('enforces invoice-state and payment-lifecycle guards through the application 
     billingIssueInvoice($this, $adminToken, $tenantId, $issuedInvoiceId, 'payment-issued-invoice-issue')
         ->assertOk();
 
-    $payment = app(InitiatePaymentCommandHandler::class)->handle(new InitiatePaymentCommand([
+    $payment = app(PaymentAdministrationService::class)->initiate([
         'invoice_id' => $issuedInvoiceId,
         'provider_key' => 'manual',
         'amount' => '45000',
-    ]));
+    ]);
 
-    expect(fn () => app(CancelPaymentCommandHandler::class)->handle(new CancelPaymentCommand(
+    expect(fn () => app(PaymentWorkflowService::class)->cancel(
         paymentId: $payment->paymentId,
         reason: 'Attempt before pending',
-    )))->toThrow(ConflictHttpException::class);
+    ))->toThrow(ConflictHttpException::class);
 
-    $pending = app(MarkPaymentPendingCommandHandler::class)->handle(new MarkPaymentPendingCommand(
+    $pending = app(PaymentWorkflowService::class)->markPending(
         paymentId: $payment->paymentId,
         providerPaymentId: 'guard-prov-pay',
-    ));
+    );
 
     expect($pending->status)->toBe('pending');
 
-    expect(fn () => app(RefundPaymentCommandHandler::class)->handle(new RefundPaymentCommand(
+    expect(fn () => app(PaymentWorkflowService::class)->refund(
         paymentId: $payment->paymentId,
         supportsRefunds: false,
         reason: 'Unsupported gateway',
-    )))->toThrow(ConflictHttpException::class);
+    ))->toThrow(ConflictHttpException::class);
 
-    $canceled = app(CancelPaymentCommandHandler::class)->handle(new CancelPaymentCommand(
+    $canceled = app(PaymentWorkflowService::class)->cancel(
         paymentId: $payment->paymentId,
         reason: 'Patient selected cash',
-    ));
+    );
 
     expect($canceled->status)->toBe('canceled');
 
-    $secondPayment = app(InitiatePaymentCommandHandler::class)->handle(new InitiatePaymentCommand([
+    $secondPayment = app(PaymentAdministrationService::class)->initiate([
         'invoice_id' => $issuedInvoiceId,
         'provider_key' => 'manual',
         'amount' => '45000',
-    ]));
+    ]);
 
-    app(MarkPaymentPendingCommandHandler::class)->handle(new MarkPaymentPendingCommand(
+    app(PaymentWorkflowService::class)->markPending(
         paymentId: $secondPayment->paymentId,
         providerPaymentId: 'guard-prov-pay-2',
-    ));
+    );
 
-    $failed = app(FailPaymentCommandHandler::class)->handle(new FailPaymentCommand(
+    $failed = app(PaymentWorkflowService::class)->fail(
         paymentId: $secondPayment->paymentId,
         failureCode: 'provider_timeout',
         failureMessage: 'Gateway timed out',
-    ));
+    );
 
     expect($failed->status)->toBe('failed');
-    expect(fn () => app(CapturePaymentCommandHandler::class)->handle(new CapturePaymentCommand(
+    expect(fn () => app(PaymentWorkflowService::class)->capture(
         paymentId: $secondPayment->paymentId,
-    )))->toThrow(ConflictHttpException::class);
+    ))->toThrow(ConflictHttpException::class);
 });

@@ -4,6 +4,8 @@ use App\Modules\Billing\Presentation\Http\Controllers\BillableServiceController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceItemController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceWorkflowController;
+use App\Modules\Billing\Presentation\Http\Controllers\PaymentController;
+use App\Modules\Billing\Presentation\Http\Controllers\PaymentWorkflowController;
 use App\Modules\Billing\Presentation\Http\Controllers\PriceListController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApiKeyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthController;
@@ -280,6 +282,9 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
                 Route::get('/invoices/{invoiceId}/items', [InvoiceItemController::class, 'list'])->name('invoices.items.list');
                 Route::get('/invoices/{invoiceId}', [InvoiceController::class, 'show'])->name('invoices.show');
+                Route::get('/payments', [PaymentController::class, 'list'])->name('payments.list');
+                Route::get('/payments/{paymentId}', [PaymentController::class, 'show'])->name('payments.show');
+                Route::get('/payments/{paymentId}/status', [PaymentController::class, 'status'])->name('payments.status');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -517,6 +522,18 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/invoices/{invoiceId}:void', [InvoiceWorkflowController::class, 'void'])
                     ->middleware('idempotency:invoices.void')
                     ->name('invoices.void');
+                Route::post('/payments:initiate', [PaymentController::class, 'initiate'])
+                    ->middleware('idempotency:payments.initiate')
+                    ->name('payments.initiate');
+                Route::post('/payments/{paymentId}:capture', [PaymentWorkflowController::class, 'capture'])
+                    ->middleware('idempotency:payments.capture')
+                    ->name('payments.capture');
+                Route::post('/payments/{paymentId}:cancel', [PaymentWorkflowController::class, 'cancel'])
+                    ->middleware('idempotency:payments.cancel')
+                    ->name('payments.cancel');
+                Route::post('/payments/{paymentId}:refund', [PaymentWorkflowController::class, 'refund'])
+                    ->middleware('idempotency:payments.refund')
+                    ->name('payments.refund');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])

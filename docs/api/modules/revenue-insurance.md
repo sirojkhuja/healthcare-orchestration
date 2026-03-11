@@ -75,6 +75,7 @@
 ## Payment Notes
 
 - `T050` defines the payment aggregate and initiation contract in ADR `037`.
+- `T051` defines payment HTTP operations and local gateway behavior in ADR `038`.
 - Payment status values are `initiated`, `pending`, `captured`, `failed`, `canceled`, and `refunded`.
 - Payments are tenant-scoped records linked to a single invoice and snapshot `invoice_number`.
 - Payment initiation requires `invoice_id`, `provider_key`, and `amount`.
@@ -82,10 +83,15 @@
 - Payment amount must be positive, may not exceed the linked invoice `total_amount`, and must use the invoice currency.
 - `provider_key` is a lowercase slug used to resolve the provider gateway implementation.
 - Local payment creation starts in `initiated`.
+- API initiation resolves the configured gateway and may immediately advance the local payment from `initiated` to `pending`.
+- `GET /payments` supports `q`, `status`, `invoice_id`, `provider_key`, `created_from`, `created_to`, and `limit`.
+- `GET /payments/{paymentId}/status` returns a status-focused projection from the local payment record.
+- `POST /payments:initiate`, `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` all require `Idempotency-Key`.
 - Allowed forward transitions are `initiated -> pending`, `pending -> captured|failed|canceled`, and `captured -> refunded`.
 - Refunds are allowed only for captured payments and only when the selected gateway supports refunds.
 - Payment creation and transitions write audit records and billing-topic outbox events.
 - Payment records do not mutate invoice balances or settlement state in this phase.
+- Local development and CI use the configured `manual` and `manual_no_refund` gateways until provider-specific adapters are introduced.
 
 ## Insurance Claims
 

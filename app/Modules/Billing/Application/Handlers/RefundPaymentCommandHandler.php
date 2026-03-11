@@ -4,21 +4,19 @@ namespace App\Modules\Billing\Application\Handlers;
 
 use App\Modules\Billing\Application\Commands\RefundPaymentCommand;
 use App\Modules\Billing\Application\Data\PaymentData;
-use App\Modules\Billing\Application\Services\PaymentWorkflowService;
+use App\Modules\Billing\Application\Services\PaymentGatewayOperationService;
 
 final class RefundPaymentCommandHandler
 {
     public function __construct(
-        private readonly PaymentWorkflowService $paymentWorkflowService,
+        private readonly PaymentGatewayOperationService $paymentGatewayOperationService,
     ) {}
 
     public function handle(RefundPaymentCommand $command): PaymentData
     {
-        return $this->paymentWorkflowService->refund(
+        return $this->paymentGatewayOperationService->refund(
             paymentId: $command->paymentId,
-            supportsRefunds: $command->supportsRefunds,
             reason: $command->reason,
-            providerStatus: $command->providerStatus,
         );
     }
 }

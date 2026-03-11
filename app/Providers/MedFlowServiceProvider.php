@@ -14,8 +14,10 @@ use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditEventRep
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseSecurityEventRepository;
 use App\Modules\Billing\Application\Contracts\BillableServiceRepository;
 use App\Modules\Billing\Application\Contracts\InvoiceRepository;
+use App\Modules\Billing\Application\Contracts\PaymentGatewayRegistry;
 use App\Modules\Billing\Application\Contracts\PaymentRepository;
 use App\Modules\Billing\Application\Contracts\PriceListRepository;
+use App\Modules\Billing\Infrastructure\Integrations\ConfigPaymentGatewayRegistry;
 use App\Modules\Billing\Infrastructure\Persistence\DatabaseBillableServiceRepository;
 use App\Modules\Billing\Infrastructure\Persistence\DatabaseInvoiceRepository;
 use App\Modules\Billing\Infrastructure\Persistence\DatabasePaymentRepository;
@@ -206,6 +208,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
         $this->app->bind(BillableServiceRepository::class, DatabaseBillableServiceRepository::class);
         $this->app->bind(InvoiceRepository::class, DatabaseInvoiceRepository::class);
+        $this->app->bind(PaymentGatewayRegistry::class, ConfigPaymentGatewayRegistry::class);
         $this->app->bind(PaymentRepository::class, DatabasePaymentRepository::class);
         $this->app->bind(ClinicRepository::class, DatabaseClinicRepository::class);
         $this->app->bind(LocationReferenceRepository::class, ConfigLocationReferenceRepository::class);

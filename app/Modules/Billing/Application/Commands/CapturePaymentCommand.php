@@ -6,6 +6,5 @@ final readonly class CapturePaymentCommand
 {
     public function __construct(
         public string $paymentId,
-        public ?string $providerStatus = null,
     ) {}
 }

@@ -4,7 +4,9 @@ namespace App\Modules\Billing\Infrastructure\Persistence;
 
 use App\Modules\Billing\Application\Contracts\PaymentRepository;
 use App\Modules\Billing\Application\Data\PaymentData;
+use App\Modules\Billing\Application\Data\PaymentListCriteria;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use stdClass;
@@ -62,6 +64,56 @@ final class DatabasePaymentRepository implements PaymentRepository
             ->first();
 
         return $row instanceof stdClass ? $this->paymentRecordMapper->toData($row) : null;
+    }
+
+    #[\Override]
+    public function search(string $tenantId, PaymentListCriteria $criteria): array
+    {
+        $query = DB::table('payments')
+            ->where('tenant_id', $tenantId);
+
+        foreach ([
+            'status' => $criteria->status,
+            'invoice_id' => $criteria->invoiceId,
+            'provider_key' => $criteria->providerKey,
+        ] as $column => $value) {
+            if ($value !== null) {
+                $query->where($column, $value);
+            }
+        }
+
+        if ($criteria->createdFrom !== null) {
+            $query->where('created_at', '>=', CarbonImmutable::parse($criteria->createdFrom)->startOfDay());
+        }
+
+        if ($criteria->createdTo !== null) {
+            $query->where('created_at', '<=', CarbonImmutable::parse($criteria->createdTo)->endOfDay());
+        }
+
+        if ($criteria->query !== null && trim($criteria->query) !== '') {
+            $pattern = '%'.mb_strtolower(trim($criteria->query)).'%';
+            $query->where(function (Builder $builder) use ($pattern): void {
+                $builder
+                    ->whereRaw('LOWER(invoice_number) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(provider_key) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(provider_payment_id, \'\')) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(description, \'\')) LIKE ?', [$pattern]);
+            });
+        }
+
+        /** @var list<stdClass> $rows */
+        $rows = $query
+            ->orderByRaw('COALESCE(refunded_at, captured_at, failed_at, canceled_at, pending_at, initiated_at, created_at) DESC')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit($criteria->limit)
+            ->get()
+            ->all();
+
+        return array_map(
+            fn (stdClass $row): PaymentData => $this->paymentRecordMapper->toData($row),
+            $rows,
+        );
     }
 
     #[\Override]

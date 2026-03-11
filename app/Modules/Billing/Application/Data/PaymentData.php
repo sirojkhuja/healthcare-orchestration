@@ -78,4 +78,34 @@ final readonly class PaymentData
             'updated_at' => $this->updatedAt->toIso8601String(),
         ];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toStatusArray(): array
+    {
+        return [
+            'id' => $this->paymentId,
+            'status' => $this->status,
+            'provider' => [
+                'key' => $this->providerKey,
+                'payment_id' => $this->providerPaymentId,
+                'status' => $this->providerStatus,
+                'checkout_url' => $this->checkoutUrl,
+            ],
+            'last_transition' => $this->lastTransition,
+            'failure' => $this->failureCode === null && $this->failureMessage === null ? null : [
+                'code' => $this->failureCode,
+                'message' => $this->failureMessage,
+            ],
+            'cancel_reason' => $this->cancelReason,
+            'refund_reason' => $this->refundReason,
+            'initiated_at' => $this->initiatedAt->toIso8601String(),
+            'pending_at' => $this->pendingAt?->toIso8601String(),
+            'captured_at' => $this->capturedAt?->toIso8601String(),
+            'failed_at' => $this->failedAt?->toIso8601String(),
+            'canceled_at' => $this->canceledAt?->toIso8601String(),
+            'refunded_at' => $this->refundedAt?->toIso8601String(),
+        ];
+    }
 }
