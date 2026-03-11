@@ -19,6 +19,22 @@ function notificationCreateTemplate(
         ->postJson('/api/v1/templates', $payload);
 }
 
+function notificationCancel(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $notificationId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/notifications/'.$notificationId.':cancel', $payload);
+}
+
 function notificationCreateTenant($testCase, string $token, string $name)
 {
     return treatmentCreateTenant($testCase, $token, $name);
@@ -47,6 +63,36 @@ function notificationGrantPermissions(User $user, string $tenantId, array $permi
 function notificationIssueBearerToken($testCase, string $email, string $password = 'secret-password'): string
 {
     return treatmentIssueBearerToken($testCase, $email, $password);
+}
+
+function notificationQueue(
+    $testCase,
+    string $token,
+    string $tenantId,
+    array $payload,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/notifications', $payload);
+}
+
+function notificationRetry(
+    $testCase,
+    string $token,
+    string $tenantId,
+    string $notificationId,
+    string $idempotencyKey,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'Idempotency-Key' => $idempotencyKey,
+        ])
+        ->postJson('/api/v1/notifications/'.$notificationId.':retry');
 }
 
 function notificationTestRenderTemplate(

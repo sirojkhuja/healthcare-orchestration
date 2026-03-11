@@ -34,6 +34,7 @@
 ## Notification Notes
 
 - `T056` defines the template contract in ADR `043`.
+- `T057` defines the notification queue lifecycle in ADR `044`.
 - Templates are tenant-scoped, soft-deletable records with immutable version history.
 - Supported channels are `email`, `sms`, and `telegram`.
 - Template `code` is required, normalized to uppercase, and unique per tenant among non-deleted templates.
@@ -44,6 +45,17 @@
 - Placeholder syntax is `{{path.to.value}}` with dot-path lookup into the `variables` object.
 - Test-render accepts only scalar, boolean, or `null` final values; arrays and objects at the final placeholder path return `422`.
 - Missing placeholder paths during test-render return `422`.
+- `POST /notifications` requires `template_id`, `recipient`, and `variables`; `metadata` is optional.
+- The referenced template must exist in the current tenant and be active.
+- Notifications snapshot the rendered subject and body at queue time so later template edits do not alter history.
+- Notification states are `queued`, `sent`, `failed`, and `canceled`.
+- `POST /notifications` creates a `queued` notification record and publishes `notification.queued` to `medflow.notifications.v1`.
+- `POST /notifications/{notificationId}:retry` is allowed only from `failed` and returns the record to `queued` when `attempts < max_attempts`.
+- `POST /notifications/{notificationId}:cancel` is allowed from `queued|failed` and records an optional cancel reason.
+- `GET /notifications` supports `q`, `status`, `channel`, `template_id`, `created_from`, `created_to`, and `limit`.
+- `email` recipients require `recipient.email` and optional `recipient.name`.
+- `sms` recipients require `recipient.phone_number`.
+- `telegram` recipients require `recipient.chat_id`.
 
 ## Integrations Hub
 

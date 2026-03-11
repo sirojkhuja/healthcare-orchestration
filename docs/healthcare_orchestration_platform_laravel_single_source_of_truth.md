@@ -1403,6 +1403,17 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - GET `/notifications/{notificationId}` → `GetNotificationQuery` → Notifications
 - POST `/notifications/{notificationId}:retry` → `RetryNotificationCommand` → Notifications
 - POST `/notifications/{notificationId}:cancel` → `CancelNotificationCommand` → Notifications
+- `POST /notifications` requires `template_id`, `recipient`, and `variables`; `metadata` is optional
+- the referenced template must exist in the current tenant and be active
+- send is queue-first for this phase: the API stores a rendered notification snapshot in `queued` and publishes `notification.queued` to `medflow.notifications.v1`
+- notification states are `queued`, `sent`, `failed`, and `canceled`
+- retry is allowed only from `failed` and only while `attempts < max_attempts`
+- cancel is allowed from `queued|failed`
+- notifications snapshot rendered subject and body so later template edits do not rewrite delivery history
+- `GET /notifications` supports `q`, `status`, `channel`, `template_id`, `created_from`, `created_to`, and `limit`
+- `email` recipients require `recipient.email` and optional `recipient.name`
+- `sms` recipients require `recipient.phone_number`
+- `telegram` recipients require `recipient.chat_id`
 
 ### Provider configs
 - GET `/notification-providers/sms` → `ListSmsProvidersQuery` → Notifications

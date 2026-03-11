@@ -269,6 +269,232 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notifications:
+    get:
+      operationId: ListNotificationsQuery
+      tags: [Notifications]
+      summary: List queued and delivered notifications in the current tenant
+      description: Returns tenant-scoped notification records filtered by free-text, lifecycle status, channel, template, and creation window.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/NotificationSearchQuery'
+        - $ref: '#/components/parameters/NotificationStatusFilter'
+        - $ref: '#/components/parameters/NotificationChannelFilter'
+        - $ref: '#/components/parameters/NotificationTemplateIdFilter'
+        - $ref: '#/components/parameters/NotificationCreatedFrom'
+        - $ref: '#/components/parameters/NotificationCreatedTo'
+        - $ref: '#/components/parameters/NotificationLimit'
+      responses:
+        '200':
+          description: Notification directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: SendNotificationCommand
+      tags: [Notifications]
+      summary: Queue a rendered notification for delivery
+      description: Renders the active template in the current tenant, snapshots the rendered content, and stores a notification record in `queued`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationRequest'
+            example:
+              template_id: 5a11fa9c-9ec9-4f56-9fa4-22ac7544c6cb
+              recipient:
+                email: amina@example.com
+                name: Amina Karimova
+              variables:
+                patient:
+                  first_name: Amina
+                appointment:
+                  start_at: 2026-03-12 09:00
+              metadata:
+                object_type: appointment
+                object_id: APT-123
+      responses:
+        '201':
+          description: Notification queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Template not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid recipient, inactive template, or invalid render payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notifications/{notificationId}:
+    get:
+      operationId: GetNotificationQuery
+      tags: [Notifications]
+      summary: Get one notification record
+      description: Returns the stored notification snapshot and lifecycle state in the current tenant.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/NotificationIdPath'
+      responses:
+        '200':
+          description: Notification details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDetailsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Notification not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notifications/{notificationId}:retry:
+    post:
+      operationId: RetryNotificationCommand
+      tags: [Notifications]
+      summary: Retry a failed notification
+      description: Returns a failed notification to `queued` when retry budget remains.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/NotificationIdPath'
+      responses:
+        '200':
+          description: Notification re-queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Notification not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Notification is not retryable or retry budget is exhausted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notifications/{notificationId}:cancel:
+    post:
+      operationId: CancelNotificationCommand
+      tags: [Notifications]
+      summary: Cancel a queued or failed notification
+      description: Stops future delivery attempts for a queued or failed notification and records an optional cancel reason.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/NotificationIdPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelNotificationRequest'
+            example:
+              reason: Reminder no longer needed.
+      responses:
+        '200':
+          description: Notification canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Notification not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Notification is not cancelable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -297,7 +523,21 @@ components:
       schema:
         type: string
         format: uuid
+    NotificationIdPath:
+      in: path
+      name: notificationId
+      required: true
+      schema:
+        type: string
+        format: uuid
     TemplateSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    NotificationSearchQuery:
       in: query
       name: q
       required: false
@@ -311,6 +551,13 @@ components:
       schema:
         type: string
         enum: [email, sms, telegram]
+    NotificationChannelFilter:
+      in: query
+      name: channel
+      required: false
+      schema:
+        type: string
+        enum: [email, sms, telegram]
     TemplateActiveFilter:
       in: query
       name: is_active
@@ -318,6 +565,43 @@ components:
       schema:
         type: boolean
     TemplateLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    NotificationStatusFilter:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+        enum: [queued, sent, failed, canceled]
+    NotificationTemplateIdFilter:
+      in: query
+      name: template_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    NotificationCreatedFrom:
+      in: query
+      name: created_from
+      required: false
+      schema:
+        type: string
+        format: date
+    NotificationCreatedTo:
+      in: query
+      name: created_to
+      required: false
+      schema:
+        type: string
+        format: date
+    NotificationLimit:
       in: query
       name: limit
       required: false
@@ -575,3 +859,167 @@ components:
             rendered_at:
               type: string
               format: date-time
+    Notification:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - template
+        - recipient
+        - recipient_value
+        - rendered_body
+        - variables
+        - metadata
+        - status
+        - attempts
+        - queued_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        template:
+          type: object
+          required: [id, code, version, channel]
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            version:
+              type: integer
+              minimum: 1
+            channel:
+              type: string
+              enum: [email, sms, telegram]
+        recipient:
+          type: object
+          additionalProperties: true
+        recipient_value:
+          type: string
+        rendered_subject:
+          type: [string, 'null']
+        rendered_body:
+          type: string
+        variables:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [queued, sent, failed, canceled]
+        attempts:
+          type: object
+          required: [used, max, remaining]
+          properties:
+            used:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 1
+            remaining:
+              type: integer
+              minimum: 0
+        provider:
+          type:
+            - object
+            - 'null'
+          properties:
+            key:
+              type: [string, 'null']
+            message_id:
+              type: [string, 'null']
+        failure:
+          type:
+            - object
+            - 'null'
+          properties:
+            code:
+              type: [string, 'null']
+            message:
+              type: [string, 'null']
+        queued_at:
+          type: string
+          format: date-time
+        sent_at:
+          type: [string, 'null']
+          format: date-time
+        failed_at:
+          type: [string, 'null']
+          format: date-time
+        canceled_at:
+          type: [string, 'null']
+          format: date-time
+        canceled_reason:
+          type: [string, 'null']
+        last_attempt_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    NotificationCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    NotificationMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [notification_queued, notification_retried, notification_canceled]
+        data:
+          $ref: '#/components/schemas/Notification'
+    NotificationDetailsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Notification'
+    SendNotificationRequest:
+      type: object
+      required: [template_id, recipient, variables]
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        recipient:
+          type: object
+          additionalProperties: true
+        variables:
+          type: object
+          additionalProperties: true
+        metadata:
+          type:
+            - object
+            - 'null'
+          additionalProperties: true
+    CancelNotificationRequest:
+      type: object
+      properties:
+        reason:
+          type: [string, 'null']
+          maxLength: 5000

@@ -92,8 +92,10 @@ use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabOrderRepository;
 use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabResultRepository;
 use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabTestRepository;
 use App\Modules\Lab\Infrastructure\Persistence\DatabaseLabWebhookDeliveryRepository;
+use App\Modules\Notifications\Application\Contracts\NotificationRepository;
 use App\Modules\Notifications\Application\Contracts\NotificationTemplateRenderer;
 use App\Modules\Notifications\Application\Contracts\NotificationTemplateRepository;
+use App\Modules\Notifications\Infrastructure\Persistence\DatabaseNotificationRepository;
 use App\Modules\Notifications\Infrastructure\Persistence\DatabaseNotificationTemplateRepository;
 use App\Modules\Notifications\Infrastructure\Rendering\CurlyBraceNotificationTemplateRenderer;
 use App\Modules\Patient\Application\Contracts\PatientConsentRepository;
@@ -234,6 +236,7 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(LabResultRepository::class, DatabaseLabResultRepository::class);
         $this->app->bind(LabTestRepository::class, DatabaseLabTestRepository::class);
         $this->app->bind(LabWebhookDeliveryRepository::class, DatabaseLabWebhookDeliveryRepository::class);
+        $this->app->bind(NotificationRepository::class, DatabaseNotificationRepository::class);
         $this->app->bind(NotificationTemplateRenderer::class, CurlyBraceNotificationTemplateRenderer::class);
         $this->app->bind(NotificationTemplateRepository::class, DatabaseNotificationTemplateRepository::class);
         $this->app->bind(PatientRepository::class, DatabasePatientRepository::class);

@@ -243,6 +243,36 @@
 - payment creation validates that the linked invoice is in `issued|finalized`
 - payment allocation and invoice-balance mutation remain deferred beyond `T050`
 
+## Notification State Machine
+
+### States
+
+- `queued`
+- `sent`
+- `failed`
+- `canceled`
+
+### Allowed Transitions
+
+- `create -> queued`
+- `failed -> queued` through `retry`
+- `queued|failed -> canceled`
+- later provider tasks may advance `queued -> sent|failed`
+
+### Required Guards
+
+- notification create requires an active template in the current tenant
+- retry is allowed only from `failed`
+- retry is rejected when `attempts >= max_attempts`
+- cancel is allowed only from `queued|failed`
+- sent notifications are terminal
+
+### Operational Notes
+
+- `T057` establishes queue-first notification dispatch and does not call external providers directly
+- notification records snapshot rendered content and recipient payload at queue time
+- external provider tasks must reuse this lifecycle instead of introducing a second delivery model
+
 ## Domain Event Catalog
 
 At minimum the platform must support events for:
@@ -264,6 +294,9 @@ At minimum the platform must support events for:
 - `PaymentCaptured`
 - `ClaimSubmitted`
 - `ClaimApproved`
+- `NotificationQueued`
+- `NotificationRetried`
+- `NotificationCanceled`
 
 Each module may define more events, but they must follow the standard envelope and versioning rules.
 

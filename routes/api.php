@@ -34,7 +34,9 @@ use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabResultController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabTestController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabWebhookController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTemplateController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationWorkflowController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
@@ -316,6 +318,8 @@ Route::prefix('v1')->group(function (): void {
             Route::middleware('permission:notifications.view')->group(function (): void {
                 Route::get('/templates', [NotificationTemplateController::class, 'list'])->name('templates.list');
                 Route::get('/templates/{templateId}', [NotificationTemplateController::class, 'show'])->name('templates.show');
+                Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
+                Route::get('/notifications/{notificationId}', [NotificationController::class, 'show'])->name('notifications.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -633,6 +637,15 @@ Route::prefix('v1')->group(function (): void {
                     ->name('templates.delete');
                 Route::post('/templates/{templateId}:test-render', [NotificationTemplateController::class, 'testRender'])
                     ->name('templates.test-render');
+                Route::post('/notifications', [NotificationController::class, 'send'])
+                    ->middleware('idempotency:notifications.send')
+                    ->name('notifications.send');
+                Route::post('/notifications/{notificationId}:retry', [NotificationWorkflowController::class, 'retry'])
+                    ->middleware('idempotency:notifications.retry')
+                    ->name('notifications.retry');
+                Route::post('/notifications/{notificationId}:cancel', [NotificationWorkflowController::class, 'cancel'])
+                    ->middleware('idempotency:notifications.cancel')
+                    ->name('notifications.cancel');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
