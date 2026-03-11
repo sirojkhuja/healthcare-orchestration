@@ -16,6 +16,7 @@ Current provider-native replay anchors:
 
 - Payme uses provider transaction id plus method.
 - Click uses `click_trans_id` plus Shop API stage (`prepare` or `complete`).
+- Uzum uses `transId` plus Merchant API `operation`.
 
 ## HTTP Contract
 

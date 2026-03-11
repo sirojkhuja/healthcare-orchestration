@@ -112,6 +112,22 @@
 - Click `Complete` with `error < 0` is replay-safe by `click_trans_id` and maps local `pending -> canceled`.
 - Click provider error mapping uses `-1`, `-2`, `-3`, `-4`, `-5`, `-6`, `-8`, and `-9` from the documented Shop API response contract, with `-7` reserved for unexpected local processing failure after verification.
 - `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` are not supported for `provider_key = click` in this phase and return `409`.
+- `T054` defines the Uzum Merchant API contract and payment reconciliation surface in ADR `041`.
+- `provider_key = uzum` keeps the local payment in `initiated`, stores provider status `awaiting_uzum_webhook`, and does not return a checkout URL in this phase.
+- `POST /payments:reconcile` requires `provider_key`, accepts optional `payment_ids[]` plus optional `limit`, and stores a tenant-scoped reconciliation run record.
+- `GET /payments/reconciliation-runs` supports optional `provider_key` plus `limit`.
+- `GET /payments/reconciliation-runs/{runId}` returns the stored reconciliation run with per-payment results.
+- Uzum public processing uses `POST /webhooks/uzum?operation={check|create|confirm|reverse|status}`.
+- Uzum verification uses the `Authorization` header with configured Basic-auth credentials plus payload field `serviceId`.
+- Uzum request linkage uses `params.payment_id`, with `params.account.value` accepted as a compatibility alias.
+- Uzum provider transaction identity and replay safety use `transId + operation`.
+- Uzum `check` is read-only and validates authentication, service id, payment existence, and amount.
+- Uzum `create` is replay-safe by `transId` and maps local `initiated -> pending` with provider status `CREATED`.
+- Uzum `confirm` is replay-safe by `transId` and maps local `pending -> captured` with provider status `CONFIRMED`.
+- Uzum `reverse` is replay-safe by `transId` and maps local `initiated|pending -> canceled` with provider status `CANCELED`, and local `captured -> refunded` with provider status `REFUNDED`.
+- Uzum `status` is read-only and returns the current normalized provider state from the local payment record.
+- Uzum reconciliation does not poll a remote provider API in this phase; it normalizes stale local `pending` payments to `failed` when they remain unconfirmed past the configured timeout window.
+- `POST /payments/{paymentId}:capture`, `POST /payments/{paymentId}:cancel`, and `POST /payments/{paymentId}:refund` are not supported for `provider_key = uzum` in this phase and return `409`.
 
 ## Insurance Claims
 

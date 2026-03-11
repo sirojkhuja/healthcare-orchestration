@@ -79,3 +79,13 @@ Provider-initiated routes that cannot supply `Idempotency-Key` must satisfy the 
 - `action = 0` is `Prepare` and `action = 1` is `Complete`.
 - `Prepare` and `Complete` must be duplicate-safe by `click_trans_id` without requiring `Idempotency-Key`.
 - `POST /webhooks/click:verify` is the authenticated diagnostics helper and must not mutate business state.
+
+## Uzum Webhook Notes
+
+- `POST /webhooks/uzum` is a public Merchant API callback route and uses query parameter `operation` to distinguish `check`, `create`, `confirm`, `reverse`, and `status`.
+- Uzum verification uses the `Authorization` header with configured Basic auth and payload field `serviceId`.
+- Uzum request linkage uses `params.payment_id`, with `params.account.value` accepted as a compatibility alias.
+- Uzum replay safety uses `transId` plus the selected `operation`.
+- `check` and `status` are read-only but still persist delivery metadata for audit and diagnostics.
+- `create`, `confirm`, and `reverse` must be duplicate-safe by `transId` without requiring `Idempotency-Key`.
+- `POST /webhooks/uzum:verify` is the authenticated diagnostics helper and must not mutate business state.

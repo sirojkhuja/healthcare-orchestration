@@ -5,6 +5,7 @@ use App\Modules\Billing\Presentation\Http\Controllers\InvoiceController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceItemController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceWorkflowController;
 use App\Modules\Billing\Presentation\Http\Controllers\PaymentController;
+use App\Modules\Billing\Presentation\Http\Controllers\PaymentReconciliationController;
 use App\Modules\Billing\Presentation\Http\Controllers\PaymentWorkflowController;
 use App\Modules\Billing\Presentation\Http\Controllers\PriceListController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApiKeyController;
@@ -21,6 +22,7 @@ use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceControll
 use App\Modules\Integrations\Presentation\Http\Controllers\ClickWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
+use App\Modules\Integrations\Presentation\Http\Controllers\UzumWebhookController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderBulkController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
@@ -95,6 +97,8 @@ Route::prefix('v1')->group(function (): void {
         ->name('webhooks.payme.process');
     Route::post('/webhooks/click', [ClickWebhookController::class, 'process'])
         ->name('webhooks.click.process');
+    Route::post('/webhooks/uzum', [UzumWebhookController::class, 'process'])
+        ->name('webhooks.uzum.process');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
@@ -289,6 +293,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/invoices/{invoiceId}/items', [InvoiceItemController::class, 'list'])->name('invoices.items.list');
                 Route::get('/invoices/{invoiceId}', [InvoiceController::class, 'show'])->name('invoices.show');
                 Route::get('/payments', [PaymentController::class, 'list'])->name('payments.list');
+                Route::get('/payments/reconciliation-runs', [PaymentReconciliationController::class, 'list'])->name('payments.reconciliation-runs.list');
+                Route::get('/payments/reconciliation-runs/{runId}', [PaymentReconciliationController::class, 'get'])->name('payments.reconciliation-runs.show');
                 Route::get('/payments/{paymentId}', [PaymentController::class, 'show'])->name('payments.show');
                 Route::get('/payments/{paymentId}/status', [PaymentController::class, 'status'])->name('payments.status');
             });
@@ -540,6 +546,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/payments/{paymentId}:refund', [PaymentWorkflowController::class, 'refund'])
                     ->middleware('idempotency:payments.refund')
                     ->name('payments.refund');
+                Route::post('/payments:reconcile', [PaymentReconciliationController::class, 'reconcile'])
+                    ->name('payments.reconcile');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
@@ -549,6 +557,8 @@ Route::prefix('v1')->group(function (): void {
                     ->name('webhooks.payme.verify');
                 Route::post('/webhooks/click:verify', [ClickWebhookController::class, 'verify'])
                     ->name('webhooks.click.verify');
+                Route::post('/webhooks/uzum:verify', [UzumWebhookController::class, 'verify'])
+                    ->name('webhooks.uzum.verify');
             });
             Route::middleware('permission:treatments.manage')->group(function (): void {
                 Route::post('/treatment-plans', [TreatmentPlanController::class, 'create'])->name('treatment-plans.create');

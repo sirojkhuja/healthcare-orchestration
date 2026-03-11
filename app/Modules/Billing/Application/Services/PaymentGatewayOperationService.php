@@ -6,9 +6,7 @@ use App\Modules\Billing\Application\Contracts\PaymentGatewayRegistry;
 use App\Modules\Billing\Application\Contracts\PaymentRepository;
 use App\Modules\Billing\Application\Data\PaymentData;
 use App\Modules\Billing\Application\Data\PaymentGatewayInitiationRequestData;
-use App\Modules\Billing\Application\Data\PaymentGatewaySnapshotData;
 use App\Shared\Application\Contracts\TenantContext;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class PaymentGatewayOperationService
@@ -18,7 +16,7 @@ final class PaymentGatewayOperationService
         private readonly PaymentRepository $paymentRepository,
         private readonly PaymentGatewayRegistry $paymentGatewayRegistry,
         private readonly PaymentAdministrationService $paymentAdministrationService,
-        private readonly PaymentWorkflowService $paymentWorkflowService,
+        private readonly PaymentSnapshotSynchronizationService $paymentSnapshotSynchronizationService,
     ) {}
 
     /**
@@ -42,7 +40,11 @@ final class PaymentGatewayOperationService
             description: $payment->description,
         ));
 
-        return $this->applySnapshot($payment, $snapshot, $gateway->supportsRefunds());
+        return $this->paymentSnapshotSynchronizationService->synchronize(
+            payment: $payment,
+            snapshot: $snapshot,
+            supportsRefunds: $gateway->supportsRefunds(),
+        );
     }
 
     public function cancel(string $paymentId, ?string $reason = null): PaymentData
@@ -51,7 +53,12 @@ final class PaymentGatewayOperationService
         $gateway = $this->paymentGatewayRegistry->resolve($payment->providerKey);
         $snapshot = $gateway->cancelPayment($payment, $reason);
 
-        return $this->applySnapshot($payment, $snapshot, $gateway->supportsRefunds(), $reason);
+        return $this->paymentSnapshotSynchronizationService->synchronize(
+            payment: $payment,
+            snapshot: $snapshot,
+            supportsRefunds: $gateway->supportsRefunds(),
+            reason: $reason,
+        );
     }
 
     public function capture(string $paymentId): PaymentData
@@ -60,7 +67,11 @@ final class PaymentGatewayOperationService
         $gateway = $this->paymentGatewayRegistry->resolve($payment->providerKey);
         $snapshot = $gateway->capturePayment($payment);
 
-        return $this->applySnapshot($payment, $snapshot, $gateway->supportsRefunds());
+        return $this->paymentSnapshotSynchronizationService->synchronize(
+            payment: $payment,
+            snapshot: $snapshot,
+            supportsRefunds: $gateway->supportsRefunds(),
+        );
     }
 
     public function refund(string $paymentId, ?string $reason = null): PaymentData
@@ -69,64 +80,12 @@ final class PaymentGatewayOperationService
         $gateway = $this->paymentGatewayRegistry->resolve($payment->providerKey);
         $snapshot = $gateway->refundPayment($payment, $reason);
 
-        return $this->applySnapshot($payment, $snapshot, $gateway->supportsRefunds(), $reason);
-    }
-
-    private function applySnapshot(
-        PaymentData $payment,
-        PaymentGatewaySnapshotData $snapshot,
-        bool $supportsRefunds,
-        ?string $reason = null,
-    ): PaymentData {
-        return match ($snapshot->status) {
-            'initiated' => $this->persistSnapshot($payment, $snapshot),
-            'pending' => $this->paymentWorkflowService->markPending(
-                paymentId: $payment->paymentId,
-                providerPaymentId: $snapshot->providerPaymentId,
-                providerStatus: $snapshot->providerStatus,
-                checkoutUrl: $snapshot->checkoutUrl,
-            ),
-            'captured' => $this->paymentWorkflowService->capture(
-                paymentId: $payment->paymentId,
-                providerPaymentId: $snapshot->providerPaymentId,
-                providerStatus: $snapshot->providerStatus,
-            ),
-            'failed' => $this->paymentWorkflowService->fail(
-                paymentId: $payment->paymentId,
-                failureCode: $snapshot->failureCode,
-                failureMessage: $snapshot->failureMessage,
-                providerPaymentId: $snapshot->providerPaymentId,
-                providerStatus: $snapshot->providerStatus,
-            ),
-            'canceled' => $this->paymentWorkflowService->cancel(
-                paymentId: $payment->paymentId,
-                reason: $snapshot->reason ?? $reason,
-                providerPaymentId: $snapshot->providerPaymentId,
-                providerStatus: $snapshot->providerStatus,
-            ),
-            'refunded' => $this->paymentWorkflowService->refund(
-                paymentId: $payment->paymentId,
-                supportsRefunds: $supportsRefunds,
-                reason: $snapshot->reason ?? $reason,
-                providerPaymentId: $snapshot->providerPaymentId,
-                providerStatus: $snapshot->providerStatus,
-            ),
-            default => throw new ConflictHttpException('The payment gateway returned an unsupported payment status.'),
-        };
-    }
-
-    private function persistSnapshot(PaymentData $payment, PaymentGatewaySnapshotData $snapshot): PaymentData
-    {
-        return $this->paymentRepository->update($payment->tenantId, $payment->paymentId, array_filter(
-            [
-                'provider_payment_id' => $snapshot->providerPaymentId,
-                'provider_status' => $snapshot->providerStatus,
-                'checkout_url' => $snapshot->checkoutUrl,
-                'failure_code' => $snapshot->failureCode,
-                'failure_message' => $snapshot->failureMessage,
-            ],
-            static fn (mixed $value): bool => $value !== null,
-        )) ?? $payment;
+        return $this->paymentSnapshotSynchronizationService->synchronize(
+            payment: $payment,
+            snapshot: $snapshot,
+            supportsRefunds: $gateway->supportsRefunds(),
+            reason: $reason,
+        );
     }
 
     private function paymentOrFail(string $paymentId): PaymentData

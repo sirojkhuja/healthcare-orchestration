@@ -1122,6 +1122,114 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments:reconcile:
+    post:
+      operationId: ReconcilePaymentsCommand
+      tags: [Billing]
+      summary: Reconcile provider-scoped payments
+      description: Runs one tenant-scoped reconciliation pass for the selected provider and stores a reconciliation run record with per-payment results.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentReconciliationRequest'
+      responses:
+        '200':
+          description: Payments reconciled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReconciliationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reconciliation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/reconciliation-runs:
+    get:
+      operationId: ListReconciliationRunsQuery
+      tags: [Billing]
+      summary: List payment reconciliation runs
+      description: Returns tenant-scoped payment reconciliation runs filtered by optional provider key.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PaymentProviderKeyFilter'
+        - $ref: '#/components/parameters/BillingLimit'
+      responses:
+        '200':
+          description: Payment reconciliation run collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReconciliationRunCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/payments/reconciliation-runs/{runId}:
+    get:
+      operationId: GetReconciliationRunQuery
+      tags: [Billing]
+      summary: Get one payment reconciliation run
+      description: Returns the stored tenant-scoped reconciliation run and its per-payment results.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/PaymentReconciliationRunIdPath'
+      responses:
+        '200':
+          description: Payment reconciliation run detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReconciliationRunShowResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Reconciliation run not found in tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/payments/{paymentId}:
     get:
       operationId: GetPaymentQuery
@@ -1476,6 +1584,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/uzum:
+    post:
+      operationId: HandleUzumWebhookCommand
+      tags: [Integrations]
+      summary: Process one Uzum Merchant API callback
+      description: Accepts the MedFlow-normalized Uzum Merchant API callback contract and uses query parameter `operation` to select `check`, `create`, `confirm`, `reverse`, or `status`.
+      parameters:
+        - name: operation
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [check, create, confirm, reverse, status]
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UzumWebhookRequest'
+      responses:
+        '200':
+          description: Uzum callback response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UzumWebhookResponse'
+  /api/v1/webhooks/uzum:verify:
+    post:
+      operationId: VerifyUzumWebhookCommand
+      tags: [Integrations]
+      summary: Verify Uzum webhook authorization and service id
+      description: Authenticated diagnostics helper that checks whether one Uzum Merchant API authorization header and payload match the configured Basic-auth credentials and service id without mutating payment state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UzumWebhookVerifyRequest'
+      responses:
+        '200':
+          description: Uzum webhook verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UzumWebhookVerifyResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid verification payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -1528,6 +1708,13 @@ components:
         format: uuid
     PaymentIdPath:
       name: paymentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PaymentReconciliationRunIdPath:
+      name: runId
       in: path
       required: true
       schema:
@@ -2266,6 +2453,87 @@ components:
           type: string
         data:
           $ref: '#/components/schemas/Payment'
+    PaymentReconciliationResult:
+      type: object
+      required: [payment_id, status_before, status_after, changed, payment]
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        status_before:
+          type: string
+          enum: [initiated, pending, captured, failed, canceled, refunded]
+        status_after:
+          type: string
+          enum: [initiated, pending, captured, failed, canceled, refunded]
+        changed:
+          type: boolean
+        provider_payment_id:
+          type: [string, 'null']
+        provider_status:
+          type: [string, 'null']
+        failure_code:
+          type: [string, 'null']
+        failure_message:
+          type: [string, 'null']
+        payment:
+          $ref: '#/components/schemas/Payment'
+    PaymentReconciliationRun:
+      type: object
+      required: [id, tenant_id, provider_key, requested_payment_ids, scanned_count, changed_count, result_count, results, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        provider_key:
+          type: string
+        requested_payment_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        scanned_count:
+          type: integer
+        changed_count:
+          type: integer
+        result_count:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentReconciliationResult'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PaymentReconciliationRunCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentReconciliationRun'
+    PaymentReconciliationRunShowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentReconciliationRun'
+    PaymentReconciliationMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [payments_reconciled]
+        data:
+          $ref: '#/components/schemas/PaymentReconciliationRun'
     PaymeJsonRpcError:
       type: object
       required: [code, message]
@@ -2346,6 +2614,79 @@ components:
           enum: [click_webhook_verified]
         data:
           $ref: '#/components/schemas/ClickWebhookVerification'
+    UzumWebhookError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    UzumWebhookRequest:
+      type: object
+      required: [serviceId, transId, params]
+      properties:
+        serviceId:
+          type: string
+        transId:
+          type: string
+        amount:
+          type: [string, number, 'null']
+        timestamp:
+          type: [string, integer, 'null']
+        params:
+          type: object
+          additionalProperties: true
+    UzumWebhookResponse:
+      type: object
+      required: [status, error, data]
+      properties:
+        status:
+          type: string
+          enum: [OK, ERROR]
+        error:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/UzumWebhookError'
+        data:
+          type: object
+          additionalProperties: true
+    UzumWebhookVerification:
+      type: object
+      required: [provider_key, valid, operation]
+      properties:
+        provider_key:
+          type: string
+          enum: [uzum]
+        valid:
+          type: boolean
+        operation:
+          type: string
+          enum: [check, create, confirm, reverse, status]
+        transaction_id:
+          type: [string, 'null']
+        payment_id:
+          type: [string, 'null']
+    UzumWebhookVerifyRequest:
+      type: object
+      required: [operation, authorization, payload]
+      properties:
+        operation:
+          type: string
+          enum: [check, create, confirm, reverse, status]
+        authorization:
+          type: string
+        payload:
+          $ref: '#/components/schemas/UzumWebhookRequest'
+    UzumWebhookVerifyResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [uzum_webhook_verified]
+        data:
+          $ref: '#/components/schemas/UzumWebhookVerification'
     InvoiceItemCollectionResponse:
       type: object
       required: [data]
@@ -2496,6 +2837,24 @@ components:
       properties:
         reason:
           type: [string, 'null']
+    PaymentReconciliationRequest:
+      type: object
+      required: [provider_key]
+      properties:
+        provider_key:
+          type: string
+          pattern: '^[a-z0-9._-]+$'
+        payment_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
     PaymeWebhookRequest:
       type: object
       required: [method, params]

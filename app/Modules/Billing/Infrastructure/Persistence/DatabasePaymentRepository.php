@@ -89,6 +89,38 @@ final class DatabasePaymentRepository implements PaymentRepository
     }
 
     #[\Override]
+    public function listForReconciliation(
+        string $tenantId,
+        string $providerKey,
+        array $statuses,
+        int $limit,
+        array $paymentIds = [],
+    ): array {
+        $query = DB::table('payments')
+            ->where('tenant_id', $tenantId)
+            ->where('provider_key', $providerKey)
+            ->whereIn('status', $statuses);
+
+        if ($paymentIds !== []) {
+            $query->whereIn('id', $paymentIds);
+        }
+
+        /** @var list<stdClass> $rows */
+        $rows = $query
+            ->orderByRaw('COALESCE(refunded_at, captured_at, failed_at, canceled_at, pending_at, initiated_at, created_at) DESC')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get()
+            ->all();
+
+        return array_map(
+            fn (stdClass $row): PaymentData => $this->paymentRecordMapper->toData($row),
+            $rows,
+        );
+    }
+
+    #[\Override]
     public function search(string $tenantId, PaymentListCriteria $criteria): array
     {
         $query = DB::table('payments')

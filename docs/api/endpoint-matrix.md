@@ -22,6 +22,9 @@ The original SSoT carries the full route inventory. This document is the split n
 
 Revenue and insurance route inventory includes the Uzbek payment callback surface under:
 
+- `/payments:reconcile`
+- `/payments/reconciliation-runs`
+- `/payments/reconciliation-runs/{runId}`
 - `/webhooks/payme`
 - `/webhooks/click`
 - `/webhooks/uzum`

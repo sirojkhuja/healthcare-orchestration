@@ -19,6 +19,19 @@ interface PaymentRepository
     public function findByProviderPaymentId(string $providerKey, string $providerPaymentId): ?PaymentData;
 
     /**
+     * @param  list<string>  $statuses
+     * @param  list<string>  $paymentIds
+     * @return list<PaymentData>
+     */
+    public function listForReconciliation(
+        string $tenantId,
+        string $providerKey,
+        array $statuses,
+        int $limit,
+        array $paymentIds = [],
+    ): array;
+
+    /**
      * @return list<PaymentData>
      */
     public function search(string $tenantId, PaymentListCriteria $criteria): array;

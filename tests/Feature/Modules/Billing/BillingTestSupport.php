@@ -248,6 +248,19 @@ function billingRefundPayment(
         ->postJson('/api/v1/payments/'.$paymentId.':refund', $payload);
 }
 
+function billingReconcilePayments(
+    $testCase,
+    string $token,
+    string $tenantId,
+    array $payload,
+) {
+    return $testCase->withToken($token)
+        ->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+        ])
+        ->postJson('/api/v1/payments:reconcile', $payload);
+}
+
 function billingVoidInvoice(
     $testCase,
     string $token,

@@ -1283,11 +1283,15 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - Payme generic capture, cancel, and refund action routes are not supported in this phase and return `409`
 - `provider_key = click` returns a direct Click payment-button checkout URL built from `service_id`, `merchant_id`, `amount`, and `transaction_param`, with optional configured `merchant_user_id`, `return_url`, and `card_type`
 - Click generic capture, cancel, and refund action routes are not supported in this phase and return `409`
+- `provider_key = uzum` keeps the local payment in `initiated`, stores provider status `awaiting_uzum_webhook`, and does not return a checkout URL in this phase
+- Uzum generic capture, cancel, and refund action routes are not supported in this phase and return `409`
 
 ### Reconciliation
 - POST `/payments:reconcile` → `ReconcilePaymentsCommand` → Billing
 - GET `/payments/reconciliation-runs` → `ListReconciliationRunsQuery` → Billing
 - GET `/payments/reconciliation-runs/{runId}` → `GetReconciliationRunQuery` → Billing
+- reconciliation requires `provider_key`, accepts optional `payment_ids[]` and `limit`, stores a tenant-scoped run record, and returns per-payment result snapshots
+- Uzum reconciliation uses the payment gateway snapshot abstraction to mark stale `pending` payments as `failed` after the configured confirmation timeout instead of polling a remote provider API in this phase
 
 ### Webhooks (Uzbek payments)
 - POST `/webhooks/payme` → `HandlePaymeWebhookCommand` → Integrations
@@ -1308,6 +1312,15 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - Click `Complete` (`action = 1`) with `error = 0` maps local `pending -> captured`
 - Click `Complete` (`action = 1`) with `error < 0` maps local `pending -> canceled`
 - Click `Prepare` and `Complete` are replay-safe by `click_trans_id` and do not require `Idempotency-Key`
+- Uzum webhook transport uses `POST /webhooks/uzum?operation={check|create|confirm|reverse|status}`
+- Uzum verification uses the `Authorization` header with configured Basic auth plus payload field `serviceId`
+- Uzum request linkage uses `params.payment_id`, with `params.account.value` accepted as a compatibility alias
+- Uzum replay safety uses `transId` plus `operation`
+- Uzum `check` is read-only and validates authentication, service id, payment existence, and amount
+- Uzum `create` maps local `initiated -> pending` with provider status `CREATED`
+- Uzum `confirm` maps local `pending -> captured` with provider status `CONFIRMED`
+- Uzum `reverse` maps local `initiated|pending -> canceled` with provider status `CANCELED` and local `captured -> refunded` with provider status `REFUNDED`
+- Uzum `status` returns the current normalized provider state from the local payment lifecycle
 
 ---
 

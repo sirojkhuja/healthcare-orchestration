@@ -3,6 +3,7 @@
 use App\Modules\Billing\Infrastructure\Integrations\ClickPaymentGateway;
 use App\Modules\Billing\Infrastructure\Integrations\ManualPaymentGateway;
 use App\Modules\Billing\Infrastructure\Integrations\PaymePaymentGateway;
+use App\Modules\Billing\Infrastructure\Integrations\UzumPaymentGateway;
 
 return [
     'payment_gateways' => [
@@ -35,6 +36,14 @@ return [
             'payment_base_url' => env('CLICK_PAYMENT_BASE_URL', 'https://my.click.uz/services/pay'),
             'return_url' => env('CLICK_RETURN_URL'),
             'card_type' => env('CLICK_CARD_TYPE'),
+            'supports_refunds' => false,
+        ],
+        'uzum' => [
+            'driver' => UzumPaymentGateway::class,
+            'service_id' => env('UZUM_SERVICE_ID', 'demo-uzum-service'),
+            'merchant_login' => env('UZUM_MERCHANT_LOGIN', 'demo-uzum-login'),
+            'merchant_password' => env('UZUM_MERCHANT_PASSWORD', 'demo-uzum-password'),
+            'confirmation_timeout_minutes' => env('UZUM_CONFIRMATION_TIMEOUT_MINUTES', 30),
             'supports_refunds' => false,
         ],
     ],
