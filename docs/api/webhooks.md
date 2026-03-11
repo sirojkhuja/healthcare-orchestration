@@ -89,3 +89,12 @@ Provider-initiated routes that cannot supply `Idempotency-Key` must satisfy the 
 - `check` and `status` are read-only but still persist delivery metadata for audit and diagnostics.
 - `create`, `confirm`, and `reverse` must be duplicate-safe by `transId` without requiring `Idempotency-Key`.
 - `POST /webhooks/uzum:verify` is the authenticated diagnostics helper and must not mutate business state.
+
+## Telegram Webhook Notes
+
+- `POST /webhooks/telegram` is a public Bot API update route and returns JSON `{ "ok": true }` after successful verification.
+- Telegram verification uses header `X-Telegram-Bot-Api-Secret-Token`.
+- replay safety uses Telegram `update_id`.
+- supported updates in this phase are `message` and `edited_message`.
+- tenant resolution uses the inbound `chat.id` against tenant-configured Telegram support and broadcast chat ids.
+- only mapped support-chat messages with non-empty text record support workflow audit activity; other verified updates are stored as ignored.

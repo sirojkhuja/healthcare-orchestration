@@ -542,6 +542,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notifications:test/telegram:
+    post:
+      operationId: SendTestTelegramCommand
+      tags: [Notifications]
+      summary: Send a diagnostic Telegram message
+      description: Validates the Telegram payload, uses the tenant Telegram provider settings, and sends directly through the configured bot without creating a notification row.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendTelegramRequest'
+            example:
+              recipient:
+                chat_id: '3001'
+              message: Test telegram message
+              metadata:
+                parse_mode: HTML
+      responses:
+        '200':
+          description: Diagnostic Telegram result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelegramDiagnosticSendResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Telegram provider is disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid Telegram recipient or payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/notification-providers/sms:
     get:
       operationId: ListSmsProvidersQuery
@@ -614,6 +668,214 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
         '422':
           description: Invalid message type or provider order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notification-providers/telegram:
+    get:
+      operationId: GetTelegramProviderQuery
+      tags: [Notifications]
+      summary: Get tenant Telegram provider settings
+      description: Returns the tenant Telegram delivery settings and the most recent bot sync snapshot.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Telegram provider settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelegramProviderSettingsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: SetTelegramProviderCommand
+      tags: [Notifications]
+      summary: Replace tenant Telegram provider settings
+      description: Replaces the tenant Telegram settings, including enabled state, parse mode, and the configured broadcast and support chat sets.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTelegramProviderSettingsRequest'
+            example:
+              enabled: true
+              parse_mode: MarkdownV2
+              broadcast_chat_ids: ['1001', '1002']
+              support_chat_ids: ['2001']
+      responses:
+        '200':
+          description: Telegram provider settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelegramProviderSettingsMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid parse mode or chat assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/telegram/bot:broadcast:
+    post:
+      operationId: BroadcastTelegramCommand
+      tags: [Notifications]
+      summary: Broadcast a Telegram message to tenant chats
+      description: Sends one Telegram message to either explicit chat ids or one of the configured tenant audiences without creating notification rows.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelegramBroadcastRequest'
+            example:
+              message: Clinic notice
+              audience: all_configured
+      responses:
+        '200':
+          description: Broadcast processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelegramBroadcastResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Telegram provider is disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Empty recipient set or invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/telegram:
+    post:
+      operationId: HandleTelegramWebhookCommand
+      tags: [Integrations]
+      summary: Process an inbound Telegram bot webhook update
+      description: Verifies the Telegram secret token, stores replay-safe delivery metadata keyed by update id, and records support-chat inbound activity when the chat is mapped to the current tenant configuration.
+      parameters:
+        - in: header
+          name: X-Telegram-Bot-Api-Secret-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+            example:
+              update_id: 5001
+              message:
+                message_id: 88
+                text: Need help with scheduling
+                chat:
+                  id: '7001'
+                  type: supergroup
+      responses:
+        '200':
+          description: Webhook processed or replay suppressed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelegramWebhookSuccessResponse'
+        '401':
+          description: Telegram secret token verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid Telegram update payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/telegram/bot:sync:
+    post:
+      operationId: SyncTelegramBotCommand
+      tags: [Integrations]
+      summary: Sync Telegram bot metadata and webhook configuration
+      description: Retrieves bot metadata, checks webhook drift, sets the expected webhook when needed, and stores the sync snapshot into tenant Telegram settings.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Telegram bot synced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelegramSyncResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Telegram provider is disabled or sync configuration is incomplete
           content:
             application/json:
               schema:
@@ -1322,6 +1584,79 @@ components:
           enum: [sms_providers_updated]
         data:
           $ref: '#/components/schemas/SmsRoutingSettings'
+    TelegramProviderSettings:
+      type: object
+      required: [provider_key, enabled, parse_mode, broadcast_chat_ids, support_chat_ids, sync, updated_at]
+      properties:
+        provider_key:
+          type: string
+          enum: [telegram]
+        enabled:
+          type: boolean
+        parse_mode:
+          type: string
+          enum: [HTML, MarkdownV2]
+        broadcast_chat_ids:
+          type: array
+          items:
+            type: string
+        support_chat_ids:
+          type: array
+          items:
+            type: string
+        sync:
+          type: object
+          required: [bot_id, bot_username, webhook_url, webhook_pending_update_count, webhook_last_error_date, last_synced_at]
+          properties:
+            bot_id:
+              type: [string, 'null']
+            bot_username:
+              type: [string, 'null']
+            webhook_url:
+              type: [string, 'null']
+            webhook_pending_update_count:
+              type: [integer, 'null']
+            webhook_last_error_date:
+              type: [string, 'null']
+              format: date-time
+            last_synced_at:
+              type: [string, 'null']
+              format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TelegramProviderSettingsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/TelegramProviderSettings'
+    TelegramProviderSettingsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [telegram_provider_updated]
+        data:
+          $ref: '#/components/schemas/TelegramProviderSettings'
+    UpdateTelegramProviderSettingsRequest:
+      type: object
+      required: [enabled, parse_mode, broadcast_chat_ids, support_chat_ids]
+      properties:
+        enabled:
+          type: boolean
+        parse_mode:
+          type: string
+          enum: [HTML, MarkdownV2]
+        broadcast_chat_ids:
+          type: array
+          items:
+            type: string
+        support_chat_ids:
+          type: array
+          items:
+            type: string
     UpdateSmsRoutingSettingsRequest:
       type: object
       required: [routes]
@@ -1359,6 +1694,24 @@ components:
         message_type:
           type: [string, 'null']
           enum: [otp, reminder, transactional, bulk, null]
+        metadata:
+          type:
+            - object
+            - 'null'
+          additionalProperties: true
+    SendTelegramRequest:
+      type: object
+      required: [recipient, message]
+      properties:
+        recipient:
+          type: object
+          required: [chat_id]
+          properties:
+            chat_id:
+              type: string
+        message:
+          type: string
+          maxLength: 4000
         metadata:
           type:
             - object
@@ -1464,3 +1817,165 @@ components:
           enum: [sms_sent, sms_failed]
         data:
           $ref: '#/components/schemas/SmsDiagnosticPayload'
+    TelegramSendResult:
+      type: object
+      required: [provider, chat_id, status, message_id, error, occurred_at]
+      properties:
+        provider:
+          type: object
+          required: [key]
+          properties:
+            key:
+              type: string
+              enum: [telegram]
+        chat_id:
+          type: string
+        status:
+          type: string
+          enum: [sent, failed]
+        message_id:
+          type: [string, 'null']
+        error:
+          type:
+            - object
+            - 'null'
+          properties:
+            code:
+              type: [string, 'null']
+            message:
+              type: [string, 'null']
+        occurred_at:
+          type: string
+          format: date-time
+    TelegramDiagnosticPayload:
+      type: object
+      required: [channel, recipient, message, parse_mode, result]
+      properties:
+        channel:
+          type: string
+          enum: [telegram]
+        recipient:
+          type: object
+          required: [chat_id]
+          properties:
+            chat_id:
+              type: string
+        message:
+          type: string
+        parse_mode:
+          type: string
+          enum: [HTML, MarkdownV2]
+        result:
+          $ref: '#/components/schemas/TelegramSendResult'
+    TelegramDiagnosticSendResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [notification_test_telegram_sent, notification_test_telegram_failed]
+        data:
+          $ref: '#/components/schemas/TelegramDiagnosticPayload'
+    TelegramBroadcastRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          maxLength: 4000
+        chat_ids:
+          type: array
+          items:
+            type: string
+        audience:
+          type: string
+          enum: [configured_broadcast, configured_support, all_configured]
+        parse_mode:
+          type: string
+          enum: [HTML, MarkdownV2]
+    TelegramBroadcastResult:
+      type: object
+      required: [audience, chat_ids, sent_count, failed_count, results]
+      properties:
+        audience:
+          type: string
+          enum: [configured_broadcast, configured_support, all_configured]
+        chat_ids:
+          type: array
+          items:
+            type: string
+        sent_count:
+          type: integer
+          minimum: 0
+        failed_count:
+          type: integer
+          minimum: 0
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TelegramSendResult'
+    TelegramBroadcastResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [telegram_broadcast_processed]
+        data:
+          $ref: '#/components/schemas/TelegramBroadcastResult'
+    TelegramSyncResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [telegram_bot_synced]
+        data:
+          type: object
+          required: [provider_key, bot, webhook, settings, configured_chat_counts]
+          properties:
+            provider_key:
+              type: string
+              enum: [telegram]
+            bot:
+              type: object
+              required: [id, username, display_name]
+              properties:
+                id:
+                  type: string
+                username:
+                  type: string
+                display_name:
+                  type: [string, 'null']
+            webhook:
+              type: object
+              required: [url, has_custom_certificate, pending_update_count, last_error_date]
+              properties:
+                url:
+                  type: string
+                has_custom_certificate:
+                  type: boolean
+                pending_update_count:
+                  type: integer
+                  minimum: 0
+                last_error_date:
+                  type: [string, 'null']
+                  format: date-time
+            settings:
+              $ref: '#/components/schemas/TelegramProviderSettings'
+            configured_chat_counts:
+              type: object
+              required: [broadcast, support]
+              properties:
+                broadcast:
+                  type: integer
+                  minimum: 0
+                support:
+                  type: integer
+                  minimum: 0
+    TelegramWebhookSuccessResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean

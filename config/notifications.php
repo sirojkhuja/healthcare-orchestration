@@ -39,4 +39,11 @@ return [
             ],
         ],
     ],
+    'telegram' => [
+        'provider_key' => 'telegram',
+        'api_base_url' => env('TELEGRAM_API_BASE_URL', 'https://api.telegram.org'),
+        'bot_token' => env('TELEGRAM_BOT_TOKEN', ''),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET', ''),
+        'default_parse_mode' => env('TELEGRAM_PARSE_MODE', 'HTML'),
+    ],
 ];

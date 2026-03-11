@@ -1443,6 +1443,14 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/webhooks/telegram` → `HandleTelegramWebhookCommand` → Integrations
 - POST `/telegram/bot:broadcast` → `BroadcastTelegramCommand` → Notifications
 - POST `/telegram/bot:sync` → `SyncTelegramBotCommand` → Integrations
+- GET `/notification-providers/telegram` returns tenant-scoped Telegram settings plus the last synced bot snapshot
+- PUT `/notification-providers/telegram` replaces tenant-scoped Telegram settings: `enabled`, `parse_mode`, `broadcast_chat_ids[]`, `support_chat_ids[]`
+- Telegram chat ids may not be assigned to multiple tenants because webhook tenant resolution must remain deterministic
+- POST `/notifications:test/telegram` uses the Telegram adapter directly for diagnostics and does not persist a notification row
+- queued or retried Telegram notifications are consumed from `medflow.notifications.v1`, use one provider attempt per send, and transition `queued -> sent|failed`
+- `POST /telegram/bot:broadcast` requires `message` plus either explicit `chat_ids[]` or `audience = configured_broadcast|configured_support|all_configured`
+- `POST /webhooks/telegram` verifies `X-Telegram-Bot-Api-Secret-Token`, stores replay-safe delivery metadata keyed by `update_id`, and records mapped support-chat messages in audit history
+- `POST /telegram/bot:sync` reconciles `getMe`, `getWebhookInfo`, and the expected webhook URL `APP_URL + /api/v1/webhooks/telegram`
 
 ### Email
 - POST `/email:send` → `SendEmailCommand` → Notifications

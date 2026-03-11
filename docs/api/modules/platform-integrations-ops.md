@@ -65,6 +65,14 @@
 - `POST /integrations/eskiz:send`, `POST /integrations/playmobile:send`, and `POST /integrations/textup:send` are provider-specific diagnostics that force one provider, return the single-provider result, and do not create a notification row.
 - The SMS delivery consumer processes only `notification.queued|notification.retried` records whose channel is `sms`, advances them to `sent|failed`, and counts one `attempts` increment per provider attempt.
 - SMS delivery writes audit actions `notifications.sent|notifications.failed` and publishes outbox events `notification.sent|notification.failed`, including the ordered delivery-attempt list.
+- `GET /notification-providers/telegram` returns tenant-scoped Telegram settings plus the last synced bot snapshot.
+- `PUT /notification-providers/telegram` replaces tenant-scoped Telegram settings: `enabled`, `parse_mode`, `broadcast_chat_ids[]`, and `support_chat_ids[]`.
+- Telegram chat ids may not be assigned to multiple tenants because webhook tenant resolution must remain deterministic.
+- `POST /notifications:test/telegram` is a tenant-scoped diagnostic send and does not create a notification row.
+- queued or retried Telegram notifications are consumed from `medflow.notifications.v1`, use one provider attempt per send, and publish `notification.sent|notification.failed`.
+- `POST /telegram/bot:broadcast` requires `message` and either explicit `chat_ids[]` or `audience = configured_broadcast|configured_support|all_configured`.
+- `POST /webhooks/telegram` verifies `X-Telegram-Bot-Api-Secret-Token`, stores delivery metadata keyed by `update_id`, and records support-chat audit activity for mapped inbound messages.
+- `POST /telegram/bot:sync` reconciles `getMe`, `getWebhookInfo`, and the expected webhook URL `APP_URL + /api/v1/webhooks/telegram`.
 - Appointment-linked scheduling actions in `T041` select active templates by exact code rather than by template id.
 - The reserved appointment-linked template codes are `APPOINTMENT-REMINDER-SMS`, `APPOINTMENT-REMINDER-EMAIL`, `APPOINTMENT-CONFIRMATION-SMS`, and `APPOINTMENT-CONFIRMATION-EMAIL`.
 - `T041` resolves appointment-linked recipients from patient `phone` and `email` first, then falls back to ordered patient contacts, and persists an appointment-to-notification linkage record for idempotent reminder windows and confirmation requests.

@@ -25,6 +25,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Throwable;
 
@@ -97,6 +98,12 @@ final class ApiErrorResponseFactory
                 401,
                 'WEBHOOK_SIGNATURE_INVALID',
                 'Inbound webhook signature failed verification.',
+                [],
+            ],
+            $throwable instanceof UnauthorizedHttpException => [
+                401,
+                'UNAUTHENTICATED',
+                $throwable->getMessage() !== '' ? $throwable->getMessage() : 'Authentication is required for this operation.',
                 [],
             ],
             $throwable instanceof IpAddressNotAllowedException => [

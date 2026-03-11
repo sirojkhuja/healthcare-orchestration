@@ -28,6 +28,8 @@ use App\Modules\Integrations\Presentation\Http\Controllers\ClickWebhookControlle
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\SmsProviderSendController;
+use App\Modules\Integrations\Presentation\Http\Controllers\TelegramBotController;
+use App\Modules\Integrations\Presentation\Http\Controllers\TelegramWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\UzumWebhookController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderBulkController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabOrderController;
@@ -38,8 +40,10 @@ use App\Modules\Lab\Presentation\Http\Controllers\LabWebhookController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationChannelTestController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationSmsProviderController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTelegramProviderController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTemplateController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationWorkflowController;
+use App\Modules\Notifications\Presentation\Http\Controllers\TelegramBroadcastController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
@@ -110,6 +114,8 @@ Route::prefix('v1')->group(function (): void {
         ->name('webhooks.click.process');
     Route::post('/webhooks/uzum', [UzumWebhookController::class, 'process'])
         ->name('webhooks.uzum.process');
+    Route::post('/webhooks/telegram', [TelegramWebhookController::class, 'process'])
+        ->name('webhooks.telegram.process');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
@@ -325,6 +331,8 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/notifications/{notificationId}', [NotificationController::class, 'show'])->name('notifications.show');
                 Route::get('/notification-providers/sms', [NotificationSmsProviderController::class, 'list'])
                     ->name('notification-providers.sms.list');
+                Route::get('/notification-providers/telegram', [NotificationTelegramProviderController::class, 'show'])
+                    ->name('notification-providers.telegram.show');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -660,9 +668,18 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/notifications:test/sms', [NotificationChannelTestController::class, 'sendSms'])
                     ->middleware('idempotency:notifications.test.sms')
                     ->name('notifications.test.sms');
+                Route::post('/notifications:test/telegram', [NotificationChannelTestController::class, 'sendTelegram'])
+                    ->middleware('idempotency:notifications.test.telegram')
+                    ->name('notifications.test.telegram');
                 Route::put('/notification-providers/sms', [NotificationSmsProviderController::class, 'update'])
                     ->middleware('idempotency:notification-providers.sms.update')
                     ->name('notification-providers.sms.update');
+                Route::put('/notification-providers/telegram', [NotificationTelegramProviderController::class, 'update'])
+                    ->middleware('idempotency:notification-providers.telegram.update')
+                    ->name('notification-providers.telegram.update');
+                Route::post('/telegram/bot:broadcast', [TelegramBroadcastController::class, 'broadcast'])
+                    ->middleware('idempotency:telegram.bot.broadcast')
+                    ->name('telegram.bot.broadcast');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
                 Route::post('/integrations/eskiz:send', [SmsProviderSendController::class, 'sendEskiz'])
@@ -683,6 +700,9 @@ Route::prefix('v1')->group(function (): void {
                     ->name('webhooks.click.verify');
                 Route::post('/webhooks/uzum:verify', [UzumWebhookController::class, 'verify'])
                     ->name('webhooks.uzum.verify');
+                Route::post('/telegram/bot:sync', [TelegramBotController::class, 'sync'])
+                    ->middleware('idempotency:telegram.bot.sync')
+                    ->name('telegram.bot.sync');
             });
             Route::middleware('permission:treatments.manage')->group(function (): void {
                 Route::post('/treatment-plans', [TreatmentPlanController::class, 'create'])->name('treatment-plans.create');
