@@ -127,6 +127,16 @@
 - `GET /integrations/{integrationKey}/tokens` returns token metadata only, including token previews and expiry timestamps.
 - `POST /integrations/{integrationKey}/tokens:refresh` supports optional `token_id` and refreshes the latest active token when omitted.
 - `DELETE /integrations/{integrationKey}/tokens/{tokenId}` revokes the selected token without deleting history.
+- `POST /integrations/myid:verify` requires the `myid` feature flag to be available, the tenant-managed integration to be enabled, managed credentials to exist, and at least one active secret-managed webhook registration.
+- `POST /integrations/myid:verify` requires `external_reference` and `subject`, accepts optional `metadata`, returns a tenant-scoped `pending` verification session, and generates the provider reference locally in this phase.
+- MyID verification session states are `pending`, `verified`, `rejected`, `expired`, and `failed`.
+- `POST /integrations/eimzo:sign` requires the `eimzo` feature flag to be available, the tenant-managed integration to be enabled, managed credentials to exist, and at least one active secret-managed webhook registration.
+- `POST /integrations/eimzo:sign` requires `external_reference`, `document_hash`, and `document_name`, accepts optional `signer` and `metadata`, returns a tenant-scoped `pending` sign request, and generates the provider reference locally in this phase.
+- E-IMZO sign request states are `pending`, `signed`, `canceled`, `expired`, and `failed`.
+- `POST /webhooks/myid` and `POST /webhooks/eimzo` are public routes. They require `X-Integration-Webhook-Secret` plus body fields `webhook_id`, `delivery_id`, `provider_reference`, and `status`.
+- Optional plug-in webhook tenant resolution is derived from the managed webhook inventory by `integration_key + webhook_id`, and the provided secret is verified against the stored SHA-256 webhook secret hash.
+- Replay protection for optional plug-in webhooks is keyed by `integration_key + webhook_id + delivery_id`; duplicate deliveries return `{ "ok": true }` without mutating state a second time.
+- Optional plug-in initiation stays local-first in this phase. Webhook completion remains the authoritative state transition mechanism and every initiation plus processed webhook writes integration-log and audit entries.
 
 ## Audit and Compliance
 

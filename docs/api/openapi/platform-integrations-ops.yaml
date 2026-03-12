@@ -1891,6 +1891,180 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/myid:verify:
+    post:
+      operationId: VerifyMyIdCommand
+      tags: [Integrations]
+      summary: Create one tenant-scoped MyID verification session
+      description: Creates a local-first `pending` MyID verification session after the tenant integration is enabled, credentialed, and has an active secret-managed webhook.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyIdVerificationCreateRequest'
+      responses:
+        '201':
+          description: MyID verification session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyIdVerificationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Feature flag is off or tenant readiness requirements are not met
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid verification payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/myid:
+    post:
+      operationId: HandleMyIdWebhookCommand
+      tags: [Integrations]
+      summary: Process one MyID webhook delivery
+      description: Verifies the managed webhook secret, resolves tenant scope from the webhook inventory, deduplicates `delivery_id` replays, and transitions one pending verification session to a terminal state.
+      parameters:
+        - $ref: '#/components/parameters/IntegrationWebhookSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyIdWebhookRequest'
+      responses:
+        '200':
+          description: Webhook accepted or replay ignored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionalIntegrationWebhookResponse'
+        '401':
+          description: Missing or invalid integration webhook secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown webhook or provider reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid webhook payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/eimzo:sign:
+    post:
+      operationId: CreateEImzoSignRequestCommand
+      tags: [Integrations]
+      summary: Create one tenant-scoped E-IMZO sign request
+      description: Creates a local-first `pending` E-IMZO sign request after the tenant integration is enabled, credentialed, and has an active secret-managed webhook.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EImzoSignRequestCreateRequest'
+      responses:
+        '201':
+          description: E-IMZO sign request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EImzoSignRequestMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Feature flag is off or tenant readiness requirements are not met
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid sign request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/webhooks/eimzo:
+    post:
+      operationId: HandleEImzoWebhookCommand
+      tags: [Integrations]
+      summary: Process one E-IMZO webhook delivery
+      description: Verifies the managed webhook secret, resolves tenant scope from the webhook inventory, deduplicates `delivery_id` replays, and transitions one pending sign request to a terminal state.
+      parameters:
+        - $ref: '#/components/parameters/IntegrationWebhookSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EImzoWebhookRequest'
+      responses:
+        '200':
+          description: Webhook accepted or replay ignored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionalIntegrationWebhookResponse'
+        '401':
+          description: Missing or invalid integration webhook secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown webhook or provider reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid webhook payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -2078,6 +2252,13 @@ components:
       schema:
         type: string
         format: uuid
+    IntegrationWebhookSecretHeader:
+      in: header
+      name: X-Integration-Webhook-Secret
+      required: true
+      schema:
+        type: string
+        maxLength: 255
     IntegrationCategoryFilter:
       in: query
       name: category
@@ -3606,3 +3787,168 @@ components:
           enum: [integration_token_refreshed, integration_token_revoked]
         data:
           $ref: '#/components/schemas/IntegrationToken'
+    OptionalIntegrationFlexibleMap:
+      type: object
+      additionalProperties: true
+    MyIdVerificationSession:
+      type: object
+      required:
+        [verification_id, integration_key, external_reference, provider_reference, status, subject, metadata, result_payload, completed_at, created_at, updated_at]
+      properties:
+        verification_id:
+          type: string
+          format: uuid
+        integration_key:
+          type: string
+          enum: [myid]
+        external_reference:
+          type: string
+        provider_reference:
+          type: string
+        status:
+          type: string
+          enum: [pending, verified, rejected, expired, failed]
+        subject:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        metadata:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        result_payload:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        completed_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MyIdVerificationCreateRequest:
+      type: object
+      required: [external_reference, subject]
+      properties:
+        external_reference:
+          type: string
+          maxLength: 191
+        subject:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        metadata:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+    MyIdVerificationMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [myid_verification_created]
+        data:
+          $ref: '#/components/schemas/MyIdVerificationSession'
+    MyIdWebhookRequest:
+      type: object
+      required: [webhook_id, delivery_id, provider_reference, status]
+      properties:
+        webhook_id:
+          type: string
+          format: uuid
+        delivery_id:
+          type: string
+          maxLength: 191
+        provider_reference:
+          type: string
+          maxLength: 191
+        status:
+          type: string
+          enum: [verified, rejected, expired, failed]
+        metadata:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        result_payload:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+    EImzoSignRequest:
+      type: object
+      required:
+        [sign_request_id, integration_key, external_reference, provider_reference, status, document_hash, document_name, signer, metadata, signature_payload, completed_at, created_at, updated_at]
+      properties:
+        sign_request_id:
+          type: string
+          format: uuid
+        integration_key:
+          type: string
+          enum: [eimzo]
+        external_reference:
+          type: string
+        provider_reference:
+          type: string
+        status:
+          type: string
+          enum: [pending, signed, canceled, expired, failed]
+        document_hash:
+          type: string
+        document_name:
+          type: string
+        signer:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        metadata:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        signature_payload:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        completed_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    EImzoSignRequestCreateRequest:
+      type: object
+      required: [external_reference, document_hash, document_name]
+      properties:
+        external_reference:
+          type: string
+          maxLength: 191
+        document_hash:
+          type: string
+          maxLength: 191
+        document_name:
+          type: string
+          maxLength: 255
+        signer:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        metadata:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+    EImzoSignRequestMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [eimzo_sign_request_created]
+        data:
+          $ref: '#/components/schemas/EImzoSignRequest'
+    EImzoWebhookRequest:
+      type: object
+      required: [webhook_id, delivery_id, provider_reference, status]
+      properties:
+        webhook_id:
+          type: string
+          format: uuid
+        delivery_id:
+          type: string
+          maxLength: 191
+        provider_reference:
+          type: string
+          maxLength: 191
+        status:
+          type: string
+          enum: [signed, canceled, expired, failed]
+        metadata:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+        signature_payload:
+          $ref: '#/components/schemas/OptionalIntegrationFlexibleMap'
+    OptionalIntegrationWebhookResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean

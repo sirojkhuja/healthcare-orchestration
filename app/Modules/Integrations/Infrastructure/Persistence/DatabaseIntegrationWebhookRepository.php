@@ -3,6 +3,7 @@
 namespace App\Modules\Integrations\Infrastructure\Persistence;
 
 use App\Modules\Integrations\Application\Contracts\IntegrationWebhookRepository;
+use App\Modules\Integrations\Application\Data\InboundIntegrationWebhookData;
 use App\Modules\Integrations\Application\Data\IntegrationWebhookData;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Crypt;
@@ -56,6 +57,17 @@ final class DatabaseIntegrationWebhookRepository implements IntegrationWebhookRe
             ->where('integration_key', $integrationKey)
             ->where('id', $webhookId)
             ->delete() > 0;
+    }
+
+    #[\Override]
+    public function findInboundTarget(string $integrationKey, string $webhookId): ?InboundIntegrationWebhookData
+    {
+        $row = DB::table('integration_webhooks')
+            ->where('integration_key', $integrationKey)
+            ->where('id', $webhookId)
+            ->first();
+
+        return $row instanceof stdClass ? $this->toInboundData($row) : null;
     }
 
     #[\Override]
@@ -126,6 +138,19 @@ final class DatabaseIntegrationWebhookRepository implements IntegrationWebhookRe
             secretLastRotatedAt: $this->nullableDateTime($row->secret_last_rotated_at ?? null),
             createdAt: $this->nullableDateTime($row->created_at ?? null) ?? CarbonImmutable::now(),
             updatedAt: $this->nullableDateTime($row->updated_at ?? null) ?? CarbonImmutable::now(),
+        );
+    }
+
+    private function toInboundData(stdClass $row): InboundIntegrationWebhookData
+    {
+        return new InboundIntegrationWebhookData(
+            id: $this->stringValue($row->id ?? null),
+            tenantId: $this->stringValue($row->tenant_id ?? null),
+            integrationKey: $this->stringValue($row->integration_key ?? null),
+            name: $this->stringValue($row->name ?? null),
+            status: $this->stringValue($row->status ?? null),
+            secretHash: $this->nullableString($row->secret_hash ?? null),
+            metadata: $this->metadata($this->decodedArray($row->metadata ?? null)),
         );
     }
 

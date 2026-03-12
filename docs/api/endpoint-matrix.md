@@ -46,6 +46,10 @@ Platform integrations route inventory includes the tenant-scoped integrations hu
 - `/integrations/{integrationKey}/webhooks/{webhookId}:rotate-secret`
 - `/integrations/{integrationKey}/tokens`
 - `/integrations/{integrationKey}/tokens:refresh`
+- `/integrations/myid:verify`
+- `/webhooks/myid`
+- `/integrations/eimzo:sign`
+- `/webhooks/eimzo`
 
 ## Inventory Summary
 
@@ -64,7 +68,7 @@ Platform integrations route inventory includes the tenant-scoped integrations hu
 | Billing and Payments | `40` |
 | Insurance Claims | `28` |
 | Notifications | `34` |
-| Integrations Hub | `36` |
+| Integrations Hub | `40` |
 | Audit and Compliance | `18` |
 | Observability and Admin Ops | `22` |
 | Reference Data and Search | `18` |

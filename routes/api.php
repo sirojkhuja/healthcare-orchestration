@@ -25,11 +25,15 @@ use App\Modules\Insurance\Presentation\Http\Controllers\InsuranceRuleController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PayerController;
 use App\Modules\Integrations\Presentation\Http\Controllers\ClickWebhookController;
+use App\Modules\Integrations\Presentation\Http\Controllers\EImzoController;
+use App\Modules\Integrations\Presentation\Http\Controllers\EImzoWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationController;
 use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationCredentialController;
 use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationDiagnosticsController;
 use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationTokenController;
 use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationWebhookController;
+use App\Modules\Integrations\Presentation\Http\Controllers\MyIdController;
+use App\Modules\Integrations\Presentation\Http\Controllers\MyIdWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\SmsProviderSendController;
@@ -121,6 +125,10 @@ Route::prefix('v1')->group(function (): void {
         ->name('webhooks.click.process');
     Route::post('/webhooks/uzum', [UzumWebhookController::class, 'process'])
         ->name('webhooks.uzum.process');
+    Route::post('/webhooks/myid', [MyIdWebhookController::class, 'process'])
+        ->name('webhooks.myid.process');
+    Route::post('/webhooks/eimzo', [EImzoWebhookController::class, 'process'])
+        ->name('webhooks.eimzo.process');
     Route::post('/webhooks/telegram', [TelegramWebhookController::class, 'process'])
         ->name('webhooks.telegram.process');
 
@@ -754,6 +762,12 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/integrations/textup:send', [SmsProviderSendController::class, 'sendTextUp'])
                     ->middleware('idempotency:integrations.textup.send')
                     ->name('integrations.textup.send');
+                Route::post('/integrations/myid:verify', [MyIdController::class, 'verify'])
+                    ->middleware('idempotency:integrations.myid.verify')
+                    ->name('integrations.myid.verify');
+                Route::post('/integrations/eimzo:sign', [EImzoController::class, 'sign'])
+                    ->middleware('idempotency:integrations.eimzo.sign')
+                    ->name('integrations.eimzo.sign');
                 Route::post('/webhooks/lab/{provider}:verify', [LabWebhookController::class, 'verify'])
                     ->where('provider', '[A-Za-z0-9_-]+')
                     ->name('webhooks.labs.verify');

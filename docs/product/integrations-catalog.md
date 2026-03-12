@@ -53,11 +53,19 @@ Controllers and domain objects must never call third-party clients directly.
 
 - optional identity verification
 - treat as an external verification provider, not as an internal identity store
+- initiation is tenant-scoped through `POST /integrations/myid:verify`
+- initiation requires the tenant integration to be enabled, managed credentials to be configured, and at least one active secret-managed webhook registration
+- verification sessions are local-first in this phase and complete only through the replay-safe public webhook `POST /webhooks/myid`
+- verification session states are `pending`, `verified`, `rejected`, `expired`, and `failed`
 
 ### E-IMZO
 
 - optional e-signature workflow
 - all signing state must be auditable
+- initiation is tenant-scoped through `POST /integrations/eimzo:sign`
+- initiation requires the tenant integration to be enabled, managed credentials to be configured, and at least one active secret-managed webhook registration
+- sign requests are local-first in this phase and complete only through the replay-safe public webhook `POST /webhooks/eimzo`
+- sign request states are `pending`, `signed`, `canceled`, `expired`, and `failed`
 
 ## Messaging Integrations
 
@@ -120,3 +128,4 @@ The hub owns the administrative inventory, while provider-specific modules keep 
 - local geocoding or map providers
 
 Optional integrations must remain plug-in style and must not change the core architecture.
+- Optional plug-in webhooks must verify a managed secret header, resolve tenant scope from managed webhook inventory, and deduplicate deliveries by provider-specific replay keys.

@@ -382,6 +382,8 @@ Common features:
 ### 10.3 Identity
 - Google OAuth (login)
 - Optional: MyID (KYC / identity verification)
+- MyID verification is initiated by a tenant-scoped command and completes through a replay-safe managed webhook using a tenant-managed secret
+- MyID verification session states are `pending`, `verified`, `rejected`, `expired`, and `failed`
 
 ### 10.4 SMS Providers
 - Eskiz
@@ -412,6 +414,9 @@ These are designed as plug-ins; implement when you have credentials:
 - Global ID Gate / other local identity aggregators
 - Tax/receipt systems (if applicable)
 - Local maps/geocoding providers (if needed)
+- E-IMZO sign requests are initiated by a tenant-scoped command and complete through a replay-safe managed webhook using a tenant-managed secret
+- E-IMZO sign request states are `pending`, `signed`, `canceled`, `expired`, and `failed`
+- Optional plug-in initiation in this phase is local-first, requires tenant-managed enablement plus credentials plus an active managed webhook, and treats the verified webhook callback as the authoritative completion signal
 
 ---
 
@@ -1513,6 +1518,9 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - webhook inventory records are tenant-managed metadata entries; deleting one does not remove the underlying Laravel webhook route
 - secret-managed webhook integrations return the generated or rotated secret exactly once
 - token inventory returns metadata only; raw access and refresh tokens are not returned after persistence
+- `POST /integrations/myid:verify` requires `external_reference`, `subject`, and tenant readiness through the integrations hub, then creates a `pending` verification session with a locally generated provider reference
+- `POST /integrations/eimzo:sign` requires `external_reference`, `document_hash`, `document_name`, and tenant readiness through the integrations hub, then creates a `pending` sign request with a locally generated provider reference
+- `POST /webhooks/myid` and `POST /webhooks/eimzo` require `X-Integration-Webhook-Secret`, `webhook_id`, `delivery_id`, `provider_reference`, and `status`, resolve tenant scope from managed webhook inventory, and deduplicate replays by `integration_key + webhook_id + delivery_id`
 - token refresh supports an optional `token_id` and otherwise refreshes the latest active token
 
 ---

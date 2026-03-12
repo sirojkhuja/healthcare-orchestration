@@ -2,6 +2,7 @@
 
 namespace App\Modules\Integrations\Application\Contracts;
 
+use App\Modules\Integrations\Application\Data\InboundIntegrationWebhookData;
 use App\Modules\Integrations\Application\Data\IntegrationWebhookData;
 use Carbon\CarbonImmutable;
 
@@ -25,6 +26,8 @@ interface IntegrationWebhookRepository
     ): IntegrationWebhookData;
 
     public function delete(string $tenantId, string $integrationKey, string $webhookId): bool;
+
+    public function findInboundTarget(string $integrationKey, string $webhookId): ?InboundIntegrationWebhookData;
 
     public function findInTenant(string $tenantId, string $integrationKey, string $webhookId): ?IntegrationWebhookData;
 
