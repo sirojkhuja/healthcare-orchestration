@@ -1459,7 +1459,7 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/email:send` → `SendEmailCommand` → Notifications
 - GET `/email/events` → `ListEmailEventsQuery` → Notifications
 - GET `/notification-providers/email` returns tenant-scoped sender settings with `enabled`, `provider_key`, `from_address`, `from_name`, and optional reply-to fields
-- PUT `/notification-providers/email` fully replaces the tenant sender settings; transport credentials remain configuration-backed until the integrations hub task
+- PUT `/notification-providers/email` fully replaces the tenant sender settings; transport credential inventory is managed through `PUT /integrations/email/credentials`
 - POST `/notifications:test/email` uses the configured adapter directly, returns `notification_test_email_sent|notification_test_email_failed`, and does not persist notification or email-event rows
 - queued or retried email notifications are consumed from `medflow.notifications.v1`, use one delivery attempt per send, transition `queued -> sent|failed`, and append one email-event record per outcome
 - POST `/email:send` sends one transactional email directly without creating a notification row and always appends an email-event row with `source = direct`
@@ -1500,6 +1500,20 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - POST `/webhooks/myid` → `HandleMyIdWebhookCommand` → Integrations
 - POST `/integrations/eimzo:sign` → `CreateEImzoSignRequestCommand` → Integrations
 - POST `/webhooks/eimzo` → `HandleEImzoWebhookCommand` → Integrations
+
+- Supported catalog keys in this phase are `email`, `telegram`, `eskiz`, `playmobile`, `textup`, `payme`, `click`, `uzum`, `mock-lab`, `myid`, and `eimzo`
+- feature-flagged optional integrations remain visible in the registry with `available = false`
+- integration registry enablement is tenant-scoped and controls the hub administrative state for the tenant
+- `GET /integrations/{integrationKey}/credentials` returns field schema plus masked previews; raw secrets are never returned after persistence
+- `PUT /integrations/{integrationKey}/credentials` fully replaces the tenant-managed credential payload
+- credential deletion revokes active hub-managed tokens for the same integration key
+- `GET /integrations/{integrationKey}/health` returns `status = healthy|degraded|failing|disabled` plus ordered readiness checks
+- `POST /integrations/{integrationKey}:test-connection` is a deterministic readiness probe for this phase and records audit plus integration-log entries
+- integration logs are append-only tenant-scoped operational records and support `level`, `event`, and `limit`
+- webhook inventory records are tenant-managed metadata entries; deleting one does not remove the underlying Laravel webhook route
+- secret-managed webhook integrations return the generated or rotated secret exactly once
+- token inventory returns metadata only; raw access and refresh tokens are not returned after persistence
+- token refresh supports an optional `token_id` and otherwise refreshes the latest active token
 
 ---
 

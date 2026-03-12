@@ -100,6 +100,19 @@ SMS delivery uses a strategy interface with tenant-specific routing and failover
 - timeout, retry, and failure classification policy
 - explicit mapping between provider errors and the platform error catalog
 
+## Integrations Hub
+
+The shared integrations hub is the tenant-scoped administrative surface for:
+
+- catalog-backed integration registry
+- encrypted credential inventory
+- readiness and test-connection checks
+- append-only integration operation logs
+- managed webhook inventory and secret rotation
+- managed token inventory and refresh lifecycle
+
+The hub owns the administrative inventory, while provider-specific modules keep their existing runtime API contracts.
+
 ## Optional Uzbekistan-Specific Extensions
 
 - local identity aggregators

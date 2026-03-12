@@ -66,7 +66,7 @@
 - The SMS delivery consumer processes only `notification.queued|notification.retried` records whose channel is `sms`, advances them to `sent|failed`, and counts one `attempts` increment per provider attempt.
 - SMS delivery writes audit actions `notifications.sent|notifications.failed` and publishes outbox events `notification.sent|notification.failed`, including the ordered delivery-attempt list.
 - `GET /notification-providers/email` returns tenant-scoped sender settings with `enabled`, `provider_key`, `from_address`, `from_name`, and optional reply-to fields.
-- `PUT /notification-providers/email` fully replaces the tenant email sender settings. Transport credentials remain config-backed until `T061`.
+- `PUT /notification-providers/email` fully replaces the tenant email sender settings. Transport credential inventory is now managed through `PUT /integrations/email/credentials`.
 - `POST /notifications:test/email` is a tenant-scoped diagnostic route. It uses the configured email adapter directly, returns `notification_test_email_sent|notification_test_email_failed`, and does not create notification or email-event rows.
 - queued or retried email notifications are consumed from `medflow.notifications.v1`, use one delivery attempt per send, transition `queued -> sent|failed`, and append one email-event row per outcome.
 - `POST /email:send` sends one transactional email directly without creating a notification row and always appends an email-event row with `source = direct`.
@@ -79,6 +79,7 @@
 - `POST /telegram/bot:broadcast` requires `message` and either explicit `chat_ids[]` or `audience = configured_broadcast|configured_support|all_configured`.
 - `POST /webhooks/telegram` verifies `X-Telegram-Bot-Api-Secret-Token`, stores delivery metadata keyed by `update_id`, and records support-chat audit activity for mapped inbound messages.
 - `POST /telegram/bot:sync` reconciles `getMe`, `getWebhookInfo`, and the expected webhook URL `APP_URL + /api/v1/webhooks/telegram`.
+- Telegram bot credential inventory is now managed through `PUT /integrations/telegram/credentials`.
 - Appointment-linked scheduling actions in `T041` select active templates by exact code rather than by template id.
 - The reserved appointment-linked template codes are `APPOINTMENT-REMINDER-SMS`, `APPOINTMENT-REMINDER-EMAIL`, `APPOINTMENT-CONFIRMATION-SMS`, and `APPOINTMENT-CONFIRMATION-EMAIL`.
 - `T041` resolves appointment-linked recipients from patient `phone` and `email` first, then falls back to ordered patient contacts, and persists an appointment-to-notification linkage record for idempotent reminder windows and confirmation requests.
@@ -106,6 +107,26 @@
 - `POST /webhooks/myid` -> `HandleMyIdWebhookCommand` -> Integrations
 - `POST /integrations/eimzo:sign` -> `CreateEImzoSignRequestCommand` -> Integrations
 - `POST /webhooks/eimzo` -> `HandleEImzoWebhookCommand` -> Integrations
+
+## Integrations Hub Notes
+
+- Supported catalog keys in this phase are `email`, `telegram`, `eskiz`, `playmobile`, `textup`, `payme`, `click`, `uzum`, `mock-lab`, `myid`, and `eimzo`.
+- `GET /integrations` supports optional `category` and `enabled` filters.
+- Registry responses expose `available`, `enabled`, capability flags, credential summary, health summary, webhook count, and token count.
+- Feature-flagged optional integrations remain visible with `available = false`; `POST /integrations/{integrationKey}:enable` returns `409` while the feature flag stays off.
+- `GET /integrations/{integrationKey}/credentials` returns schema plus masked previews. Raw secrets are never returned after persistence.
+- `PUT /integrations/{integrationKey}/credentials` fully replaces the tenant-managed payload and accepts only catalog-declared fields inside `values`.
+- Credential deletion revokes all active hub-managed tokens for the same integration key.
+- `GET /integrations/{integrationKey}/health` returns `status = healthy|degraded|failing|disabled` plus ordered checks for feature flag, credentials, webhooks, and tokens when applicable.
+- `POST /integrations/{integrationKey}:test-connection` is a deterministic readiness probe for this phase. It records audit and integration-log entries and does not require live outbound traffic.
+- `GET /integrations/{integrationKey}/logs` supports `level`, `event`, and `limit`, defaults to `50`, and caps at `100`.
+- `GET /integrations/{integrationKey}/webhooks` returns tenant-managed webhook inventory only. It does not enumerate the underlying Laravel routes automatically.
+- `POST /integrations/{integrationKey}/webhooks` requires `name` and derives the callback URL from the catalog. Secret-managed integrations return the generated secret exactly once at creation time.
+- `POST /integrations/{integrationKey}/webhooks/{webhookId}:rotate-secret` returns the new secret exactly once and is allowed only for integrations marked as secret-rotatable.
+- `DELETE /integrations/{integrationKey}/webhooks/{webhookId}` removes the tenant inventory record, not the underlying public route implementation.
+- `GET /integrations/{integrationKey}/tokens` returns token metadata only, including token previews and expiry timestamps.
+- `POST /integrations/{integrationKey}/tokens:refresh` supports optional `token_id` and refreshes the latest active token when omitted.
+- `DELETE /integrations/{integrationKey}/tokens/{tokenId}` revokes the selected token without deleting history.
 
 ## Audit and Compliance
 

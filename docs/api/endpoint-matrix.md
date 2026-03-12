@@ -32,6 +32,21 @@ Revenue and insurance route inventory includes the Uzbek payment callback surfac
 - `/webhooks/click:verify`
 - `/webhooks/uzum:verify`
 
+Platform integrations route inventory includes the tenant-scoped integrations hub surface under:
+
+- `/integrations`
+- `/integrations/{integrationKey}`
+- `/integrations/{integrationKey}:enable`
+- `/integrations/{integrationKey}:disable`
+- `/integrations/{integrationKey}/credentials`
+- `/integrations/{integrationKey}/health`
+- `/integrations/{integrationKey}:test-connection`
+- `/integrations/{integrationKey}/logs`
+- `/integrations/{integrationKey}/webhooks`
+- `/integrations/{integrationKey}/webhooks/{webhookId}:rotate-secret`
+- `/integrations/{integrationKey}/tokens`
+- `/integrations/{integrationKey}/tokens:refresh`
+
 ## Inventory Summary
 
 | Area | Approximate endpoints |

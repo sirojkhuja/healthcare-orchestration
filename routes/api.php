@@ -25,6 +25,11 @@ use App\Modules\Insurance\Presentation\Http\Controllers\InsuranceRuleController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PatientInsuranceController;
 use App\Modules\Insurance\Presentation\Http\Controllers\PayerController;
 use App\Modules\Integrations\Presentation\Http\Controllers\ClickWebhookController;
+use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationController;
+use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationCredentialController;
+use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationDiagnosticsController;
+use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationTokenController;
+use App\Modules\Integrations\Presentation\Http\Controllers\IntegrationWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PatientExternalReferenceController;
 use App\Modules\Integrations\Presentation\Http\Controllers\PaymeWebhookController;
 use App\Modules\Integrations\Presentation\Http\Controllers\SmsProviderSendController;
@@ -338,6 +343,20 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/notification-providers/telegram', [NotificationTelegramProviderController::class, 'show'])
                     ->name('notification-providers.telegram.show');
                 Route::get('/email/events', [EmailController::class, 'events'])->name('email.events');
+            });
+            Route::middleware('permission:integrations.view')->group(function (): void {
+                Route::get('/integrations', [IntegrationController::class, 'list'])->name('integrations.list');
+                Route::get('/integrations/{integrationKey}', [IntegrationController::class, 'show'])->name('integrations.show');
+                Route::get('/integrations/{integrationKey}/credentials', [IntegrationCredentialController::class, 'show'])
+                    ->name('integrations.credentials.show');
+                Route::get('/integrations/{integrationKey}/health', [IntegrationDiagnosticsController::class, 'health'])
+                    ->name('integrations.health.show');
+                Route::get('/integrations/{integrationKey}/logs', [IntegrationDiagnosticsController::class, 'logs'])
+                    ->name('integrations.logs.list');
+                Route::get('/integrations/{integrationKey}/webhooks', [IntegrationWebhookController::class, 'list'])
+                    ->name('integrations.webhooks.list');
+                Route::get('/integrations/{integrationKey}/tokens', [IntegrationTokenController::class, 'list'])
+                    ->name('integrations.tokens.list');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -696,6 +715,36 @@ Route::prefix('v1')->group(function (): void {
                     ->name('telegram.bot.broadcast');
             });
             Route::middleware('permission:integrations.manage')->group(function (): void {
+                Route::post('/integrations/{integrationKey}:enable', [IntegrationController::class, 'enable'])
+                    ->middleware('idempotency:integrations.enable')
+                    ->name('integrations.enable');
+                Route::post('/integrations/{integrationKey}:disable', [IntegrationController::class, 'disable'])
+                    ->middleware('idempotency:integrations.disable')
+                    ->name('integrations.disable');
+                Route::put('/integrations/{integrationKey}/credentials', [IntegrationCredentialController::class, 'update'])
+                    ->middleware('idempotency:integrations.credentials.update')
+                    ->name('integrations.credentials.update');
+                Route::delete('/integrations/{integrationKey}/credentials', [IntegrationCredentialController::class, 'delete'])
+                    ->middleware('idempotency:integrations.credentials.delete')
+                    ->name('integrations.credentials.delete');
+                Route::post('/integrations/{integrationKey}:test-connection', [IntegrationDiagnosticsController::class, 'testConnection'])
+                    ->middleware('idempotency:integrations.test-connection')
+                    ->name('integrations.test-connection');
+                Route::post('/integrations/{integrationKey}/webhooks', [IntegrationWebhookController::class, 'create'])
+                    ->middleware('idempotency:integrations.webhooks.create')
+                    ->name('integrations.webhooks.create');
+                Route::delete('/integrations/{integrationKey}/webhooks/{webhookId}', [IntegrationWebhookController::class, 'delete'])
+                    ->middleware('idempotency:integrations.webhooks.delete')
+                    ->name('integrations.webhooks.delete');
+                Route::post('/integrations/{integrationKey}/webhooks/{webhookId}:rotate-secret', [IntegrationWebhookController::class, 'rotateSecret'])
+                    ->middleware('idempotency:integrations.webhooks.rotate-secret')
+                    ->name('integrations.webhooks.rotate-secret');
+                Route::post('/integrations/{integrationKey}/tokens:refresh', [IntegrationTokenController::class, 'refresh'])
+                    ->middleware('idempotency:integrations.tokens.refresh')
+                    ->name('integrations.tokens.refresh');
+                Route::delete('/integrations/{integrationKey}/tokens/{tokenId}', [IntegrationTokenController::class, 'revoke'])
+                    ->middleware('idempotency:integrations.tokens.revoke')
+                    ->name('integrations.tokens.revoke');
                 Route::post('/integrations/eskiz:send', [SmsProviderSendController::class, 'sendEskiz'])
                     ->middleware('idempotency:integrations.eskiz.send')
                     ->name('integrations.eskiz.send');

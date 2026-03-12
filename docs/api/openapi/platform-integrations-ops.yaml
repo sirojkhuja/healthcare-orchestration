@@ -1223,6 +1223,674 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations:
+    get:
+      operationId: ListIntegrationsQuery
+      tags: [Integrations]
+      summary: List the integrations hub registry
+      description: Returns the tenant-scoped integration registry with availability, capability, credential, health, webhook, and token summaries.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationCategoryFilter'
+        - $ref: '#/components/parameters/IntegrationEnabledFilter'
+      responses:
+        '200':
+          description: Integration registry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationsCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}:
+    get:
+      operationId: GetIntegrationQuery
+      tags: [Integrations]
+      summary: Get one integration registry entry
+      description: Returns one tenant-scoped integration entry with capability and operational summaries.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration registry entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}:enable:
+    post:
+      operationId: EnableIntegrationCommand
+      tags: [Integrations]
+      summary: Enable one integration for the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Integration is feature-flagged off or otherwise unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}:disable:
+    post:
+      operationId: DisableIntegrationCommand
+      tags: [Integrations]
+      summary: Disable one integration for the current tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/credentials:
+    get:
+      operationId: GetIntegrationCredentialsQuery
+      tags: [Integrations]
+      summary: Get one integration credential inventory entry
+      description: Returns the credential field schema plus masked previews for tenant-managed stored values.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationCredentialsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: UpsertIntegrationCredentialsCommand
+      tags: [Integrations]
+      summary: Replace one integration credential payload
+      description: Replaces the tenant-managed credential payload using catalog-declared fields only. Raw secrets are never returned after persistence.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIntegrationCredentialsRequest'
+      responses:
+        '200':
+          description: Integration credentials updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationCredentialsMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Integration does not support managed credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid credential payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteIntegrationCredentialsCommand
+      tags: [Integrations]
+      summary: Delete one integration credential payload
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration credentials deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationCredentialsMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/health:
+    get:
+      operationId: IntegrationHealthQuery
+      tags: [Integrations]
+      summary: Get one integration health view
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationHealthResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}:test-connection:
+    post:
+      operationId: TestIntegrationConnectionCommand
+      tags: [Integrations]
+      summary: Run an integration readiness probe
+      description: Executes the deterministic phase-one readiness probe and records audit plus integration-log entries.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Integration connection test completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationHealthMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Integration does not support readiness probes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/logs:
+    get:
+      operationId: ListIntegrationLogsQuery
+      tags: [Integrations]
+      summary: List integration hub operation logs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+        - $ref: '#/components/parameters/IntegrationLogLevelFilter'
+        - $ref: '#/components/parameters/IntegrationLogEventFilter'
+        - $ref: '#/components/parameters/IntegrationLogLimit'
+      responses:
+        '200':
+          description: Integration operation logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationLogsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/webhooks:
+    get:
+      operationId: ListIntegrationWebhooksQuery
+      tags: [Integrations]
+      summary: List managed webhook inventory for one integration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Managed webhook inventory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationWebhooksResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateIntegrationWebhookCommand
+      tags: [Integrations]
+      summary: Create one managed webhook inventory record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIntegrationWebhookRequest'
+      responses:
+        '201':
+          description: Managed webhook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationWebhookMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Integration does not support managed webhooks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid webhook payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/webhooks/{webhookId}:
+    delete:
+      operationId: DeleteIntegrationWebhookCommand
+      tags: [Integrations]
+      summary: Delete one managed webhook inventory record
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+        - $ref: '#/components/parameters/WebhookIdPath'
+      responses:
+        '200':
+          description: Managed webhook deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationWebhookMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration or webhook id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/webhooks/{webhookId}:rotate-secret:
+    post:
+      operationId: RotateWebhookSecretCommand
+      tags: [Integrations]
+      summary: Rotate one managed webhook secret
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+        - $ref: '#/components/parameters/WebhookIdPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RotateIntegrationWebhookSecretRequest'
+      responses:
+        '200':
+          description: Webhook secret rotated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationWebhookMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration or webhook id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Secret rotation is not supported for this integration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/tokens:
+    get:
+      operationId: ListIntegrationTokensQuery
+      tags: [Integrations]
+      summary: List managed token inventory for one integration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      responses:
+        '200':
+          description: Managed token inventory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationTokensResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/tokens:refresh:
+    post:
+      operationId: RefreshIntegrationTokensCommand
+      tags: [Integrations]
+      summary: Refresh one integration token
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshIntegrationTokensRequest'
+      responses:
+        '200':
+          description: Managed token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationTokenMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: No refreshable token exists or token refresh is unsupported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/integrations/{integrationKey}/tokens/{tokenId}:
+    delete:
+      operationId: RevokeIntegrationTokenCommand
+      tags: [Integrations]
+      summary: Revoke one managed integration token
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/IntegrationKeyPath'
+        - $ref: '#/components/parameters/TokenIdPath'
+      responses:
+        '200':
+          description: Managed token revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationTokenMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or integrations write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Unknown integration or token id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -1389,6 +2057,63 @@ components:
         minimum: 1
         maximum: 100
         default: 25
+    IntegrationKeyPath:
+      in: path
+      name: integrationKey
+      required: true
+      schema:
+        type: string
+        maxLength: 64
+    WebhookIdPath:
+      in: path
+      name: webhookId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TokenIdPath:
+      in: path
+      name: tokenId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IntegrationCategoryFilter:
+      in: query
+      name: category
+      required: false
+      schema:
+        type: string
+        enum: [notifications, sms, payments, labs, identity]
+    IntegrationEnabledFilter:
+      in: query
+      name: enabled
+      required: false
+      schema:
+        type: boolean
+    IntegrationLogLevelFilter:
+      in: query
+      name: level
+      required: false
+      schema:
+        type: string
+        enum: [info, warning, error]
+    IntegrationLogEventFilter:
+      in: query
+      name: event
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    IntegrationLogLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
   schemas:
     ApiErrorResponse:
       type: object
@@ -2503,3 +3228,381 @@ components:
       properties:
         ok:
           type: boolean
+    IntegrationCapabilitySet:
+      type: object
+      required: [credentials, health, logs, webhooks, tokens, test_connection]
+      properties:
+        credentials:
+          type: boolean
+        health:
+          type: boolean
+        logs:
+          type: boolean
+        webhooks:
+          type: boolean
+        tokens:
+          type: boolean
+        test_connection:
+          type: boolean
+    IntegrationCredentialSummary:
+      type: object
+      required: [supported, configured, updated_at]
+      properties:
+        supported:
+          type: boolean
+        configured:
+          type: boolean
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    Integration:
+      type: object
+      required: [integration_key, name, category, enabled, available, feature_flag, capabilities, credentials, health, webhooks, tokens]
+      properties:
+        integration_key:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        enabled:
+          type: boolean
+        available:
+          type: boolean
+        feature_flag:
+          type: [string, 'null']
+        capabilities:
+          $ref: '#/components/schemas/IntegrationCapabilitySet'
+        credentials:
+          $ref: '#/components/schemas/IntegrationCredentialSummary'
+        health:
+          type: object
+          required: [status]
+          properties:
+            status:
+              type: string
+              enum: [healthy, degraded, failing, disabled]
+        webhooks:
+          type: object
+          required: [count]
+          properties:
+            count:
+              type: integer
+              minimum: 0
+        tokens:
+          type: object
+          required: [count]
+          properties:
+            count:
+              type: integer
+              minimum: 0
+    IntegrationsCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Integration'
+    IntegrationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Integration'
+    IntegrationMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [integration_enabled, integration_disabled]
+        data:
+          $ref: '#/components/schemas/Integration'
+    IntegrationCredentialField:
+      type: object
+      required: [key, label, secret, required, configured]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        secret:
+          type: boolean
+        required:
+          type: boolean
+        configured:
+          type: boolean
+    IntegrationCredentials:
+      type: object
+      required: [integration_key, source, supports_credentials, configured, fields, values, updated_at]
+      properties:
+        integration_key:
+          type: string
+        source:
+          type: string
+          enum: [tenant, none]
+        supports_credentials:
+          type: boolean
+        configured:
+          type: boolean
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationCredentialField'
+        values:
+          type: object
+          additionalProperties:
+            type: [string, 'null']
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    IntegrationCredentialsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/IntegrationCredentials'
+    IntegrationCredentialsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [integration_credentials_updated, integration_credentials_deleted]
+        data:
+          $ref: '#/components/schemas/IntegrationCredentials'
+    UpdateIntegrationCredentialsRequest:
+      type: object
+      required: [values]
+      properties:
+        values:
+          type: object
+          additionalProperties:
+            type: [string, 'null']
+    IntegrationHealthCheck:
+      type: object
+      required: [key, status, message]
+      properties:
+        key:
+          type: string
+        status:
+          type: string
+          enum: [pass, warn, fail]
+        message:
+          type: string
+    IntegrationHealth:
+      type: object
+      required: [integration_key, status, enabled, available, last_test_status, last_tested_at, checks]
+      properties:
+        integration_key:
+          type: string
+        status:
+          type: string
+          enum: [healthy, degraded, failing, disabled]
+        enabled:
+          type: boolean
+        available:
+          type: boolean
+        last_test_status:
+          type: [string, 'null']
+          enum: [healthy, degraded, failing, disabled, null]
+        last_tested_at:
+          type: [string, 'null']
+          format: date-time
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationHealthCheck'
+    IntegrationHealthResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/IntegrationHealth'
+    IntegrationHealthMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [integration_connection_tested]
+        data:
+          $ref: '#/components/schemas/IntegrationHealth'
+    IntegrationLog:
+      type: object
+      required: [id, integration_key, level, event, message, context, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        integration_key:
+          type: string
+        level:
+          type: string
+          enum: [info, warning, error]
+        event:
+          type: string
+        message:
+          type: string
+        context:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+    IntegrationLogsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationLog'
+    IntegrationWebhook:
+      type: object
+      required:
+        [id, integration_key, name, endpoint_url, auth_mode, status, secret_configured, rotate_supported, metadata, secret_last_rotated_at, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        integration_key:
+          type: string
+        name:
+          type: string
+        endpoint_url:
+          type: string
+          format: uri
+        auth_mode:
+          type: string
+        status:
+          type: string
+          enum: [active, paused]
+        secret_configured:
+          type: boolean
+        rotate_supported:
+          type: boolean
+        secret:
+          type: [string, 'null']
+          description: Returned only at create and rotate time.
+        metadata:
+          type: object
+          additionalProperties: true
+        secret_last_rotated_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    IntegrationWebhooksResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationWebhook'
+    CreateIntegrationWebhookRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 64
+        status:
+          type: string
+          enum: [active, paused]
+        secret:
+          type: [string, 'null']
+          maxLength: 255
+        metadata:
+          type: object
+          additionalProperties: true
+    RotateIntegrationWebhookSecretRequest:
+      type: object
+      properties:
+        secret:
+          type: [string, 'null']
+          maxLength: 255
+    IntegrationWebhookMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [integration_webhook_created, integration_webhook_deleted, integration_webhook_secret_rotated]
+        data:
+          $ref: '#/components/schemas/IntegrationWebhook'
+    IntegrationToken:
+      type: object
+      required:
+        [id, integration_key, label, status, token_type, scopes, access_token_preview, refresh_token_preview, access_token_expires_at, refresh_token_expires_at, last_refreshed_at, revoked_at, metadata, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        integration_key:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+          enum: [active, revoked, expired]
+        token_type:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        access_token_preview:
+          type: [string, 'null']
+        refresh_token_preview:
+          type: [string, 'null']
+        access_token_expires_at:
+          type: [string, 'null']
+          format: date-time
+        refresh_token_expires_at:
+          type: [string, 'null']
+          format: date-time
+        last_refreshed_at:
+          type: [string, 'null']
+          format: date-time
+        revoked_at:
+          type: [string, 'null']
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    IntegrationTokensResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationToken'
+    RefreshIntegrationTokensRequest:
+      type: object
+      properties:
+        token_id:
+          type: [string, 'null']
+          format: uuid
+    IntegrationTokenMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [integration_token_refreshed, integration_token_revoked]
+        data:
+          $ref: '#/components/schemas/IntegrationToken'

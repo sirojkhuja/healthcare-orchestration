@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-12`
 
-Overall Progress: `85% (60/70 tasks completed)`
+Overall Progress: `87% (61/70 tasks completed)`
 
 Active Task: `None`
 
@@ -113,7 +113,7 @@ Active Task: `None`
 | T058 | Done | Implement SMS routing and failover using Eskiz, Play Mobile, and TextUp. | T057, T019 | SMS strategy, provider adapters, routing policy. | Contract tests prove routing and failover behavior. |
 | T059 | Done | Implement Telegram bot broadcast, inbound webhook handling, and bot sync flows. | T057, T019 | Telegram adapter, webhook processing, broadcast command. | Integration tests cover inbound and outbound Telegram flows. |
 | T060 | Done | Implement email send flows and email event tracking. | T057, T019 | Email adapter, send endpoint, email event query model. | Delivery and event-mapping tests pass. |
-| T061 | Todo | Implement integrations hub management for credentials, health, logs, webhooks, and tokens. | T010, T014, T019 | Integration registry endpoints, secure credential store, token refresh flows. | Security, audit, and adapter tests pass. |
+| T061 | Done | Implement integrations hub management for credentials, health, logs, webhooks, and tokens. | T010, T014, T019 | Integration registry endpoints, secure credential store, token refresh flows. | Security, audit, and adapter tests pass. |
 | T062 | Todo | Implement optional MyID and E-IMZO plug-ins behind feature flags. | T061 | Optional identity adapters, webhook flows, feature flags. | Feature-flag and contract tests pass. |
 
 ## Phase 8: Compliance, Search, and Operations
