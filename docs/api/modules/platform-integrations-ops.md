@@ -65,6 +65,12 @@
 - `POST /integrations/eskiz:send`, `POST /integrations/playmobile:send`, and `POST /integrations/textup:send` are provider-specific diagnostics that force one provider, return the single-provider result, and do not create a notification row.
 - The SMS delivery consumer processes only `notification.queued|notification.retried` records whose channel is `sms`, advances them to `sent|failed`, and counts one `attempts` increment per provider attempt.
 - SMS delivery writes audit actions `notifications.sent|notifications.failed` and publishes outbox events `notification.sent|notification.failed`, including the ordered delivery-attempt list.
+- `GET /notification-providers/email` returns tenant-scoped sender settings with `enabled`, `provider_key`, `from_address`, `from_name`, and optional reply-to fields.
+- `PUT /notification-providers/email` fully replaces the tenant email sender settings. Transport credentials remain config-backed until `T061`.
+- `POST /notifications:test/email` is a tenant-scoped diagnostic route. It uses the configured email adapter directly, returns `notification_test_email_sent|notification_test_email_failed`, and does not create notification or email-event rows.
+- queued or retried email notifications are consumed from `medflow.notifications.v1`, use one delivery attempt per send, transition `queued -> sent|failed`, and append one email-event row per outcome.
+- `POST /email:send` sends one transactional email directly without creating a notification row and always appends an email-event row with `source = direct`.
+- `GET /email/events` returns actual email delivery outcomes only. Diagnostic sends are excluded. Supported filters are `q`, `source`, `event_type`, `notification_id`, `created_from`, `created_to`, and `limit`.
 - `GET /notification-providers/telegram` returns tenant-scoped Telegram settings plus the last synced bot snapshot.
 - `PUT /notification-providers/telegram` replaces tenant-scoped Telegram settings: `enabled`, `parse_mode`, `broadcast_chat_ids[]`, and `support_chat_ids[]`.
 - Telegram chat ids may not be assigned to multiple tenants because webhook tenant resolution must remain deterministic.

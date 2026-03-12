@@ -274,6 +274,7 @@
 - `T057` establishes queue-first notification dispatch and does not call external providers directly
 - notification records snapshot rendered content and recipient payload at queue time
 - `T058` delivers SMS notifications by consuming `notification.queued|notification.retried` and attempting providers in tenant-configured failover order
+- `T060` delivers email notifications by consuming `notification.queued|notification.retried`, records one delivery attempt per send, and appends email-event history for both queued and direct email flows
 - SMS delivery attempts increment `attempts` once per provider call, not once per manual retry request
 - external provider tasks must reuse this lifecycle instead of introducing a second delivery model
 

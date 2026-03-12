@@ -2,8 +2,10 @@
 
 namespace App\Modules\Notifications\Presentation\Http\Controllers;
 
+use App\Modules\Notifications\Application\Commands\SendTestEmailCommand;
 use App\Modules\Notifications\Application\Commands\SendTestSmsCommand;
 use App\Modules\Notifications\Application\Commands\SendTestTelegramCommand;
+use App\Modules\Notifications\Application\Handlers\SendTestEmailCommandHandler;
 use App\Modules\Notifications\Application\Handlers\SendTestSmsCommandHandler;
 use App\Modules\Notifications\Application\Handlers\SendTestTelegramCommandHandler;
 use Illuminate\Http\JsonResponse;
@@ -11,6 +13,23 @@ use Illuminate\Http\Request;
 
 final class NotificationChannelTestController
 {
+    public function sendEmail(Request $request, SendTestEmailCommandHandler $handler): JsonResponse
+    {
+        $validated = $request->validate([
+            'recipient' => ['required', 'array'],
+            'subject' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:20000'],
+            'metadata' => ['sometimes', 'nullable', 'array'],
+        ]);
+        /** @var array<string, mixed> $validated */
+        $data = $handler->handle(new SendTestEmailCommand($validated));
+
+        return response()->json([
+            'status' => $this->isSent($data['result'] ?? null) ? 'notification_test_email_sent' : 'notification_test_email_failed',
+            'data' => $data,
+        ]);
+    }
+
     public function sendSms(Request $request, SendTestSmsCommandHandler $handler): JsonResponse
     {
         $validated = $request->validate([

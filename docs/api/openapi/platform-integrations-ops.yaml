@@ -542,6 +542,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notifications:test/email:
+    post:
+      operationId: SendTestEmailCommand
+      tags: [Notifications]
+      summary: Send a diagnostic email through the configured tenant sender
+      description: Validates the email payload, uses the tenant email provider settings, and sends directly through the configured adapter without creating notification or email-event rows.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+            example:
+              recipient:
+                email: patient.email+test@openai.com
+                name: Amina Karimova
+              subject: Diagnostic subject
+              body: Diagnostic body
+      responses:
+        '200':
+          description: Diagnostic email result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailDiagnosticSendResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Email provider is disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid email recipient or payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/notifications:test/telegram:
     post:
       operationId: SendTestTelegramCommand
@@ -592,6 +646,82 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
         '422':
           description: Invalid Telegram recipient or payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/notification-providers/email:
+    get:
+      operationId: GetEmailProviderQuery
+      tags: [Notifications]
+      summary: Get tenant email provider settings
+      description: Returns the tenant email sender settings used for direct and queued transactional email delivery.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Email provider settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailProviderSettingsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: SetEmailProviderCommand
+      tags: [Notifications]
+      summary: Replace tenant email provider settings
+      description: Replaces the tenant email sender configuration. Transport credentials remain application-configured until the integrations hub task.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmailProviderSettingsRequest'
+            example:
+              enabled: true
+              from_address: noreply@openai.com
+              from_name: MedFlow Notifications
+              reply_to_address: support@openai.com
+              reply_to_name: MedFlow Support
+      responses:
+        '200':
+          description: Email provider settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailProviderSettingsMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid sender or reply-to payload
           content:
             application/json:
               schema:
@@ -880,6 +1010,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/email:send:
+    post:
+      operationId: SendEmailCommand
+      tags: [Notifications]
+      summary: Send one direct transactional email
+      description: Sends a tenant-scoped transactional email directly through the configured adapter without creating a notification row and appends one email-event record with `source = direct`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+            example:
+              recipient:
+                email: patient.direct@openai.com
+                name: Malika Rustamova
+              subject: Invoice available
+              body: Your invoice is ready.
+              metadata:
+                object_type: invoice
+                object_id: INV-1001
+      responses:
+        '200':
+          description: Direct email result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailDirectSendResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid email recipient or payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/email/events:
+    get:
+      operationId: ListEmailEventsQuery
+      tags: [Notifications]
+      summary: List tracked email delivery outcomes in the current tenant
+      description: Returns append-only email delivery history for actual direct and notification-linked sends. Diagnostic sends are excluded.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/EmailEventSearchQuery'
+        - $ref: '#/components/parameters/EmailEventSourceFilter'
+        - $ref: '#/components/parameters/EmailEventTypeFilter'
+        - $ref: '#/components/parameters/EmailEventNotificationIdFilter'
+        - $ref: '#/components/parameters/EmailEventCreatedFrom'
+        - $ref: '#/components/parameters/EmailEventCreatedTo'
+        - $ref: '#/components/parameters/EmailEventLimit'
+      responses:
+        '200':
+          description: Email event directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailEventsResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or notification read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/integrations/eskiz:send:
     post:
       operationId: SendEskizSmsCommand
@@ -1113,6 +1330,57 @@ components:
         type: string
         format: date
     NotificationLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    EmailEventSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    EmailEventSourceFilter:
+      in: query
+      name: source
+      required: false
+      schema:
+        type: string
+        enum: [notification, direct]
+    EmailEventTypeFilter:
+      in: query
+      name: event_type
+      required: false
+      schema:
+        type: string
+        enum: [sent, failed]
+    EmailEventNotificationIdFilter:
+      in: query
+      name: notification_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    EmailEventCreatedFrom:
+      in: query
+      name: created_from
+      required: false
+      schema:
+        type: string
+        format: date
+    EmailEventCreatedTo:
+      in: query
+      name: created_to
+      required: false
+      schema:
+        type: string
+        format: date
+    EmailEventLimit:
       in: query
       name: limit
       required: false
@@ -1584,6 +1852,68 @@ components:
           enum: [sms_providers_updated]
         data:
           $ref: '#/components/schemas/SmsRoutingSettings'
+    EmailProviderSettings:
+      type: object
+      required:
+        [tenant_id, enabled, provider_key, from_address, from_name, reply_to_address, reply_to_name, created_at, updated_at]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        enabled:
+          type: boolean
+        provider_key:
+          type: string
+          enum: [email]
+        from_address:
+          type: string
+          format: email
+        from_name:
+          type: string
+        reply_to_address:
+          type: [string, 'null']
+          format: email
+        reply_to_name:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    EmailProviderSettingsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/EmailProviderSettings'
+    EmailProviderSettingsMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [email_provider_updated]
+        data:
+          $ref: '#/components/schemas/EmailProviderSettings'
+    UpdateEmailProviderSettingsRequest:
+      type: object
+      required: [enabled, from_address, from_name]
+      properties:
+        enabled:
+          type: boolean
+        from_address:
+          type: string
+          format: email
+        from_name:
+          type: string
+          maxLength: 191
+        reply_to_address:
+          type: [string, 'null']
+          format: email
+        reply_to_name:
+          type: [string, 'null']
+          maxLength: 191
     TelegramProviderSettings:
       type: object
       required: [provider_key, enabled, parse_mode, broadcast_chat_ids, support_chat_ids, sync, updated_at]
@@ -1694,6 +2024,30 @@ components:
         message_type:
           type: [string, 'null']
           enum: [otp, reminder, transactional, bulk, null]
+        metadata:
+          type:
+            - object
+            - 'null'
+          additionalProperties: true
+    SendEmailRequest:
+      type: object
+      required: [recipient, subject, body]
+      properties:
+        recipient:
+          type: object
+          required: [email]
+          properties:
+            email:
+              type: string
+              format: email
+            name:
+              type: [string, 'null']
+        subject:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+          maxLength: 20000
         metadata:
           type:
             - object
@@ -1817,6 +2171,176 @@ components:
           enum: [sms_sent, sms_failed]
         data:
           $ref: '#/components/schemas/SmsDiagnosticPayload'
+    EmailSendResult:
+      type: object
+      required: [provider, recipient, subject, status, error, occurred_at]
+      properties:
+        provider:
+          type: object
+          required: [key, message_id]
+          properties:
+            key:
+              type: string
+              enum: [email]
+            message_id:
+              type: [string, 'null']
+        recipient:
+          type: object
+          required: [email, name]
+          properties:
+            email:
+              type: string
+              format: email
+            name:
+              type: [string, 'null']
+        subject:
+          type: string
+        status:
+          type: string
+          enum: [sent, failed]
+        error:
+          type:
+            - object
+            - 'null'
+          properties:
+            code:
+              type: [string, 'null']
+            message:
+              type: [string, 'null']
+        occurred_at:
+          type: string
+          format: date-time
+    EmailDiagnosticPayload:
+      type: object
+      required: [channel, recipient, subject, body, result]
+      properties:
+        channel:
+          type: string
+          enum: [email]
+        recipient:
+          type: object
+          required: [email]
+          properties:
+            email:
+              type: string
+              format: email
+            name:
+              type: [string, 'null']
+        subject:
+          type: string
+        body:
+          type: string
+        result:
+          $ref: '#/components/schemas/EmailSendResult'
+    EmailDiagnosticSendResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [notification_test_email_sent, notification_test_email_failed]
+        data:
+          $ref: '#/components/schemas/EmailDiagnosticPayload'
+    EmailEvent:
+      type: object
+      required: [id, tenant_id, notification_id, source, event_type, recipient, subject, provider, error, metadata, occurred_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        notification_id:
+          type: [string, 'null']
+          format: uuid
+        source:
+          type: string
+          enum: [notification, direct]
+        event_type:
+          type: string
+          enum: [sent, failed]
+        recipient:
+          type: object
+          required: [email, name]
+          properties:
+            email:
+              type: string
+              format: email
+            name:
+              type: [string, 'null']
+        subject:
+          type: string
+        provider:
+          type: object
+          required: [key, message_id]
+          properties:
+            key:
+              type: string
+              enum: [email]
+            message_id:
+              type: [string, 'null']
+        error:
+          type:
+            - object
+            - 'null'
+          properties:
+            code:
+              type: [string, 'null']
+            message:
+              type: [string, 'null']
+        metadata:
+          type: object
+          additionalProperties: true
+        occurred_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    EmailEventsResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailEvent'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    EmailDirectSendResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [email_sent, email_failed]
+        data:
+          type: object
+          required: [recipient, subject, body, result, event]
+          properties:
+            recipient:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: [string, 'null']
+            subject:
+              type: string
+            body:
+              type: string
+            result:
+              $ref: '#/components/schemas/EmailSendResult'
+            event:
+              $ref: '#/components/schemas/EmailEvent'
     TelegramSendResult:
       type: object
       required: [provider, chat_id, status, message_id, error, occurred_at]

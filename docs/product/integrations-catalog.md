@@ -84,6 +84,10 @@ SMS delivery uses a strategy interface with tenant-specific routing and failover
 - transactional delivery
 - versioned templates
 - event tracking for delivery outcomes
+- tenant-scoped sender settings with explicit enable and reply-to fields
+- queue-consumer delivery for template-backed notification rows
+- direct authenticated send flow for operational emails without creating notification rows
+- append-only email-event history for `direct` and `notification` sources
 
 ## Shared Requirements for Every Integration
 

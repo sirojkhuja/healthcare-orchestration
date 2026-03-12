@@ -5,6 +5,15 @@ use App\Modules\Notifications\Infrastructure\Integrations\PlayMobileSmsProvider;
 use App\Modules\Notifications\Infrastructure\Integrations\TextUpSmsProvider;
 
 return [
+    'email' => [
+        'provider_key' => env('NOTIFICATIONS_EMAIL_PROVIDER_KEY', 'email'),
+        'mailer' => env('NOTIFICATIONS_EMAIL_MAILER', env('MAIL_MAILER', 'log')),
+        'enabled_by_default' => filter_var(env('NOTIFICATIONS_EMAIL_ENABLED_DEFAULT', false), FILTER_VALIDATE_BOOL),
+        'default_from_address' => env('NOTIFICATIONS_EMAIL_FROM_ADDRESS', env('MAIL_FROM_ADDRESS', 'noreply@medflow.local')),
+        'default_from_name' => env('NOTIFICATIONS_EMAIL_FROM_NAME', env('MAIL_FROM_NAME', 'MedFlow')),
+        'default_reply_to_address' => env('NOTIFICATIONS_EMAIL_REPLY_TO_ADDRESS'),
+        'default_reply_to_name' => env('NOTIFICATIONS_EMAIL_REPLY_TO_NAME'),
+    ],
     'sms' => [
         'message_types' => [
             'otp',

@@ -37,8 +37,10 @@ use App\Modules\Lab\Presentation\Http\Controllers\LabOrderWorkflowController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabResultController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabTestController;
 use App\Modules\Lab\Presentation\Http\Controllers\LabWebhookController;
+use App\Modules\Notifications\Presentation\Http\Controllers\EmailController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationChannelTestController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationController;
+use App\Modules\Notifications\Presentation\Http\Controllers\NotificationEmailProviderController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationSmsProviderController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTelegramProviderController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTemplateController;
@@ -329,10 +331,13 @@ Route::prefix('v1')->group(function (): void {
                 Route::get('/templates/{templateId}', [NotificationTemplateController::class, 'show'])->name('templates.show');
                 Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
                 Route::get('/notifications/{notificationId}', [NotificationController::class, 'show'])->name('notifications.show');
+                Route::get('/notification-providers/email', [NotificationEmailProviderController::class, 'show'])
+                    ->name('notification-providers.email.show');
                 Route::get('/notification-providers/sms', [NotificationSmsProviderController::class, 'list'])
                     ->name('notification-providers.sms.list');
                 Route::get('/notification-providers/telegram', [NotificationTelegramProviderController::class, 'show'])
                     ->name('notification-providers.telegram.show');
+                Route::get('/email/events', [EmailController::class, 'events'])->name('email.events');
             });
             Route::middleware('permission:providers.manage')->group(function (): void {
                 Route::post('/providers', [ProviderController::class, 'create'])->name('providers.create');
@@ -668,15 +673,24 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/notifications:test/sms', [NotificationChannelTestController::class, 'sendSms'])
                     ->middleware('idempotency:notifications.test.sms')
                     ->name('notifications.test.sms');
+                Route::post('/notifications:test/email', [NotificationChannelTestController::class, 'sendEmail'])
+                    ->middleware('idempotency:notifications.test.email')
+                    ->name('notifications.test.email');
                 Route::post('/notifications:test/telegram', [NotificationChannelTestController::class, 'sendTelegram'])
                     ->middleware('idempotency:notifications.test.telegram')
                     ->name('notifications.test.telegram');
+                Route::put('/notification-providers/email', [NotificationEmailProviderController::class, 'update'])
+                    ->middleware('idempotency:notification-providers.email.update')
+                    ->name('notification-providers.email.update');
                 Route::put('/notification-providers/sms', [NotificationSmsProviderController::class, 'update'])
                     ->middleware('idempotency:notification-providers.sms.update')
                     ->name('notification-providers.sms.update');
                 Route::put('/notification-providers/telegram', [NotificationTelegramProviderController::class, 'update'])
                     ->middleware('idempotency:notification-providers.telegram.update')
                     ->name('notification-providers.telegram.update');
+                Route::post('/email:send', [EmailController::class, 'send'])
+                    ->middleware('idempotency:email.send')
+                    ->name('email.send');
                 Route::post('/telegram/bot:broadcast', [TelegramBroadcastController::class, 'broadcast'])
                     ->middleware('idempotency:telegram.bot.broadcast')
                     ->name('telegram.bot.broadcast');

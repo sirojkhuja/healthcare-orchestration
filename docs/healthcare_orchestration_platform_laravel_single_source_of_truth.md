@@ -1453,8 +1453,17 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - `POST /telegram/bot:sync` reconciles `getMe`, `getWebhookInfo`, and the expected webhook URL `APP_URL + /api/v1/webhooks/telegram`
 
 ### Email
+- GET `/notification-providers/email` → `GetEmailProviderQuery` → Notifications
+- PUT `/notification-providers/email` → `SetEmailProviderCommand` → Notifications
+- POST `/notifications:test/email` → `SendTestEmailCommand` → Notifications
 - POST `/email:send` → `SendEmailCommand` → Notifications
 - GET `/email/events` → `ListEmailEventsQuery` → Notifications
+- GET `/notification-providers/email` returns tenant-scoped sender settings with `enabled`, `provider_key`, `from_address`, `from_name`, and optional reply-to fields
+- PUT `/notification-providers/email` fully replaces the tenant sender settings; transport credentials remain configuration-backed until the integrations hub task
+- POST `/notifications:test/email` uses the configured adapter directly, returns `notification_test_email_sent|notification_test_email_failed`, and does not persist notification or email-event rows
+- queued or retried email notifications are consumed from `medflow.notifications.v1`, use one delivery attempt per send, transition `queued -> sent|failed`, and append one email-event record per outcome
+- POST `/email:send` sends one transactional email directly without creating a notification row and always appends an email-event row with `source = direct`
+- GET `/email/events` returns append-only delivery outcomes for actual sends and supports `q`, `source`, `event_type`, `notification_id`, `created_from`, `created_to`, and `limit`
 
 ---
 
