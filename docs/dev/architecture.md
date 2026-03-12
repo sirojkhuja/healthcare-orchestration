@@ -137,3 +137,16 @@ docs/
 - State transitions must be explicit action use cases.
 - Domain models remain pure and test-friendly.
 - Shared abstractions must not become a dumping ground for module behavior.
+
+## Automated Architecture Checks
+
+Release-blocking architecture checks run through `bash scripts/architecture/check.sh` and are included in `make harden` and `make verify`.
+
+The automated contract currently enforces:
+
+- domain code stays free of Laravel and lower-layer imports
+- application code does not import presentation or infrastructure classes
+- presentation code does not import module infrastructure classes
+- application PHP files stay within the `400` line hard limit unless explicitly listed in the reviewed exception register
+
+The reviewed exception register lives in [governance.php](/var/www/personal/said-team/portfolio/healthcare-orchestration/config/governance.php). If an exempted file drops under the hard limit, the architecture suite fails until the exception entry is removed.

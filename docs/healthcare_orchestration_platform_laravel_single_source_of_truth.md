@@ -634,6 +634,7 @@ Standard error:
 - PII key rotation and re-encryption operations must create append-only compliance reports and audit records
 - Audit logging mandatory
 - Security event tracking mandatory for authentication, MFA, and other sensitive IAM actions
+- runtime dependency audit and tracked-secret scan before merge and before release
 
 ---
 
@@ -644,11 +645,13 @@ Standard error:
 - unit tests
 - feature tests
 - integration tests (optional on main)
+- performance smoke baselines
 - generated OpenAPI bundle build
 - OpenAPI validation
 - official OpenAPI `3.1.1` schema validation for the generated bundle
 - coverage thresholds
 - architecture rules (layering, file size)
+- security audit and tracked-secret scan
 
 ### 16.2 Releases
 - semantic versioning
@@ -696,6 +699,7 @@ OpenAPI work in this repository means updating the authoring fragments and regen
 - [ ] All CI gates pass
 - [ ] No file > 400 lines
 - [ ] No domain imports Laravel
+- [ ] Reviewed architecture exceptions updated when needed
 - [ ] OpenAPI updated
 - [ ] Tests added
 - [ ] Observability: logs/metrics/traces updated if needed

@@ -12,7 +12,7 @@ use App\Modules\IdentityAccess\Application\Handlers\RevokeSessionCommandHandler;
 use App\Modules\IdentityAccess\Application\Handlers\UpdateIpAllowlistCommandHandler;
 use App\Modules\IdentityAccess\Application\Queries\GetIpAllowlistQuery;
 use App\Modules\IdentityAccess\Application\Queries\ListSessionsQuery;
-use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
+use App\Shared\Domain\Networking\CidrMatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

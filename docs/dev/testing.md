@@ -45,6 +45,16 @@
 - request and response example drift detection
 - provider adapter request and response mapping
 
+### Architecture Tests
+
+- clean layer-boundary enforcement
+- application file-size governance with reviewed exception tracking
+
+### Performance Tests
+
+- release-blocking latency baselines for operational endpoints
+- smoke coverage for public, authenticated tenant-scoped, and internal scrape paths
+
 ## Test Data Rules
 
 - Use builders and mother objects for domain setup.
@@ -86,3 +96,5 @@
 No feature is complete until all required test layers for that feature pass locally and in CI.
 
 OpenAPI-affecting work is not complete until the generated bundle, official schema validation, and the route/spec contract suite all pass together.
+
+Hardening work is not complete until `bash scripts/architecture/check.sh`, `bash scripts/performance/check.sh`, and `bash scripts/security/check.sh` all pass.

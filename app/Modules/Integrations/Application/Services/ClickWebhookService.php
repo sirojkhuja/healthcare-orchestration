@@ -3,7 +3,7 @@
 namespace App\Modules\Integrations\Application\Services;
 
 use App\Modules\Billing\Application\Contracts\PaymentGatewayRegistry;
-use App\Modules\Billing\Infrastructure\Integrations\ClickPaymentGateway;
+use App\Modules\Billing\Application\Contracts\ServiceIdAwareWebhookPaymentGateway;
 use App\Modules\Integrations\Application\Data\ClickWebhookResponseData;
 use App\Modules\Integrations\Application\Data\ClickWebhookVerificationData;
 use App\Modules\Integrations\Application\Exceptions\ClickWebhookException;
@@ -130,11 +130,11 @@ final class ClickWebhookService
         return $response;
     }
 
-    private function gateway(): ClickPaymentGateway
+    private function gateway(): ServiceIdAwareWebhookPaymentGateway
     {
         $gateway = $this->paymentGatewayRegistry->resolve('click');
 
-        if (! $gateway instanceof ClickPaymentGateway) {
+        if (! $gateway instanceof ServiceIdAwareWebhookPaymentGateway) {
             throw new \LogicException('The configured Click payment gateway is invalid.');
         }
 

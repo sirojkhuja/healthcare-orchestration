@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\IdentityAccess\Infrastructure\Security;
+namespace App\Shared\Domain\Networking;
 
 final class CidrMatcher
 {

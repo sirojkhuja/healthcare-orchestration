@@ -20,8 +20,9 @@ The split documents in this repository are derived from that source and exist to
 10. Read [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md) before touching protected commands, webhook deduplication, or replay behavior.
 11. Read [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md) before touching request metadata, jobs, or emitted events.
 12. Read [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md) before implementing regulated data changes or retention logic.
-13. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
-14. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+13. Read [hardening.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/hardening.md) before touching architecture gates, performance baselines, or release-blocking security checks.
+14. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
+15. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
 
 ## Documentation Areas
 
@@ -51,6 +52,7 @@ The split documents in this repository are derived from that source and exist to
 - [idempotency.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/idempotency.md)
 - [request-context.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/request-context.md)
 - [audit.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/audit.md)
+- [hardening.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/hardening.md)
 - [coding-standards.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/coding-standards.md)
 - [testing.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/testing.md)
 - [security.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/security.md)
@@ -91,7 +93,7 @@ Author the six module fragments directly. The bundled `openapi.yaml` and `openap
 - [008-kafka-client-selection.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/008-kafka-client-selection.md)
 - [009-jwt-api-authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/009-jwt-api-authentication.md)
 
-Later ADRs continue in numerical order under [docs/adr](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr), including [056-openapi-bundle-and-contract-governance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/056-openapi-bundle-and-contract-governance.md).
+Later ADRs continue in numerical order under [docs/adr](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr), including [056-openapi-bundle-and-contract-governance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/056-openapi-bundle-and-contract-governance.md) and [057-hardening-baselines-and-governance-checks.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/057-hardening-baselines-and-governance-checks.md).
 
 ## Maintenance Rule
 

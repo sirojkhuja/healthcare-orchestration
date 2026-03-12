@@ -4,7 +4,7 @@ namespace App\Modules\IdentityAccess\Infrastructure\Security\Persistence;
 
 use App\Modules\IdentityAccess\Application\Contracts\TenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Application\Data\TenantIpAllowlistEntryData;
-use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
+use App\Shared\Domain\Networking\CidrMatcher;
 
 final class DatabaseTenantIpAllowlistRepository implements TenantIpAllowlistRepository
 {

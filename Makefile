@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: bootstrap format lint analyse test build verify docs-check install-hooks compose-config
+.PHONY: bootstrap format lint analyse test build verify harden docs-check install-hooks compose-config
 
 bootstrap:
 	@if [[ -f composer.json ]]; then \
@@ -51,12 +51,26 @@ build:
 		bash scripts/quality-gate.sh --docs-only; \
 	fi
 
+harden:
+	@if [[ -f composer.json ]]; then \
+		bash scripts/architecture/check.sh; \
+		bash scripts/performance/check.sh; \
+		bash scripts/security/check.sh; \
+	else \
+		echo "No composer.json yet; running documentation checks only."; \
+		bash scripts/check-tasklist.sh; \
+		bash scripts/quality-gate.sh --docs-only; \
+	fi
+
 verify:
 	@if [[ -f composer.json ]]; then \
 		bash scripts/node.sh run openapi:validate; \
 		bash scripts/openapi/validate-schema.sh; \
 		bash scripts/composer.sh run verify; \
 		bash scripts/node.sh run build; \
+		bash scripts/architecture/check.sh; \
+		bash scripts/performance/check.sh; \
+		bash scripts/security/check.sh; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
 		bash scripts/check-tasklist.sh; \

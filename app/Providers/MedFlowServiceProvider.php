@@ -77,7 +77,6 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\Persistence\Database
 use App\Modules\IdentityAccess\Infrastructure\Devices\Persistence\DatabaseDeviceRepository;
 use App\Modules\IdentityAccess\Infrastructure\Profiles\Persistence\DatabaseProfileRepository;
 use App\Modules\IdentityAccess\Infrastructure\Profiles\Storage\AttachmentBackedProfileAvatarStore;
-use App\Modules\IdentityAccess\Infrastructure\Security\CidrMatcher;
 use App\Modules\IdentityAccess\Infrastructure\Security\Persistence\DatabaseTenantIpAllowlistRepository;
 use App\Modules\IdentityAccess\Infrastructure\Users\Persistence\DatabaseManagedUserRepository;
 use App\Modules\Insurance\Application\Contracts\ClaimAttachmentStore;
@@ -207,6 +206,7 @@ use App\Shared\Application\Contracts\TenantContext;
 use App\Shared\Application\Services\ExponentialBackoffRetryStrategy;
 use App\Shared\Application\Services\IdempotentKafkaConsumerBus;
 use App\Shared\Application\Services\OutboxRelay;
+use App\Shared\Domain\Networking\CidrMatcher;
 use App\Shared\Infrastructure\Cache\TenantCacheKeyBuilder;
 use App\Shared\Infrastructure\Cache\VersionedTenantCache;
 use App\Shared\Infrastructure\Context\ContextBackedRequestMetadataContext;

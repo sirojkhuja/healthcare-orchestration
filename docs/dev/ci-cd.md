@@ -26,6 +26,7 @@ Future Laravel bootstrap work must provide these repository commands:
 - `make test`
 - `make build`
 - `make verify`
+- `make harden`
 
 Each command delegates through Docker Compose and Composer scripts in the current foundation setup, and the interface must stay stable even if the internals change later.
 
@@ -38,7 +39,7 @@ OpenAPI contract work also uses these repository-level commands:
 ## Current Workflow Files
 
 - `.github/workflows/governance.yml` validates tasklist and governance artifacts.
-- `.github/workflows/ci.yml` validates Docker Compose, runs `make bootstrap`, then runs lint, analysis, tests, build, and explicit OpenAPI validation steps through the stable repository commands.
+- `.github/workflows/ci.yml` validates Docker Compose, runs `make bootstrap`, then runs lint, analysis, tests, build, explicit OpenAPI validation, and hardening checks through the stable repository commands.
 
 OpenAPI validation in CI must include:
 
@@ -46,6 +47,12 @@ OpenAPI validation in CI must include:
 - `npm run openapi:validate`
 - `bash scripts/openapi/validate-schema.sh`
 - the route/spec parity contract test inside the PHP test suite
+
+Hardening validation in CI must include:
+
+- `bash scripts/architecture/check.sh`
+- `bash scripts/performance/check.sh`
+- `bash scripts/security/check.sh`
 
 Observability validation in the current repository must include:
 

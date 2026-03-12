@@ -2,14 +2,14 @@
 
 namespace App\Modules\Billing\Infrastructure\Integrations;
 
-use App\Modules\Billing\Application\Contracts\PaymentGateway;
+use App\Modules\Billing\Application\Contracts\ServiceIdAwareWebhookPaymentGateway;
 use App\Modules\Billing\Application\Data\PaymentData;
 use App\Modules\Billing\Application\Data\PaymentGatewayInitiationRequestData;
 use App\Modules\Billing\Application\Data\PaymentGatewaySnapshotData;
 use Carbon\CarbonImmutable;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
-final class UzumPaymentGateway implements PaymentGateway
+final class UzumPaymentGateway implements ServiceIdAwareWebhookPaymentGateway
 {
     public function __construct(
         private readonly string $providerKey = 'uzum',
@@ -26,6 +26,7 @@ final class UzumPaymentGateway implements PaymentGateway
         throw new ConflictHttpException('Uzum payments are synchronized through the Uzum Merchant API webhook flow and cannot be canceled from this route in this phase.');
     }
 
+    #[\Override]
     public function configuredServiceId(): string
     {
         return trim($this->serviceId);

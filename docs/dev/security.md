@@ -55,3 +55,16 @@
 - Never log raw secrets, tokens, or highly sensitive payloads.
 - Never add debug routes or hidden admin behavior without documentation and gating.
 - Run security checks before merging and before release.
+
+## Automated Security Checks
+
+`bash scripts/security/check.sh` is the release-blocking security entrypoint and is included in `make harden` and `make verify`.
+
+It currently runs:
+
+- Composer runtime dependency audit against `composer.lock`
+- npm production lockfile audit
+- tracked-file secret scanning for private keys and high-risk token formats
+- tracked environment-file review that allows only `.env.example` and `.env.testing`
+
+Composer abandoned-package notices are manual review items. Actual security advisories fail the gate.

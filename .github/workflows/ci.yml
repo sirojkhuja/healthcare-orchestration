@@ -43,3 +43,6 @@ jobs:
 
       - name: Run official OpenAPI schema validation
         run: bash scripts/openapi/validate-schema.sh
+
+      - name: Run hardening checks
+        run: make harden

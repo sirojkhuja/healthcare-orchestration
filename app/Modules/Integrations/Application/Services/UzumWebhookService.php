@@ -3,7 +3,7 @@
 namespace App\Modules\Integrations\Application\Services;
 
 use App\Modules\Billing\Application\Contracts\PaymentGatewayRegistry;
-use App\Modules\Billing\Infrastructure\Integrations\UzumPaymentGateway;
+use App\Modules\Billing\Application\Contracts\ServiceIdAwareWebhookPaymentGateway;
 use App\Modules\Integrations\Application\Data\UzumWebhookResponseData;
 use App\Modules\Integrations\Application\Data\UzumWebhookVerificationData;
 use App\Modules\Integrations\Application\Exceptions\UzumWebhookException;
@@ -158,11 +158,11 @@ final class UzumWebhookService
         ];
     }
 
-    private function gateway(): UzumPaymentGateway
+    private function gateway(): ServiceIdAwareWebhookPaymentGateway
     {
         $gateway = $this->paymentGatewayRegistry->resolve('uzum');
 
-        if (! $gateway instanceof UzumPaymentGateway) {
+        if (! $gateway instanceof ServiceIdAwareWebhookPaymentGateway) {
             throw new \LogicException('The configured Uzum payment gateway is invalid.');
         }
 
