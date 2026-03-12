@@ -92,6 +92,25 @@ Audit and compliance route inventory includes the tenant-scoped governance surfa
 - `/compliance/pii:re-encrypt`
 - `/compliance/reports`
 
+Reference data, shared search, and reporting route inventory includes:
+
+- `/reference/currencies`
+- `/reference/countries`
+- `/reference/languages`
+- `/reference/diagnosis-codes`
+- `/reference/procedure-codes`
+- `/reference/insurance-codes`
+- `/search/global`
+- `/search/patients`
+- `/search/providers`
+- `/search/appointments`
+- `/search/invoices`
+- `/search/claims`
+- `/reports`
+- `/reports/{reportId}`
+- `/reports/{reportId}:run`
+- `/reports/{reportId}/download`
+
 ## Inventory Summary
 
 | Area | Approximate endpoints |

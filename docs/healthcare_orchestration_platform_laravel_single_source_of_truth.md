@@ -1623,6 +1623,19 @@ Compliance consent views and data-access-request rules:
 - POST `/reports/{reportId}:run` → `RunReportCommand` → Reporting
 - GET `/reports/{reportId}/download` → `DownloadReportQuery` → Reporting
 - DELETE `/reports/{reportId}` → `DeleteReportCommand` → Reporting
+- all `/reference/*` routes require authenticated tenant context plus `reference.view`
+- reference catalogs are global, read-only, config-backed in this phase, and expose `code`, `name`, `is_active`, and `metadata`
+- reference endpoints support `q` and `limit`; default `limit` is `25` and max `limit` is `100`
+- `/search/patients`, `/search/appointments`, `/search/invoices`, and `/search/claims` reuse the same criteria and response envelope as their module-local search endpoints
+- `/search/providers` adds provider-directory filters `q`, `provider_type`, `clinic_id`, `has_email`, `has_phone`, and `limit`
+- `GET /search/global` requires `search.global`, federates `patient|provider|appointment|invoice|claim`, accepts optional `types[]` and `limit_per_type`, and omits source types the caller cannot view
+- global search responses are grouped by type and each result item returns `type`, `id`, `title`, `subtitle`, `status`, `score`, and `metadata`
+- reports are tenant-scoped saved definitions with unique lowercase snake-case `code`, sources `patients|providers|appointments|invoices|claims`, and `csv` output only in this phase
+- report filters are stored as normalized source-specific search criteria
+- `POST /reports/{reportId}:run` executes synchronously, stores one artifact on the `artifacts` disk, and records one completed run row
+- `GET /reports/{reportId}/download` downloads the latest completed run artifact
+- `DELETE /reports/{reportId}` soft-deletes the definition while preserving append-only run history
+- report CSV output flattens nested values using dot-notation keys and JSON-encodes non-scalar leaf arrays
 
 ---
 

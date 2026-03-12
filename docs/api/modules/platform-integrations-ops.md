@@ -248,6 +248,20 @@
 - `POST /reports/{reportId}:run` -> `RunReportCommand` -> Reporting
 - `GET /reports/{reportId}/download` -> `DownloadReportQuery` -> Reporting
 - `DELETE /reports/{reportId}` -> `DeleteReportCommand` -> Reporting
+- ADR `054` defines the reference-data, shared-search, and reporting contract for this surface.
+- all `/reference/*` routes require authenticated tenant context plus `reference.view`
+- reference catalogs are global, read-only, config-backed in this phase, and expose `code`, `name`, `is_active`, and `metadata`
+- every reference endpoint supports `q` and `limit`; default `limit` is `25` and max `limit` is `100`
+- `/search/patients`, `/search/appointments`, `/search/invoices`, and `/search/claims` reuse the same criteria and envelope as their existing module-local search endpoints
+- `/search/providers` adds the provider-directory contract with `q`, `provider_type`, `clinic_id`, `has_email`, `has_phone`, and `limit`
+- `GET /search/global` requires `search.global`, searches `patient|provider|appointment|invoice|claim`, accepts optional `types[]` and `limit_per_type`, and omits source types the caller cannot view
+- global search responses are grouped by type and each item returns `type`, `id`, `title`, `subtitle`, `status`, `score`, and `metadata`
+- reporting definitions are tenant-scoped, use a unique lowercase snake-case `code`, and support sources `patients|providers|appointments|invoices|claims`
+- report definitions support only `csv` in this phase and store normalized source-specific filters
+- `POST /reports/{reportId}:run` runs synchronously, stores an artifact on the `artifacts` disk, and appends one completed run record
+- `GET /reports/{reportId}/download` returns the latest completed run artifact
+- `DELETE /reports/{reportId}` soft-deletes the definition while preserving append-only run history
+- report CSV generation flattens nested values using dot-notation keys and JSON-encodes non-scalar leaf arrays
 
 ## API Notes
 

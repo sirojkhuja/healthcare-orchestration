@@ -89,6 +89,7 @@ use App\Modules\Provider\Presentation\Http\Controllers\ProviderSpecialtyControll
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderTimeOffController;
 use App\Modules\Provider\Presentation\Http\Controllers\ProviderWorkHoursController;
 use App\Modules\Provider\Presentation\Http\Controllers\SpecialtyController;
+use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentAuditController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentBulkController;
 use App\Modules\Scheduling\Presentation\Http\Controllers\AppointmentBulkWorkflowController;
@@ -120,6 +121,8 @@ use App\Modules\Treatment\Presentation\Http\Controllers\EncounterProcedureContro
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanItemController;
 use App\Modules\Treatment\Presentation\Http\Controllers\TreatmentPlanWorkflowController;
+use App\Shared\Presentation\Http\Controllers\GlobalSearchController;
+use App\Shared\Presentation\Http\Controllers\ReferenceCatalogController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -915,6 +918,48 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/data-access-requests/{requestId}:deny', [DataAccessRequestController::class, 'deny'])
                     ->middleware('idempotency:compliance.data-access-requests.deny')
                     ->name('compliance.data-access-requests.deny');
+            });
+            Route::middleware('permission:reference.view')->group(function (): void {
+                Route::get('/reference/currencies', [ReferenceCatalogController::class, 'currencies'])->name('reference.currencies.list');
+                Route::get('/reference/countries', [ReferenceCatalogController::class, 'countries'])->name('reference.countries.list');
+                Route::get('/reference/languages', [ReferenceCatalogController::class, 'languages'])->name('reference.languages.list');
+                Route::get('/reference/diagnosis-codes', [ReferenceCatalogController::class, 'diagnosisCodes'])->name('reference.diagnosis-codes.list');
+                Route::get('/reference/procedure-codes', [ReferenceCatalogController::class, 'procedureCodes'])->name('reference.procedure-codes.list');
+                Route::get('/reference/insurance-codes', [ReferenceCatalogController::class, 'insuranceCodes'])->name('reference.insurance-codes.list');
+            });
+            Route::middleware('permission:search.global')->group(function (): void {
+                Route::get('/search/global', [GlobalSearchController::class, 'search'])->name('search.global');
+            });
+            Route::middleware('permission:patients.view')->group(function (): void {
+                Route::get('/search/patients', [PatientController::class, 'search'])->name('search.patients');
+            });
+            Route::middleware('permission:providers.view')->group(function (): void {
+                Route::get('/search/providers', [ProviderController::class, 'search'])->name('search.providers');
+            });
+            Route::middleware('permission:appointments.view')->group(function (): void {
+                Route::get('/search/appointments', [AppointmentController::class, 'search'])->name('search.appointments');
+            });
+            Route::middleware('permission:billing.view')->group(function (): void {
+                Route::get('/search/invoices', [InvoiceController::class, 'search'])->name('search.invoices');
+            });
+            Route::middleware('permission:claims.view')->group(function (): void {
+                Route::get('/search/claims', [ClaimController::class, 'search'])->name('search.claims');
+            });
+            Route::middleware('permission:reports.view')->group(function (): void {
+                Route::get('/reports', [ReportController::class, 'list'])->name('reports.list');
+                Route::get('/reports/{reportId}', [ReportController::class, 'show'])->name('reports.show');
+                Route::get('/reports/{reportId}/download', [ReportController::class, 'download'])->name('reports.download');
+            });
+            Route::middleware('permission:reports.manage')->group(function (): void {
+                Route::post('/reports', [ReportController::class, 'create'])
+                    ->middleware('idempotency:reports.create')
+                    ->name('reports.create');
+                Route::post('/reports/{reportId}:run', [ReportController::class, 'run'])
+                    ->middleware('idempotency:reports.run')
+                    ->name('reports.run');
+                Route::delete('/reports/{reportId}', [ReportController::class, 'delete'])
+                    ->middleware('idempotency:reports.delete')
+                    ->name('reports.delete');
             });
         });
     });

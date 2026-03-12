@@ -104,6 +104,14 @@ return [
                 'integrations.manage' => 'Manage integration credentials, tokens, and webhooks.',
             ],
         ],
+        'shared' => [
+            'name' => 'Shared Search',
+            'description' => 'Shared reference catalogs and federated search.',
+            'permissions' => [
+                'reference.view' => 'View shared reference catalogs and global dropdown data.',
+                'search.global' => 'Run global federated search across permitted resource types.',
+            ],
+        ],
         'ops' => [
             'name' => 'Operations',
             'description' => 'Reporting, observability, and operational controls.',

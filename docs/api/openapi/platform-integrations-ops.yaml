@@ -3759,6 +3759,675 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reference/currencies:
+    get:
+      operationId: ListCurrenciesQuery
+      tags: [Shared]
+      summary: List global reference currencies
+      description: Returns the global read-only currency catalog filtered by optional free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReferenceSearchQuery'
+        - $ref: '#/components/parameters/ReferenceLimit'
+      responses:
+        '200':
+          description: Currency catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCatalogResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or reference read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reference query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reference/countries:
+    get:
+      operationId: ListCountriesQuery
+      tags: [Shared]
+      summary: List global reference countries
+      description: Returns the global read-only country catalog filtered by optional free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReferenceSearchQuery'
+        - $ref: '#/components/parameters/ReferenceLimit'
+      responses:
+        '200':
+          description: Country catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCatalogResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or reference read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reference query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reference/languages:
+    get:
+      operationId: ListLanguagesQuery
+      tags: [Shared]
+      summary: List global reference languages
+      description: Returns the global read-only language catalog filtered by optional free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReferenceSearchQuery'
+        - $ref: '#/components/parameters/ReferenceLimit'
+      responses:
+        '200':
+          description: Language catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCatalogResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or reference read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reference query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reference/diagnosis-codes:
+    get:
+      operationId: ListDiagnosisCodesQuery
+      tags: [Shared]
+      summary: List global diagnosis codes
+      description: Returns the global read-only diagnosis-code catalog filtered by optional free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReferenceSearchQuery'
+        - $ref: '#/components/parameters/ReferenceLimit'
+      responses:
+        '200':
+          description: Diagnosis code catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCatalogResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or reference read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reference query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reference/procedure-codes:
+    get:
+      operationId: ListProcedureCodesQuery
+      tags: [Shared]
+      summary: List global procedure codes
+      description: Returns the global read-only procedure-code catalog filtered by optional free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReferenceSearchQuery'
+        - $ref: '#/components/parameters/ReferenceLimit'
+      responses:
+        '200':
+          description: Procedure code catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCatalogResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or reference read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reference query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reference/insurance-codes:
+    get:
+      operationId: ListInsuranceCodesQuery
+      tags: [Shared]
+      summary: List global insurance codes
+      description: Returns the global read-only insurance-code catalog filtered by optional free-text search.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReferenceSearchQuery'
+        - $ref: '#/components/parameters/ReferenceLimit'
+      responses:
+        '200':
+          description: Insurance code catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCatalogResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or reference read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid reference query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/search/global:
+    get:
+      operationId: GlobalSearchQuery
+      tags: [Shared]
+      summary: Run a grouped cross-module global search
+      description: Searches accessible patient, provider, appointment, invoice, and claim sources and groups results by type.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/GlobalSearchQueryTerm'
+        - $ref: '#/components/parameters/GlobalSearchTypesFilter'
+        - $ref: '#/components/parameters/GlobalSearchLimitPerType'
+      responses:
+        '200':
+          description: Grouped global search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalSearchResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or global search permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid global search filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/search/patients:
+    get:
+      operationId: SearchPatientsQuery
+      tags: [Shared]
+      summary: Search patients through the shared search surface
+      description: Returns the same response envelope as `GET /api/v1/patients/search`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Patient search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAliasResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or patient read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid patient search filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/search/providers:
+    get:
+      operationId: SearchProvidersQuery
+      tags: [Shared]
+      summary: Search providers through the shared search surface
+      description: Returns the provider directory response envelope with `q`, `provider_type`, `clinic_id`, `has_email`, `has_phone`, and `limit` filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ProviderDirectoryQuery'
+        - $ref: '#/components/parameters/ProviderDirectoryTypeFilter'
+        - $ref: '#/components/parameters/ProviderDirectoryClinicFilter'
+        - $ref: '#/components/parameters/ProviderDirectoryHasEmailFilter'
+        - $ref: '#/components/parameters/ProviderDirectoryHasPhoneFilter'
+        - $ref: '#/components/parameters/ProviderDirectoryLimit'
+      responses:
+        '200':
+          description: Provider directory search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAliasResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or provider read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid provider search filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/search/appointments:
+    get:
+      operationId: SearchAppointmentsQuery
+      tags: [Shared]
+      summary: Search appointments through the shared search surface
+      description: Returns the same response envelope as `GET /api/v1/appointments/search`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Appointment search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAliasResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or appointment read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid appointment search filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/search/invoices:
+    get:
+      operationId: SearchInvoicesQuery
+      tags: [Shared]
+      summary: Search invoices through the shared search surface
+      description: Returns the same response envelope as `GET /api/v1/invoices/search`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Invoice search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAliasResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or billing read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid invoice search filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/search/claims:
+    get:
+      operationId: SearchClaimsQuery
+      tags: [Shared]
+      summary: Search claims through the shared search surface
+      description: Returns the same response envelope as `GET /api/v1/claims/search`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Claim search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAliasResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or claim read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid claim search filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reports:
+    get:
+      operationId: ListReportsQuery
+      tags: [Reporting]
+      summary: List tenant report definitions
+      description: Returns tenant-scoped saved report definitions with their latest run projection and full run history.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReportSearchQuery'
+        - $ref: '#/components/parameters/ReportSourceFilter'
+        - $ref: '#/components/parameters/ReportLimit'
+      responses:
+        '200':
+          description: Report definition directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or report read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid report list filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateReportCommand
+      tags: [Reporting]
+      summary: Create a saved report definition
+      description: Creates a tenant-scoped report definition using normalized source-specific filters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReportRequest'
+      responses:
+        '201':
+          description: Report definition created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or report write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid, duplicate, or unsupported report definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reports/{reportId}:
+    get:
+      operationId: GetReportQuery
+      tags: [Reporting]
+      summary: Get one report definition
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReportIdPath'
+      responses:
+        '200':
+          description: Report definition details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or report read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Report definition not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      operationId: DeleteReportCommand
+      tags: [Reporting]
+      summary: Soft-delete a report definition
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ReportIdPath'
+      responses:
+        '200':
+          description: Report definition soft-deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or report write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Report definition not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reports/{reportId}:run:
+    post:
+      operationId: RunReportCommand
+      tags: [Reporting]
+      summary: Execute one report definition synchronously
+      description: Runs the selected report immediately, stores a CSV artifact on the artifacts disk, and appends one completed run row.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/ReportIdPath'
+      responses:
+        '200':
+          description: Report run completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportRunMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or report write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Report definition not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported report filters or source contract
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/reports/{reportId}/download:
+    get:
+      operationId: DownloadReportQuery
+      tags: [Reporting]
+      summary: Download the latest completed report artifact
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/ReportIdPath'
+      responses:
+        '200':
+          description: CSV report artifact
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or report read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Report definition or completed run not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -4002,6 +4671,123 @@ components:
       schema:
         type: string
         format: uuid
+    ReferenceSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    ReferenceLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    GlobalSearchQueryTerm:
+      in: query
+      name: q
+      required: true
+      schema:
+        type: string
+        maxLength: 120
+    GlobalSearchTypesFilter:
+      in: query
+      name: types
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum: [patient, provider, appointment, invoice, claim]
+    GlobalSearchLimitPerType:
+      in: query
+      name: limit_per_type
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 25
+        default: 5
+    ProviderDirectoryQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    ProviderDirectoryTypeFilter:
+      in: query
+      name: provider_type
+      required: false
+      schema:
+        type: string
+        enum: [doctor, nurse, other]
+    ProviderDirectoryClinicFilter:
+      in: query
+      name: clinic_id
+      required: false
+      schema:
+        type: string
+        format: uuid
+    ProviderDirectoryHasEmailFilter:
+      in: query
+      name: has_email
+      required: false
+      schema:
+        type: string
+        enum: ['true', 'false', '1', '0']
+    ProviderDirectoryHasPhoneFilter:
+      in: query
+      name: has_phone
+      required: false
+      schema:
+        type: string
+        enum: ['true', 'false', '1', '0']
+    ProviderDirectoryLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    ReportIdPath:
+      in: path
+      name: reportId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ReportSearchQuery:
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    ReportSourceFilter:
+      in: query
+      name: source
+      required: false
+      schema:
+        type: string
+        enum: [patients, providers, appointments, invoices, claims]
+    ReportLimit:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
   schemas:
     ApiErrorResponse:
       type: object
@@ -4018,6 +4804,289 @@ components:
           type: string
         correlation_id:
           type: string
+    ReferenceEntry:
+      type: object
+      required: [code, name, is_active, metadata]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        is_active:
+          type: boolean
+        metadata:
+          type: object
+          additionalProperties: true
+    ReferenceCatalogResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceEntry'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              required: [q, limit]
+              properties:
+                q:
+                  type: [string, 'null']
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+    GlobalSearchItem:
+      type: object
+      required: [type, id, title, subtitle, status, score, metadata]
+      properties:
+        type:
+          type: string
+          enum: [patient, provider, appointment, invoice, claim]
+        id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: [string, 'null']
+        status:
+          type: [string, 'null']
+        score:
+          type: integer
+          minimum: 0
+        metadata:
+          type: object
+          additionalProperties: true
+    GlobalSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/GlobalSearchItem'
+        meta:
+          type: object
+          required: [filters, requested_types, returned_types, total_results]
+          properties:
+            filters:
+              type: object
+              required: [q, types, limit_per_type]
+              properties:
+                q:
+                  type: string
+                types:
+                  type: array
+                  items:
+                    type: string
+                    enum: [patient, provider, appointment, invoice, claim]
+                limit_per_type:
+                  type: integer
+                  minimum: 1
+                  maximum: 25
+            requested_types:
+              type: array
+              items:
+                type: string
+                enum: [patient, provider, appointment, invoice, claim]
+            returned_types:
+              type: array
+              items:
+                type: string
+                enum: [patient, provider, appointment, invoice, claim]
+            total_results:
+              type: integer
+              minimum: 0
+    SearchAliasResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        meta:
+          type: object
+          additionalProperties: true
+    ReportStorageLocation:
+      type: object
+      required: [disk, path]
+      properties:
+        disk:
+          type: string
+        path:
+          type: string
+    ReportRun:
+      type: object
+      required:
+        - id
+        - report_id
+        - tenant_id
+        - status
+        - format
+        - row_count
+        - file_name
+        - storage
+        - generated_at
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        report_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [completed]
+        format:
+          type: string
+          enum: [csv]
+        row_count:
+          type: integer
+          minimum: 0
+        file_name:
+          type: string
+        storage:
+          $ref: '#/components/schemas/ReportStorageLocation'
+        generated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    Report:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - code
+        - name
+        - source
+        - format
+        - filters
+        - latest_run
+        - runs
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        source:
+          type: string
+          enum: [patients, providers, appointments, invoices, claims]
+        format:
+          type: string
+          enum: [csv]
+        filters:
+          type: object
+          additionalProperties: true
+        latest_run:
+          oneOf:
+            - $ref: '#/components/schemas/ReportRun'
+            - type: 'null'
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportRun'
+        deleted_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ReportCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              required: [q, source, limit]
+              properties:
+                q:
+                  type: [string, 'null']
+                source:
+                  type: [string, 'null']
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+    ReportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Report'
+    ReportMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [report_created, report_deleted]
+        data:
+          $ref: '#/components/schemas/Report'
+    ReportRunMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [report_run_completed]
+        data:
+          $ref: '#/components/schemas/ReportRun'
+    CreateReportRequest:
+      type: object
+      required: [code, name, source, format]
+      properties:
+        code:
+          type: string
+          maxLength: 120
+        name:
+          type: string
+          maxLength: 180
+        description:
+          type: [string, 'null']
+          maxLength: 5000
+        source:
+          type: string
+          enum: [patients, providers, appointments, invoices, claims]
+        format:
+          type: string
+          enum: [csv]
+        filters:
+          type: object
+          additionalProperties: true
     NotificationTemplate:
       type: object
       required:
