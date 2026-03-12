@@ -58,6 +58,12 @@ Audit and compliance route inventory includes the tenant-scoped governance surfa
 - `/audit/export`
 - `/audit/retention`
 - `/audit/object/{objectType}/{objectId}`
+- `/consents`
+- `/consents/{consentId}`
+- `/data-access-requests`
+- `/data-access-requests/{requestId}`
+- `/data-access-requests/{requestId}:approve`
+- `/data-access-requests/{requestId}:deny`
 - `/compliance/pii-fields`
 - `/compliance/pii:rotate-keys`
 - `/compliance/pii:re-encrypt`

@@ -8,6 +8,8 @@ use App\Modules\AuditCompliance\Application\Contracts\AuditRetentionPruner;
 use App\Modules\AuditCompliance\Application\Contracts\AuditRetentionRepository;
 use App\Modules\AuditCompliance\Application\Contracts\AuditTrailWriter;
 use App\Modules\AuditCompliance\Application\Contracts\ComplianceReportRepository;
+use App\Modules\AuditCompliance\Application\Contracts\ConsentViewRepository;
+use App\Modules\AuditCompliance\Application\Contracts\DataAccessRequestRepository;
 use App\Modules\AuditCompliance\Application\Contracts\PiiFieldRepository;
 use App\Modules\AuditCompliance\Application\Contracts\SecurityEventRepository;
 use App\Modules\AuditCompliance\Application\Contracts\SecurityEventWriter;
@@ -18,6 +20,8 @@ use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditEventRep
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditRetentionPruner;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseAuditRetentionRepository;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseComplianceReportRepository;
+use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseConsentViewRepository;
+use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseDataAccessRequestRepository;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabasePiiFieldRepository;
 use App\Modules\AuditCompliance\Infrastructure\Persistence\DatabaseSecurityEventRepository;
 use App\Modules\Billing\Application\Contracts\BillableServiceRepository;
@@ -255,6 +259,8 @@ final class MedFlowServiceProvider extends ServiceProvider
         $this->app->bind(AuditRetentionRepository::class, DatabaseAuditRetentionRepository::class);
         $this->app->bind(AuditTrailWriter::class, ContextualAuditTrailWriter::class);
         $this->app->bind(ComplianceReportRepository::class, DatabaseComplianceReportRepository::class);
+        $this->app->bind(ConsentViewRepository::class, DatabaseConsentViewRepository::class);
+        $this->app->bind(DataAccessRequestRepository::class, DatabaseDataAccessRequestRepository::class);
         $this->app->bind(BillableServiceRepository::class, DatabaseBillableServiceRepository::class);
         $this->app->bind(InvoiceRepository::class, DatabaseInvoiceRepository::class);
         $this->app->bind(PaymentGatewayRegistry::class, ConfigPaymentGatewayRegistry::class);

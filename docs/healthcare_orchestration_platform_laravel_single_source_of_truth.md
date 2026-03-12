@@ -1551,6 +1551,20 @@ Provider master records use the base fields `first_name`, `last_name`, `middle_n
 - GET `/data-access-requests/{requestId}` → `GetDataAccessRequestQuery` → Compliance
 - GET `/compliance/reports` → `ListComplianceReportsQuery` → Compliance
 
+Compliance consent views and data-access-request rules:
+
+- `GET /consents` is a tenant-scoped read-only compliance projection over patient consent history and supports filters `q`, `patient_id`, `consent_type`, `status`, `granted_from`, `granted_to`, `expires_from`, `expires_to`, and `limit`
+- consent views return patient summary context plus the underlying patient consent timestamps and derived `active|expired|revoked` status
+- `GET /consents/{consentId}` returns one tenant-owned consent projection only when the consent belongs to the active tenant
+- `GET /data-access-requests` supports filters `q`, `patient_id`, `request_type`, `status`, `requested_from`, `requested_to`, and `limit`
+- data access requests are tenant-scoped patient-linked workflow records with status `submitted|approved|denied`
+- `POST /data-access-requests` accepts `patient_id`, `request_type`, `requested_by_name`, optional `requested_by_relationship`, optional `requested_at`, optional `reason`, and optional `notes`
+- `request_type` is normalized to lowercase snake case and new requests always start in `submitted`
+- `POST /data-access-requests/{requestId}:approve` accepts optional `decision_notes`, works only from `submitted`, and records reviewer identity and `approved_at`
+- `POST /data-access-requests/{requestId}:deny` requires `reason`, accepts optional `decision_notes`, works only from `submitted`, and records reviewer identity and `denied_at`
+- approve or deny against a non-`submitted` request returns `409 Conflict`
+- compliance workflow mutations write immutable audit actions `compliance.data_access_request_created`, `compliance.data_access_request_approved`, and `compliance.data_access_request_denied`
+
 ---
 
 ## A.16 Observability, Health, Admin Ops (22)

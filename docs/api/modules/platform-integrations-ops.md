@@ -179,6 +179,18 @@
 - `POST /compliance/pii:re-encrypt` targets the provided `field_ids[]` or all active fields when omitted, updates `last_reencrypted_at`, and returns a compliance report of type `pii_reencryption`.
 - In this phase, re-encryption is a registry-governance pass. Business-record rewrites remain future module work after registry-backed encryptors are adopted.
 - `GET /compliance/reports` lists append-only compliance reports for `pii_key_rotation` and `pii_reencryption`, newest first, with filters `type`, `status`, and `limit`.
+- ADR `052` defines the tenant-wide consent view and data-access-request workflow contract.
+- `GET /consents` is a read-only tenant-scoped compliance projection over patient consent history and supports `q`, `patient_id`, `consent_type`, `status`, `granted_from`, `granted_to`, `expires_from`, `expires_to`, and `limit`.
+- Consent view responses include patient summary context plus the underlying consent timestamps and derived `active|expired|revoked` status from the patient module contract.
+- `GET /consents/{consentId}` returns one tenant-owned consent projection only when the consent belongs to the active tenant.
+- `GET /data-access-requests` lists tenant-scoped patient-linked workflow records with filters `q`, `patient_id`, `request_type`, `status`, `requested_from`, `requested_to`, and `limit`.
+- Data access request status is `submitted|approved|denied`. List ordering is submitted first, then `requested_at desc`, then `created_at desc`.
+- `POST /data-access-requests` accepts `patient_id`, `request_type`, `requested_by_name`, optional `requested_by_relationship`, optional `requested_at`, optional `reason`, and optional `notes`.
+- `request_type` is normalized to lowercase snake case and new requests always start in `submitted`.
+- `POST /data-access-requests/{requestId}:approve` accepts optional `decision_notes`, succeeds only from `submitted`, and records reviewer identity plus `approved_at`.
+- `POST /data-access-requests/{requestId}:deny` requires `reason`, accepts optional `decision_notes`, succeeds only from `submitted`, and records reviewer identity plus `denied_at`.
+- Approve and deny are terminal workflow actions. Repeating either action after approval or denial returns `409 Conflict`.
+- Data access request workflow mutations write immutable audit actions `compliance.data_access_request_created`, `compliance.data_access_request_approved`, and `compliance.data_access_request_denied`.
 
 ## Observability, Admin Ops, Reference Data, and Search
 

@@ -2388,6 +2388,400 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/consents:
+    get:
+      operationId: ListConsentsQuery
+      tags: [Compliance]
+      summary: List tenant-scoped compliance consent views
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 160
+        - name: patient_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: consent_type
+          in: query
+          schema:
+            type: string
+            maxLength: 64
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, expired, revoked]
+        - name: granted_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: granted_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: expires_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: expires_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Consent view collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentViewCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid consent view filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/consents/{consentId}:
+    get:
+      operationId: GetConsentQuery
+      tags: [Compliance]
+      summary: Get one tenant-scoped compliance consent view
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: consentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Consent view details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentViewResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Consent not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/data-access-requests:
+    get:
+      operationId: ListDataAccessRequestsQuery
+      tags: [Compliance]
+      summary: List tenant-scoped data access requests
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 160
+        - name: patient_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: request_type
+          in: query
+          schema:
+            type: string
+            maxLength: 64
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [submitted, approved, denied]
+        - name: requested_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: requested_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Data access request collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAccessRequestCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid data access request filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      operationId: CreateDataAccessRequestCommand
+      tags: [Compliance]
+      summary: Create one tenant-scoped data access request
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDataAccessRequestRequest'
+      responses:
+        '201':
+          description: Data access request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAccessRequestMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Patient not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid data access request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/data-access-requests/{requestId}:
+    get:
+      operationId: GetDataAccessRequestQuery
+      tags: [Compliance]
+      summary: Get one tenant-scoped data access request
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Data access request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAccessRequestResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Data access request not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/data-access-requests/{requestId}:approve:
+    post:
+      operationId: ApproveDataAccessRequestCommand
+      tags: [Compliance]
+      summary: Approve one submitted data access request
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveDataAccessRequestRequest'
+      responses:
+        '200':
+          description: Data access request approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAccessRequestApprovalResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Data access request not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Only submitted requests may be approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid approval payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/data-access-requests/{requestId}:deny:
+    post:
+      operationId: DenyDataAccessRequestCommand
+      tags: [Compliance]
+      summary: Deny one submitted data access request
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DenyDataAccessRequestRequest'
+      responses:
+        '200':
+          description: Data access request denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAccessRequestDenialResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Data access request not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Only submitted requests may be denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid denial payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/compliance/pii-fields:
     get:
       operationId: ListPiiFieldsQuery
@@ -4643,6 +5037,238 @@ components:
           enum: [audit_retention_updated]
         data:
           $ref: '#/components/schemas/AuditRetention'
+    ConsentView:
+      type: object
+      required:
+        [id, patient_id, patient, consent_type, status, granted_by_name, granted_by_relationship, granted_at, expires_at, revoked_at, revocation_reason, notes, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        patient:
+          type: object
+          required: [id, display_name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            display_name:
+              type: string
+        consent_type:
+          type: string
+        status:
+          type: string
+          enum: [active, expired, revoked]
+        granted_by_name:
+          type: string
+        granted_by_relationship:
+          type: [string, 'null']
+        granted_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: [string, 'null']
+          format: date-time
+        revoked_at:
+          type: [string, 'null']
+          format: date-time
+        revocation_reason:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ConsentViewCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentView'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    ConsentViewResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ConsentView'
+    DataAccessRequest:
+      type: object
+      required:
+        [id, patient_id, patient, request_type, status, requested_by_name, requested_by_relationship, requested_at, reason, notes, approved_at, approved_by, denied_at, denied_by, denial_reason, decision_notes, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        patient:
+          type: object
+          required: [id, display_name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            display_name:
+              type: string
+        request_type:
+          type: string
+        status:
+          type: string
+          enum: [submitted, approved, denied]
+        requested_by_name:
+          type: string
+        requested_by_relationship:
+          type: [string, 'null']
+        requested_at:
+          type: string
+          format: date-time
+        reason:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        approved_at:
+          type: [string, 'null']
+          format: date-time
+        approved_by:
+          type:
+            - object
+            - 'null'
+          required: [id, name]
+          properties:
+            id:
+              type: [string, 'null']
+              format: uuid
+            name:
+              type: [string, 'null']
+        denied_at:
+          type: [string, 'null']
+          format: date-time
+        denied_by:
+          type:
+            - object
+            - 'null'
+          required: [id, name]
+          properties:
+            id:
+              type: [string, 'null']
+              format: uuid
+            name:
+              type: [string, 'null']
+        denial_reason:
+          type: [string, 'null']
+        decision_notes:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    DataAccessRequestCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataAccessRequest'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    DataAccessRequestResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DataAccessRequest'
+    CreateDataAccessRequestRequest:
+      type: object
+      required: [patient_id, request_type, requested_by_name]
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        request_type:
+          type: string
+          maxLength: 64
+        requested_by_name:
+          type: string
+          maxLength: 160
+        requested_by_relationship:
+          type: [string, 'null']
+          maxLength: 120
+        requested_at:
+          type: [string, 'null']
+          format: date-time
+        reason:
+          type: [string, 'null']
+          maxLength: 5000
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    ApproveDataAccessRequestRequest:
+      type: object
+      properties:
+        decision_notes:
+          type: [string, 'null']
+          maxLength: 5000
+    DenyDataAccessRequestRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          maxLength: 5000
+        decision_notes:
+          type: [string, 'null']
+          maxLength: 5000
+    DataAccessRequestMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [data_access_request_created]
+        data:
+          $ref: '#/components/schemas/DataAccessRequest'
+    DataAccessRequestApprovalResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [data_access_request_approved]
+        data:
+          $ref: '#/components/schemas/DataAccessRequest'
+    DataAccessRequestDenialResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [data_access_request_denied]
+        data:
+          $ref: '#/components/schemas/DataAccessRequest'
     PiiField:
       type: object
       required:

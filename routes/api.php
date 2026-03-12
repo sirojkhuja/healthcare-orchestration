@@ -3,6 +3,8 @@
 use App\Modules\AuditCompliance\Presentation\Http\Controllers\AuditEventController;
 use App\Modules\AuditCompliance\Presentation\Http\Controllers\AuditRetentionController;
 use App\Modules\AuditCompliance\Presentation\Http\Controllers\ComplianceReportController;
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\ConsentController;
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\DataAccessRequestController;
 use App\Modules\AuditCompliance\Presentation\Http\Controllers\ObjectAuditController;
 use App\Modules\AuditCompliance\Presentation\Http\Controllers\PiiFieldController;
 use App\Modules\Billing\Presentation\Http\Controllers\BillableServiceController;
@@ -839,12 +841,25 @@ Route::prefix('v1')->group(function (): void {
             });
             Route::middleware('permission:compliance.view')->group(function (): void {
                 Route::get('/compliance/pii-fields', [PiiFieldController::class, 'list'])->name('compliance.pii-fields.list');
+                Route::get('/consents', [ConsentController::class, 'list'])->name('compliance.consents.list');
+                Route::get('/consents/{consentId}', [ConsentController::class, 'show'])->name('compliance.consents.show');
+                Route::get('/data-access-requests', [DataAccessRequestController::class, 'list'])->name('compliance.data-access-requests.list');
+                Route::get('/data-access-requests/{requestId}', [DataAccessRequestController::class, 'show'])->name('compliance.data-access-requests.show');
                 Route::get('/compliance/reports', [ComplianceReportController::class, 'list'])->name('compliance.reports.list');
             });
             Route::middleware('permission:compliance.manage')->group(function (): void {
                 Route::put('/compliance/pii-fields', [PiiFieldController::class, 'update'])->name('compliance.pii-fields.update');
                 Route::post('/compliance/pii:rotate-keys', [PiiFieldController::class, 'rotateKeys'])->name('compliance.pii.rotate-keys');
                 Route::post('/compliance/pii:re-encrypt', [PiiFieldController::class, 'reEncrypt'])->name('compliance.pii.re-encrypt');
+                Route::post('/data-access-requests', [DataAccessRequestController::class, 'create'])
+                    ->middleware('idempotency:compliance.data-access-requests.create')
+                    ->name('compliance.data-access-requests.create');
+                Route::post('/data-access-requests/{requestId}:approve', [DataAccessRequestController::class, 'approve'])
+                    ->middleware('idempotency:compliance.data-access-requests.approve')
+                    ->name('compliance.data-access-requests.approve');
+                Route::post('/data-access-requests/{requestId}:deny', [DataAccessRequestController::class, 'deny'])
+                    ->middleware('idempotency:compliance.data-access-requests.deny')
+                    ->name('compliance.data-access-requests.deny');
             });
         });
     });
