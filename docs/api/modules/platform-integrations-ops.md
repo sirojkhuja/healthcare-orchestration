@@ -194,6 +194,7 @@
 
 ## Observability, Admin Ops, Reference Data, and Search
 
+- `GET /ping` -> `PingQuery` -> Ops
 - `GET /health` -> `HealthQuery` -> Ops
 - `GET /ready` -> `ReadinessQuery` -> Ops
 - `GET /live` -> `LivenessQuery` -> Ops
@@ -218,6 +219,7 @@
 - `POST /admin/config:reload` -> `ReloadRuntimeConfigCommand` -> Ops
 - ADR `053` defines the observability and admin-ops contract for this surface.
 - ADR `055` expands the instrumentation, logging, and internal scrape behavior for this surface.
+- `GET /ping` is the only public route in this section. It returns `{ service, version, status }` and still emits the standard request metadata headers.
 - All ops routes in this phase require authenticated tenant context and `admin.view` or `admin.manage`.
 - `GET /live` returns process liveness only; `GET /ready` fails with `503` when critical runtime probes fail; `GET /health` returns `healthy|degraded|failing` with ordered checks plus outbox and failed-job summary.
 - `GET /metrics` returns Prometheus text exposition for app info, health status, outbox lag, queue counts, Kafka consumer-receipt lag, HTTP request totals and latency histogram, cache hit/miss totals and hit ratio, integration error totals, payment reconciliation failure totals, and webhook verification failure totals.
@@ -239,11 +241,11 @@
 - `GET /reference/procedure-codes` -> `ListProcedureCodesQuery` -> Shared
 - `GET /reference/insurance-codes` -> `ListInsuranceCodesQuery` -> Shared
 - `GET /search/global` -> `GlobalSearchQuery` -> Shared
-- `GET /search/patients` -> `SearchPatientsQuery` -> Patient
+- `GET /search/patients` -> `SharedSearchPatientsQuery` -> Patient
 - `GET /search/providers` -> `SearchProvidersQuery` -> Provider
-- `GET /search/appointments` -> `SearchAppointmentsQuery` -> Scheduling
-- `GET /search/invoices` -> `SearchInvoicesQuery` -> Billing
-- `GET /search/claims` -> `SearchClaimsQuery` -> Insurance
+- `GET /search/appointments` -> `SharedSearchAppointmentsQuery` -> Scheduling
+- `GET /search/invoices` -> `SharedSearchInvoicesQuery` -> Billing
+- `GET /search/claims` -> `SharedSearchClaimsQuery` -> Insurance
 - `GET /reports` -> `ListReportsQuery` -> Reporting
 - `POST /reports` -> `CreateReportCommand` -> Reporting
 - `GET /reports/{reportId}` -> `GetReportQuery` -> Reporting

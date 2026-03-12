@@ -13,7 +13,7 @@ A task is done only when all of the following are true:
 - tests pass
 - build passes
 - verification passes
-- OpenAPI is updated or marked as unaffected
+- OpenAPI fragments and generated bundle are updated or marked as unaffected
 - module and workflow docs are updated
 - ADR is updated when architectural decisions changed
 - observability and security requirements are satisfied

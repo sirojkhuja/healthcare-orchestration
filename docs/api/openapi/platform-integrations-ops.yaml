@@ -3,6 +3,24 @@ info:
   title: MedFlow Platform, Notifications, Integrations, and Ops Fragment
   version: 0.1.0
 paths:
+  /api/v1/ping:
+    get:
+      operationId: PingQuery
+      tags: [Ops]
+      summary: Return the public runtime ping payload
+      description: Returns a lightweight public service probe and still emits standard request metadata headers.
+      security: []
+      responses:
+        '200':
+          description: Ping response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+              example:
+                service: MedFlow
+                version: 0.1.0
+                status: ok
   /api/v1/templates:
     get:
       operationId: ListTemplatesQuery
@@ -4022,7 +4040,7 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/search/patients:
     get:
-      operationId: SearchPatientsQuery
+      operationId: SharedSearchPatientsQuery
       tags: [Shared]
       summary: Search patients through the shared search surface
       description: Returns the same response envelope as `GET /api/v1/patients/search`.
@@ -4098,7 +4116,7 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/search/appointments:
     get:
-      operationId: SearchAppointmentsQuery
+      operationId: SharedSearchAppointmentsQuery
       tags: [Shared]
       summary: Search appointments through the shared search surface
       description: Returns the same response envelope as `GET /api/v1/appointments/search`.
@@ -4133,7 +4151,7 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/search/invoices:
     get:
-      operationId: SearchInvoicesQuery
+      operationId: SharedSearchInvoicesQuery
       tags: [Shared]
       summary: Search invoices through the shared search surface
       description: Returns the same response envelope as `GET /api/v1/invoices/search`.
@@ -4168,7 +4186,7 @@ paths:
                 $ref: '#/components/schemas/ApiErrorResponse'
   /api/v1/search/claims:
     get:
-      operationId: SearchClaimsQuery
+      operationId: SharedSearchClaimsQuery
       tags: [Shared]
       summary: Search claims through the shared search surface
       description: Returns the same response envelope as `GET /api/v1/claims/search`.
@@ -7855,3 +7873,14 @@ components:
           enum: [runtime_config_reloaded]
         data:
           $ref: '#/components/schemas/RuntimeConfigView'
+    PingResponse:
+      type: object
+      required: [service, version, status]
+      properties:
+        service:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+          enum: [ok]

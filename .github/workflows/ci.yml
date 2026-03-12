@@ -37,3 +37,9 @@ jobs:
 
       - name: Run build
         run: make build
+
+      - name: Run OpenAPI validation
+        run: bash scripts/node.sh run openapi:validate
+
+      - name: Run official OpenAPI schema validation
+        run: bash scripts/openapi/validate-schema.sh

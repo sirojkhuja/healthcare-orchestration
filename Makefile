@@ -36,6 +36,7 @@ analyse:
 
 test:
 	@if [[ -f composer.json ]]; then \
+		bash scripts/node.sh run openapi:build; \
 		bash scripts/composer.sh run test; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
@@ -52,6 +53,8 @@ build:
 
 verify:
 	@if [[ -f composer.json ]]; then \
+		bash scripts/node.sh run openapi:validate; \
+		bash scripts/openapi/validate-schema.sh; \
 		bash scripts/composer.sh run verify; \
 		bash scripts/node.sh run build; \
 	else \

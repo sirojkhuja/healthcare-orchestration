@@ -9,6 +9,8 @@ RUN apt-get update \
         libpq-dev \
         libxml2-dev \
         libzip-dev \
+        python3 \
+        python3-jsonschema \
         unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

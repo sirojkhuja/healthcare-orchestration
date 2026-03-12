@@ -6,6 +6,19 @@
 - API base path: `/api/v1`
 - Event versioning is independent from API versioning
 
+## Authoring Sources
+
+Hand-authored OpenAPI sources are limited to the module fragments:
+
+- `docs/api/openapi/identity-access-auth.yaml`
+- `docs/api/openapi/patients-providers.yaml`
+- `docs/api/openapi/platform-integrations-ops.yaml`
+- `docs/api/openapi/revenue-insurance.yaml`
+- `docs/api/openapi/scheduling-clinical.yaml`
+- `docs/api/openapi/tenancy-clinics.yaml`
+
+Do not edit `docs/api/openapi/openapi.yaml` or `docs/api/openapi/openapi.json` manually. Those two files are generated production bundle artifacts.
+
 ## Design Rules
 
 - Prefer resource-oriented routes.
@@ -39,6 +52,7 @@ Use application use-case names:
 - `approveClaim`
 
 The OpenAPI operation ID should map cleanly to exactly one application command or query.
+Operation IDs must also be globally unique across the generated repository bundle.
 
 ## Error Model
 
@@ -83,6 +97,33 @@ Document:
 - If a tenant-owned endpoint accepts both route tenant scope and `X-Tenant-Id`, document that mismatches fail with `403`.
 - Mark admin-only endpoints explicitly.
 - Document webhook signature expectations in webhook operations.
+
+## Bundle Contract
+
+- Build the production bundle with `npm run openapi:build`.
+- The bundle is assembled from the six module fragments in a fixed order.
+- Shared error and idempotency components are normalized during bundle generation.
+- Successful `2xx` and `3xx` responses in the generated bundle must document:
+  - `X-Request-Id`
+  - `X-Correlation-Id`
+  - `X-Causation-Id`
+- The generated bundle must match the live `/api/v1` Laravel route table exactly.
+
+## Validation Contract
+
+Every API-affecting change must pass all of the following:
+
+- `npm run openapi:validate`
+- `bash scripts/openapi/validate-schema.sh`
+- `tests/Feature/Contracts/OpenApiContractCoverageTest.php`
+
+The contract suite must prove:
+
+- route-to-spec parity for all public `/api/v1` operations
+- documented security on authenticated routes
+- documented tenant context for tenant-required routes
+- documented `Idempotency-Key` on idempotent routes
+- documented request metadata headers on successful responses
 
 ## Documentation Sync Rule
 

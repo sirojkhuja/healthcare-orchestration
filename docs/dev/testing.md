@@ -40,6 +40,8 @@
 ### Contract Tests
 
 - OpenAPI schema validation
+- OpenAPI route-to-spec parity for the full `/api/v1` surface
+- OpenAPI security, tenant-context, idempotency-header, and successful-response-header coverage
 - request and response example drift detection
 - provider adapter request and response mapping
 
@@ -82,3 +84,5 @@
 ## Release Gate
 
 No feature is complete until all required test layers for that feature pass locally and in CI.
+
+OpenAPI-affecting work is not complete until the generated bundle, official schema validation, and the route/spec contract suite all pass together.

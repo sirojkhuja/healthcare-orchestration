@@ -11,7 +11,10 @@ required_files=(
   "docs/project/tasklist.md"
   "docs/dev/coding-standards.md"
   "docs/dev/architecture.md"
+  "docs/adr/056-openapi-bundle-and-contract-governance.md"
   "docs/api/endpoint-matrix.md"
+  "docs/api/openapi/openapi.yaml"
+  "docs/api/openapi/openapi.json"
   ".codex/skills/medflow-development-governance/SKILL.md"
   ".githooks/pre-commit"
   ".githooks/pre-push"
@@ -21,6 +24,12 @@ required_files=(
   "scripts/composer.sh"
   "scripts/artisan.sh"
   "scripts/node.sh"
+  "scripts/openapi/build.mjs"
+  "scripts/openapi/validate.mjs"
+  "scripts/openapi/validate-schema.sh"
+  "scripts/openapi/validate_schema.py"
+  "scripts/openapi/schema/openapi-3.1.1.schema.json"
+  "tests/Feature/Contracts/OpenApiContractCoverageTest.php"
 )
 
 for file in "${required_files[@]}"; do
@@ -38,7 +47,7 @@ if [[ ! -x ".githooks/pre-commit" || ! -x ".githooks/pre-push" ]]; then
   exit 1
 fi
 
-if [[ ! -x "scripts/check-tasklist.sh" || ! -x "scripts/install-git-hooks.sh" ]]; then
+if [[ ! -x "scripts/check-tasklist.sh" || ! -x "scripts/install-git-hooks.sh" || ! -x "scripts/openapi/validate-schema.sh" ]]; then
   echo "Governance scripts must be executable." >&2
   exit 1
 fi

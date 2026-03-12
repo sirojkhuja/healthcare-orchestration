@@ -644,7 +644,9 @@ Standard error:
 - unit tests
 - feature tests
 - integration tests (optional on main)
+- generated OpenAPI bundle build
 - OpenAPI validation
+- official OpenAPI `3.1.1` schema validation for the generated bundle
 - coverage thresholds
 - architecture rules (layering, file size)
 
@@ -687,6 +689,8 @@ Standard error:
 7. Add OpenAPI definitions + examples.
 8. Add tests (unit + feature + integration if needed).
 9. Update docs (endpoint matrix + module docs).
+
+OpenAPI work in this repository means updating the authoring fragments and regenerating the committed production bundle so the bundled document stays identical to the live `/api/v1` route surface.
 
 ### 18.2 PR Checklist
 - [ ] All CI gates pass
@@ -742,6 +746,8 @@ Standard error:
 
 # Appendix A — Endpoint Matrix (Full Inventory v1)
 > Target inventory: **~280 endpoints** (within requested 200–400). This matrix is the authoritative route catalog. Each endpoint maps to exactly one Application handler (Command/Query). Each route must be documented in OpenAPI with schemas and examples.
+
+The generated repository bundle under `docs/api/openapi/openapi.yaml` and `docs/api/openapi/openapi.json` must match this runtime route inventory exactly.
 
 ## A.0 Conventions
 - Base prefix: `/api/v1`
@@ -1619,11 +1625,11 @@ Compliance consent views and data-access-request rules:
 - GET `/reference/procedure-codes` → `ListProcedureCodesQuery` → Shared
 - GET `/reference/insurance-codes` → `ListInsuranceCodesQuery` → Shared
 - GET `/search/global` → `GlobalSearchQuery` → Shared
-- GET `/search/patients` → `SearchPatientsQuery` → Patient
+- GET `/search/patients` → `SharedSearchPatientsQuery` → Patient
 - GET `/search/providers` → `SearchProvidersQuery` → Provider
-- GET `/search/appointments` → `SearchAppointmentsQuery` → Scheduling
-- GET `/search/invoices` → `SearchInvoicesQuery` → Billing
-- GET `/search/claims` → `SearchClaimsQuery` → Insurance
+- GET `/search/appointments` → `SharedSearchAppointmentsQuery` → Scheduling
+- GET `/search/invoices` → `SharedSearchInvoicesQuery` → Billing
+- GET `/search/claims` → `SharedSearchClaimsQuery` → Insurance
 - GET `/reports` → `ListReportsQuery` → Reporting
 - POST `/reports` → `CreateReportCommand` → Reporting
 - GET `/reports/{reportId}` → `GetReportQuery` → Reporting

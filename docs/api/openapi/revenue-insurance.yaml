@@ -2619,8 +2619,106 @@ components:
       schema:
         type: string
         format: uuid
+    PayerIdPath:
+      name: payerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RuleIdPath:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ClaimIdPath:
+      name: claimId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ClaimAttachmentIdPath:
+      name: attachmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     BillingSearchQuery:
       name: q
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 120
+    PayerInsuranceCodeFilter:
+      name: insurance_code
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 64
+    ClaimStatusFilter:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [draft, submitted, under_review, approved, denied, paid]
+    ClaimPayerFilter:
+      name: payer_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    ClaimPatientFilter:
+      name: patient_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    ClaimInvoiceFilter:
+      name: invoice_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+    ClaimServiceDateFromFilter:
+      name: service_date_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    ClaimServiceDateToFilter:
+      name: service_date_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    ClaimCreatedFromFilter:
+      name: created_from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    ClaimCreatedToFilter:
+      name: created_to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    RuleServiceCategoryFilter:
+      name: service_category
       in: query
       required: false
       schema:
@@ -3433,6 +3531,738 @@ components:
           enum: [payments_reconciled]
         data:
           $ref: '#/components/schemas/PaymentReconciliationRun'
+    PayerContact:
+      type: object
+      required: [name, email, phone]
+      properties:
+        name:
+          type: [string, 'null']
+        email:
+          type: [string, 'null']
+          format: email
+        phone:
+          type: [string, 'null']
+    Payer:
+      type: object
+      required: [id, tenant_id, code, name, insurance_code, contact, is_active, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        insurance_code:
+          type: string
+        contact:
+          $ref: '#/components/schemas/PayerContact'
+        is_active:
+          type: boolean
+        notes:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        id: 2d3631ef-f0c2-4476-a1fb-d5ce3640f15e
+        tenant_id: c338c638-2626-493f-aef8-3619bf28eb6c
+        code: INSURECO
+        name: InsureCo
+        insurance_code: insureco
+        contact:
+          name: Claims Desk
+          email: claims@insureco.example
+          phone: "+998901234567"
+        is_active: true
+        notes: Preferred commercial payer.
+        created_at: 2026-03-12T08:30:00+00:00
+        updated_at: 2026-03-12T08:30:00+00:00
+    PayerCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payer'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              properties:
+                q:
+                  type: [string, 'null']
+                insurance_code:
+                  type: [string, 'null']
+                is_active:
+                  type: [boolean, 'null']
+                limit:
+                  type: integer
+    PayerMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [payer_created, payer_updated, payer_deleted]
+        data:
+          $ref: '#/components/schemas/Payer'
+    CreatePayerRequest:
+      type: object
+      required: [code, name, insurance_code]
+      properties:
+        code:
+          type: string
+          maxLength: 48
+        name:
+          type: string
+          maxLength: 160
+        insurance_code:
+          type: string
+          maxLength: 64
+        contact_name:
+          type: [string, 'null']
+          maxLength: 160
+        contact_email:
+          type: [string, 'null']
+          format: email
+          maxLength: 190
+        contact_phone:
+          type: [string, 'null']
+          maxLength: 40
+        is_active:
+          type: boolean
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    UpdatePayerRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 48
+        name:
+          type: string
+          maxLength: 160
+        insurance_code:
+          type: string
+          maxLength: 64
+        contact_name:
+          type: [string, 'null']
+          maxLength: 160
+        contact_email:
+          type: [string, 'null']
+          format: email
+          maxLength: 190
+        contact_phone:
+          type: [string, 'null']
+          maxLength: 40
+        is_active:
+          type: boolean
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    InsuranceRule:
+      type: object
+      required: [id, tenant_id, code, name, payer, requires_primary_policy, requires_attachment, is_active, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        payer:
+          type: object
+          required: [id, code, name, insurance_code]
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            name:
+              type: string
+            insurance_code:
+              type: string
+        service_category:
+          type: [string, 'null']
+        requires_primary_policy:
+          type: boolean
+        requires_attachment:
+          type: boolean
+        max_claim_amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        submission_window_days:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 3650
+        is_active:
+          type: boolean
+        notes:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    InsuranceRuleCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/InsuranceRule'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              properties:
+                q:
+                  type: [string, 'null']
+                payer_id:
+                  type: [string, 'null']
+                  format: uuid
+                service_category:
+                  type: [string, 'null']
+                is_active:
+                  type: [boolean, 'null']
+                limit:
+                  type: integer
+    InsuranceRuleMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [insurance_rule_created, insurance_rule_updated, insurance_rule_deleted]
+        data:
+          $ref: '#/components/schemas/InsuranceRule'
+    CreateInsuranceRuleRequest:
+      type: object
+      required: [payer_id, code, name]
+      properties:
+        payer_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          maxLength: 48
+        name:
+          type: string
+          maxLength: 160
+        service_category:
+          type: [string, 'null']
+          maxLength: 120
+        requires_primary_policy:
+          type: boolean
+        requires_attachment:
+          type: boolean
+        max_claim_amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        submission_window_days:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 3650
+        is_active:
+          type: boolean
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    UpdateInsuranceRuleRequest:
+      type: object
+      properties:
+        payer_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          maxLength: 48
+        name:
+          type: string
+          maxLength: 160
+        service_category:
+          type: [string, 'null']
+          maxLength: 120
+        requires_primary_policy:
+          type: boolean
+        requires_attachment:
+          type: boolean
+        max_claim_amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        submission_window_days:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 3650
+        is_active:
+          type: boolean
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    ClaimTransitionActor:
+      type: object
+      required: [type, id, name]
+      properties:
+        type:
+          type: string
+        id:
+          type: [string, 'null']
+          format: uuid
+        name:
+          type: [string, 'null']
+    ClaimTransitionRecord:
+      type: object
+      required: [from_status, to_status, occurred_at, actor, reason, source_evidence, amount]
+      properties:
+        from_status:
+          type: string
+          enum: [draft, submitted, under_review, approved, denied, paid]
+        to_status:
+          type: string
+          enum: [draft, submitted, under_review, approved, denied, paid]
+        occurred_at:
+          type: string
+          format: date-time
+        actor:
+          $ref: '#/components/schemas/ClaimTransitionActor'
+        reason:
+          type: [string, 'null']
+        source_evidence:
+          type: [string, 'null']
+        amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+    Claim:
+      type: object
+      required:
+        - id
+        - tenant_id
+        - claim_number
+        - status
+        - payer
+        - patient
+        - invoice
+        - currency
+        - service_date
+        - service_categories
+        - attachment_count
+        - amounts
+        - adjudication_history
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        claim_number:
+          type: string
+        status:
+          type: string
+          enum: [draft, submitted, under_review, approved, denied, paid]
+        payer:
+          type: object
+          required: [id, code, name, insurance_code]
+          properties:
+            id:
+              type: string
+              format: uuid
+            code:
+              type: string
+            name:
+              type: string
+            insurance_code:
+              type: string
+        patient:
+          type: object
+          required: [id, display_name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            display_name:
+              type: string
+        invoice:
+          type: object
+          required: [id, number]
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+        policy:
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [id, policy_number, member_number, group_number, plan_name]
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                policy_number:
+                  type: [string, 'null']
+                member_number:
+                  type: [string, 'null']
+                group_number:
+                  type: [string, 'null']
+                plan_name:
+                  type: [string, 'null']
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        service_date:
+          type: string
+          format: date
+        service_categories:
+          type: array
+          items:
+            type: string
+        attachment_count:
+          type: integer
+          minimum: 0
+        amounts:
+          type: object
+          required: [billed, approved, paid]
+          properties:
+            billed:
+              $ref: '#/components/schemas/Money'
+            approved:
+              oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/Money'
+            paid:
+              oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/Money'
+        notes:
+          type: [string, 'null']
+        submitted_at:
+          type: [string, 'null']
+          format: date-time
+        review_started_at:
+          type: [string, 'null']
+          format: date-time
+        approved_at:
+          type: [string, 'null']
+          format: date-time
+        denied_at:
+          type: [string, 'null']
+          format: date-time
+        paid_at:
+          type: [string, 'null']
+          format: date-time
+        denial_reason:
+          type: [string, 'null']
+        last_transition:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/ClaimTransitionRecord'
+        adjudication_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimTransitionRecord'
+        deleted_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ClaimCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              properties:
+                q:
+                  type: [string, 'null']
+                status:
+                  type: [string, 'null']
+                payer_id:
+                  type: [string, 'null']
+                  format: uuid
+                patient_id:
+                  type: [string, 'null']
+                  format: uuid
+                invoice_id:
+                  type: [string, 'null']
+                  format: uuid
+                service_date_from:
+                  type: [string, 'null']
+                  format: date
+                service_date_to:
+                  type: [string, 'null']
+                  format: date
+                created_from:
+                  type: [string, 'null']
+                  format: date-time
+                created_to:
+                  type: [string, 'null']
+                  format: date-time
+                limit:
+                  type: integer
+    ClaimShowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Claim'
+    ClaimMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum:
+            - claim_created
+            - claim_updated
+            - claim_deleted
+            - claim_submitted
+            - claim_review_started
+            - claim_approved
+            - claim_denied
+            - claim_paid
+            - claim_reopened
+        data:
+          $ref: '#/components/schemas/Claim'
+    CreateClaimRequest:
+      type: object
+      required: [invoice_id, payer_id]
+      properties:
+        invoice_id:
+          type: string
+          format: uuid
+        payer_id:
+          type: string
+          format: uuid
+        patient_policy_id:
+          type: [string, 'null']
+          format: uuid
+        service_date:
+          type: [string, 'null']
+          format: date
+        billed_amount:
+          type: [string, 'null']
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    UpdateClaimRequest:
+      type: object
+      properties:
+        payer_id:
+          type: string
+          format: uuid
+        patient_policy_id:
+          type: [string, 'null']
+          format: uuid
+        service_date:
+          type: string
+          format: date
+        billed_amount:
+          type: string
+          pattern: '^\d{1,10}(\.\d{1,2})?$'
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    ClaimDecisionRequest:
+      type: object
+      required: [reason, source_evidence]
+      properties:
+        reason:
+          type: string
+          maxLength: 5000
+        source_evidence:
+          type: string
+          maxLength: 5000
+    ApproveClaimRequest:
+      allOf:
+        - $ref: '#/components/schemas/ClaimDecisionRequest'
+        - type: object
+          required: [approved_amount]
+          properties:
+            approved_amount:
+              type: string
+              pattern: '^\d{1,10}(\.\d{1,2})?$'
+    MarkClaimPaidRequest:
+      allOf:
+        - $ref: '#/components/schemas/ClaimDecisionRequest'
+        - type: object
+          required: [paid_amount]
+          properties:
+            paid_amount:
+              type: string
+              pattern: '^\d{1,10}(\.\d{1,2})?$'
+    ClaimAttachment:
+      type: object
+      required: [id, tenant_id, claim_id, file_name, mime_type, size_bytes, storage, uploaded_at, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        claim_id:
+          type: string
+          format: uuid
+        attachment_type:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        file_name:
+          type: string
+        mime_type:
+          type: string
+        size_bytes:
+          type: integer
+          minimum: 0
+        storage:
+          type: object
+          required: [disk, path]
+          properties:
+            disk:
+              type: string
+            path:
+              type: string
+        uploaded_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ClaimAttachmentCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimAttachment'
+    ClaimAttachmentMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [claim_attachment_uploaded, claim_attachment_deleted]
+        data:
+          $ref: '#/components/schemas/ClaimAttachment'
+    UploadClaimAttachmentRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+        attachment_type:
+          type: [string, 'null']
+          maxLength: 64
+        notes:
+          type: [string, 'null']
+          maxLength: 5000
+    ClaimExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [claim_export_created]
+        data:
+          type: object
+          required: [export_id, format, file_name, row_count, generated_at, filters, storage]
+          properties:
+            export_id:
+              type: string
+              format: uuid
+            format:
+              type: string
+              enum: [csv]
+            file_name:
+              type: string
+            row_count:
+              type: integer
+            generated_at:
+              type: string
+              format: date-time
+            filters:
+              type: object
+              properties:
+                q:
+                  type: [string, 'null']
+                status:
+                  type: [string, 'null']
+                payer_id:
+                  type: [string, 'null']
+                  format: uuid
+                patient_id:
+                  type: [string, 'null']
+                  format: uuid
+                invoice_id:
+                  type: [string, 'null']
+                  format: uuid
+                service_date_from:
+                  type: [string, 'null']
+                  format: date
+                service_date_to:
+                  type: [string, 'null']
+                  format: date
+                created_from:
+                  type: [string, 'null']
+                  format: date-time
+                created_to:
+                  type: [string, 'null']
+                  format: date-time
+                limit:
+                  type: integer
+            storage:
+              type: object
+              required: [disk, path, visibility]
+              properties:
+                disk:
+                  type: string
+                path:
+                  type: string
+                visibility:
+                  type: string
     PaymeJsonRpcError:
       type: object
       required: [code, message]
@@ -3839,15 +4669,18 @@ components:
           maxLength: 3
     ApiErrorResponse:
       type: object
-      required: [code, message]
+      required: [code, message, details, trace_id, correlation_id]
       properties:
         code:
           type: string
         message:
           type: string
-        errors:
+        details:
           type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
+          additionalProperties: true
+        trace_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid

@@ -53,6 +53,7 @@ Platform integrations route inventory includes the tenant-scoped integrations hu
 
 Observability and admin ops route inventory includes:
 
+- `/ping`
 - `/health`
 - `/ready`
 - `/live`
@@ -138,6 +139,8 @@ Reference data, shared search, and reporting route inventory includes:
 | Reference Data and Search | `18` |
 
 Total planned inventory is roughly `280` to `320` distinct endpoints depending on optional integrations and reporting scope.
+
+The generated production OpenAPI bundle under `docs/api/openapi/openapi.yaml` is the exact runtime surface artifact. `T068` adds contract tests so the live public route table and the bundled OpenAPI operations must stay in sync.
 
 ## Matrix Rule
 

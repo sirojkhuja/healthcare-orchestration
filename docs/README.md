@@ -68,10 +68,15 @@ The split documents in this repository are derived from that source and exist to
 - [openapi/platform-integrations-ops.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/platform-integrations-ops.yaml)
 - [openapi/revenue-insurance.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/revenue-insurance.yaml)
 - [openapi/scheduling-clinical.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/scheduling-clinical.yaml)
+- [openapi/tenancy-clinics.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/tenancy-clinics.yaml)
+- [openapi/openapi.yaml](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/openapi.yaml)
+- [openapi/openapi.json](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/openapi/openapi.json)
 - [error-catalog.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/error-catalog.md)
 - [webhooks.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/webhooks.md)
 - [endpoint-matrix.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/endpoint-matrix.md)
 - Module route sets under [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules)
+
+Author the six module fragments directly. The bundled `openapi.yaml` and `openapi.json` artifacts are generated and committed, and must stay in sync with the live `/api/v1` route table.
 
 ### ADRs
 
@@ -85,6 +90,8 @@ The split documents in this repository are derived from that source and exist to
 - [007-postgres-schema-conventions.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/007-postgres-schema-conventions.md)
 - [008-kafka-client-selection.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/008-kafka-client-selection.md)
 - [009-jwt-api-authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/009-jwt-api-authentication.md)
+
+Later ADRs continue in numerical order under [docs/adr](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr), including [056-openapi-bundle-and-contract-governance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/056-openapi-bundle-and-contract-governance.md).
 
 ## Maintenance Rule
 
