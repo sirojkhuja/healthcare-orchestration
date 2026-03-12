@@ -62,6 +62,15 @@ use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTelegram
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationTemplateController;
 use App\Modules\Notifications\Presentation\Http\Controllers\NotificationWorkflowController;
 use App\Modules\Notifications\Presentation\Http\Controllers\TelegramBroadcastController;
+use App\Modules\Observability\Presentation\Http\Controllers\CacheAdminController;
+use App\Modules\Observability\Presentation\Http\Controllers\FeatureFlagController;
+use App\Modules\Observability\Presentation\Http\Controllers\HealthController;
+use App\Modules\Observability\Presentation\Http\Controllers\JobAdminController;
+use App\Modules\Observability\Presentation\Http\Controllers\KafkaAdminController;
+use App\Modules\Observability\Presentation\Http\Controllers\LoggingPipelineController;
+use App\Modules\Observability\Presentation\Http\Controllers\OutboxAdminController;
+use App\Modules\Observability\Presentation\Http\Controllers\RateLimitController;
+use App\Modules\Observability\Presentation\Http\Controllers\RuntimeConfigController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientConsentController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientContactController;
 use App\Modules\Patient\Presentation\Http\Controllers\PatientController;
@@ -170,6 +179,52 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/profiles/me/avatar', [ProfileController::class, 'uploadMyAvatar'])->name('profiles.me.avatar.upload');
         Route::post('/security/sessions:revoke-all', [SecurityController::class, 'revokeAllSessions'])->name('security.sessions.revoke-all');
         Route::middleware('tenant.require')->group(function (): void {
+            Route::middleware('permission:admin.view')->group(function (): void {
+                Route::get('/health', [HealthController::class, 'health'])->name('ops.health');
+                Route::get('/ready', [HealthController::class, 'ready'])->name('ops.ready');
+                Route::get('/live', [HealthController::class, 'live'])->name('ops.live');
+                Route::get('/metrics', [HealthController::class, 'metrics'])->name('ops.metrics');
+                Route::get('/version', [HealthController::class, 'version'])->name('ops.version');
+                Route::get('/admin/jobs', [JobAdminController::class, 'list'])->name('admin.jobs.list');
+                Route::get('/admin/kafka/lag', [KafkaAdminController::class, 'lag'])->name('admin.kafka.lag');
+                Route::get('/admin/outbox', [OutboxAdminController::class, 'list'])->name('admin.outbox.list');
+                Route::get('/admin/logging/pipelines', [LoggingPipelineController::class, 'list'])->name('admin.logging-pipelines.list');
+                Route::get('/admin/feature-flags', [FeatureFlagController::class, 'list'])->name('admin.feature-flags.list');
+                Route::get('/admin/rate-limits', [RateLimitController::class, 'show'])->name('admin.rate-limits.show');
+                Route::get('/admin/config', [RuntimeConfigController::class, 'show'])->name('admin.runtime-config.show');
+            });
+            Route::middleware('permission:admin.manage')->group(function (): void {
+                Route::post('/admin/cache:flush', [CacheAdminController::class, 'flush'])
+                    ->middleware('idempotency:admin.cache.flush')
+                    ->name('admin.cache.flush');
+                Route::post('/admin/cache:rebuild', [CacheAdminController::class, 'rebuild'])
+                    ->middleware('idempotency:admin.cache.rebuild')
+                    ->name('admin.cache.rebuild');
+                Route::post('/admin/jobs/{jobId}:retry', [JobAdminController::class, 'retry'])
+                    ->middleware('idempotency:admin.jobs.retry')
+                    ->name('admin.jobs.retry');
+                Route::post('/admin/kafka:replay', [KafkaAdminController::class, 'replay'])
+                    ->middleware('idempotency:admin.kafka.replay')
+                    ->name('admin.kafka.replay');
+                Route::post('/admin/outbox:drain', [OutboxAdminController::class, 'drain'])
+                    ->middleware('idempotency:admin.outbox.drain')
+                    ->name('admin.outbox.drain');
+                Route::post('/admin/outbox/{outboxId}:retry', [OutboxAdminController::class, 'retry'])
+                    ->middleware('idempotency:admin.outbox.retry')
+                    ->name('admin.outbox.retry');
+                Route::post('/admin/logging:pipeline-reload', [LoggingPipelineController::class, 'reload'])
+                    ->middleware('idempotency:admin.logging.reload')
+                    ->name('admin.logging-pipelines.reload');
+                Route::put('/admin/feature-flags', [FeatureFlagController::class, 'update'])
+                    ->middleware('idempotency:admin.feature-flags.update')
+                    ->name('admin.feature-flags.update');
+                Route::put('/admin/rate-limits', [RateLimitController::class, 'update'])
+                    ->middleware('idempotency:admin.rate-limits.update')
+                    ->name('admin.rate-limits.update');
+                Route::post('/admin/config:reload', [RuntimeConfigController::class, 'reload'])
+                    ->middleware('idempotency:admin.runtime-config.reload')
+                    ->name('admin.runtime-config.reload');
+            });
             Route::get('/security/ip-allowlist', [SecurityController::class, 'getIpAllowlist'])->name('security.ip-allowlist.get');
             Route::post('/security/ip-allowlist', [SecurityController::class, 'updateIpAllowlist'])->name('security.ip-allowlist.update');
             Route::middleware('permission:profiles.view')->group(function (): void {

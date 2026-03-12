@@ -2985,6 +2985,780 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/health:
+    get:
+      operationId: HealthQuery
+      tags: [Ops]
+      summary: Get the runtime health report
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Healthy or degraded runtime report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReport'
+        '503':
+          description: Failing runtime report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReport'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/ready:
+    get:
+      operationId: ReadinessQuery
+      tags: [Ops]
+      summary: Get the runtime readiness report
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Runtime is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReport'
+        '503':
+          description: Runtime is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReport'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/live:
+    get:
+      operationId: LivenessQuery
+      tags: [Ops]
+      summary: Get the process liveness view
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Process is live
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/metrics:
+    get:
+      operationId: MetricsQuery
+      tags: [Ops]
+      summary: Get Prometheus-compatible runtime metrics
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Prometheus text exposition
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/version:
+    get:
+      operationId: VersionQuery
+      tags: [Ops]
+      summary: Get the runtime version projection
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Runtime version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/cache:flush:
+    post:
+      operationId: FlushCacheCommand
+      tags: [Ops]
+      summary: Invalidate supported cache namespaces
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CacheAdminRequest'
+      responses:
+        '200':
+          description: Cache namespaces invalidated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheOperationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported cache domain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/cache:rebuild:
+    post:
+      operationId: RebuildCachesCommand
+      tags: [Ops]
+      summary: Invalidate and rebuild ops-managed caches
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CacheAdminRequest'
+      responses:
+        '200':
+          description: Cache namespaces invalidated and warmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheOperationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported cache domain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/jobs:
+    get:
+      operationId: ListJobsQuery
+      tags: [Ops]
+      summary: List queue summary and failed jobs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - in: query
+          name: queue
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Queue summary and failed job inventory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobOverviewResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/jobs/{jobId}:retry:
+    post:
+      operationId: RetryJobCommand
+      tags: [Ops]
+      summary: Retry one failed job
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/JobIdPath'
+      responses:
+        '200':
+          description: Failed job requeued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRetryResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Failed job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/kafka/lag:
+    get:
+      operationId: GetKafkaLagQuery
+      tags: [Ops]
+      summary: Get Kafka consumer receipt lag
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Kafka receipt lag projection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KafkaLagResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/kafka:replay:
+    post:
+      operationId: ReplayKafkaEventsCommand
+      tags: [Ops]
+      summary: Clear consumer replay receipts for a replay window
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaReplayRequest'
+      responses:
+        '200':
+          description: Replay receipts cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KafkaReplayResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid replay request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/outbox:
+    get:
+      operationId: ListOutboxQuery
+      tags: [Ops]
+      summary: List outbox rows in tenant scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [pending, processing, failed, delivered]
+        - in: query
+          name: topic
+          required: false
+          schema:
+            type: string
+            maxLength: 191
+        - in: query
+          name: event_type
+          required: false
+          schema:
+            type: string
+            maxLength: 191
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Outbox inventory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboxCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/outbox:drain:
+    post:
+      operationId: DrainOutboxCommand
+      tags: [Ops]
+      summary: Run one synchronous outbox drain pass
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutboxDrainRequest'
+      responses:
+        '200':
+          description: Outbox drain completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboxDrainResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/outbox/{outboxId}:retry:
+    post:
+      operationId: RetryOutboxItemCommand
+      tags: [Ops]
+      summary: Retry one failed outbox row
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '#/components/parameters/OutboxIdPath'
+      responses:
+        '200':
+          description: Outbox row reset to pending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboxMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Outbox row not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Outbox row is not retryable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/logging/pipelines:
+    get:
+      operationId: ListLoggingPipelinesQuery
+      tags: [Ops]
+      summary: List logging pipeline projections
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Logging pipeline projections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoggingPipelineCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/logging:pipeline-reload:
+    post:
+      operationId: ReloadLoggingPipelinesCommand
+      tags: [Ops]
+      summary: Record logging pipeline reload intent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReloadLoggingPipelinesRequest'
+      responses:
+        '200':
+          description: Logging pipelines reloaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoggingPipelineMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported pipeline key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/feature-flags:
+    get:
+      operationId: ListFeatureFlagsQuery
+      tags: [Ops]
+      summary: List tenant feature flag projections
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Feature flag catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: SetFeatureFlagsCommand
+      tags: [Ops]
+      summary: Set tenant feature flag overrides
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetFeatureFlagsRequest'
+      responses:
+        '200':
+          description: Feature flags updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported feature flag key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/rate-limits:
+    get:
+      operationId: GetRateLimitsQuery
+      tags: [Ops]
+      summary: List tenant rate-limit bucket projections
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Rate-limit bucket catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: UpdateRateLimitsCommand
+      tags: [Ops]
+      summary: Update tenant rate-limit bucket overrides
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRateLimitsRequest'
+      responses:
+        '200':
+          description: Rate limits updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Unsupported rate-limit bucket or invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/config:
+    get:
+      operationId: GetRuntimeConfigQuery
+      tags: [Ops]
+      summary: Get the safe runtime config projection
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Safe runtime config projection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuntimeConfigResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/config:reload:
+    post:
+      operationId: ReloadRuntimeConfigCommand
+      tags: [Ops]
+      summary: Refresh the safe runtime config projection
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Runtime config projection refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuntimeConfigMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or admin write permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -3215,6 +3989,19 @@ components:
         minimum: 1
         maximum: 100
         default: 50
+    JobIdPath:
+      in: path
+      name: jobId
+      required: true
+      schema:
+        type: string
+    OutboxIdPath:
+      in: path
+      name: outboxId
+      required: true
+      schema:
+        type: string
+        format: uuid
   schemas:
     ApiErrorResponse:
       type: object
@@ -5428,3 +6215,573 @@ components:
           enum: [pii_key_rotation_completed, pii_reencryption_completed]
         data:
           $ref: '#/components/schemas/ComplianceReport'
+    HealthCheck:
+      type: object
+      required: [key, status, message, details]
+      properties:
+        key:
+          type: string
+        status:
+          type: string
+          enum: [pass, warn, fail]
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    HealthReport:
+      type: object
+      required: [status, checked_at, checks]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, failing, ready, not_ready]
+        checked_at:
+          type: string
+          format: date-time
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthCheck'
+        summary:
+          type: object
+          additionalProperties: true
+    LivenessResponse:
+      type: object
+      required: [status, service, version, checked_at]
+      properties:
+        status:
+          type: string
+          enum: [alive]
+        service:
+          type: string
+        version:
+          type: string
+        checked_at:
+          type: string
+          format: date-time
+    VersionPayload:
+      type: object
+      required: [service, environment, version, php_version, laravel_version, modules]
+      properties:
+        service:
+          type: string
+        environment:
+          type: string
+        version:
+          type: string
+        php_version:
+          type: string
+        laravel_version:
+          type: string
+        modules:
+          type: array
+          items:
+            type: string
+        git_sha:
+          type: [string, 'null']
+    VersionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/VersionPayload'
+    CacheAdminRequest:
+      type: object
+      properties:
+        domains:
+          type: array
+          items:
+            type: string
+            enum: [permissions, availability, settings, reference-data, integrations, feature-flags, rate-limits, ops]
+        include_global_reference_data:
+          type: boolean
+    CacheOperation:
+      type: object
+      required: [action, domains, include_global_reference_data, namespace_invalidations, warmed, performed_at]
+      properties:
+        action:
+          type: string
+          enum: [flush, rebuild]
+        domains:
+          type: array
+          items:
+            type: string
+        include_global_reference_data:
+          type: boolean
+        namespace_invalidations:
+          type: integer
+          minimum: 0
+        warmed:
+          type: array
+          items:
+            type: string
+        performed_at:
+          type: string
+          format: date-time
+    CacheOperationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [cache_flushed, caches_rebuilt]
+        data:
+          $ref: '#/components/schemas/CacheOperation'
+    FailedJob:
+      type: object
+      required: [id, uuid, connection, queue, display_name, error_summary, failed_at]
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+          format: uuid
+        connection:
+          type: string
+        queue:
+          type: string
+        display_name:
+          type: string
+        error_summary:
+          type: string
+        failed_at:
+          type: string
+          format: date-time
+    JobOverview:
+      type: object
+      required: [summary, items]
+      properties:
+        summary:
+          type: object
+          required: [ready_jobs, reserved_jobs, failed_jobs, pending_batches]
+          properties:
+            ready_jobs:
+              type: integer
+            reserved_jobs:
+              type: integer
+            failed_jobs:
+              type: integer
+            pending_batches:
+              type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailedJob'
+    JobOverviewResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/JobOverview'
+    JobRetryResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [job_retried]
+        data:
+          type: object
+          required: [job, retried_at]
+          properties:
+            job:
+              $ref: '#/components/schemas/FailedJob'
+            retried_at:
+              type: string
+              format: date-time
+    KafkaConsumerLag:
+      type: object
+      required: [consumer_name, topics, processed_total, receipt_lag_seconds]
+      properties:
+        consumer_name:
+          type: string
+        topics:
+          type: array
+          items:
+            type: string
+        processed_total:
+          type: integer
+        last_processed_at:
+          type: [string, 'null']
+          format: date-time
+        receipt_lag_seconds:
+          type: integer
+    KafkaLagView:
+      type: object
+      required: [brokers, consumer_group, consumers, captured_at]
+      properties:
+        brokers:
+          type: array
+          items:
+            type: string
+        consumer_group:
+          type: string
+        consumers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KafkaConsumerLag'
+        captured_at:
+          type: string
+          format: date-time
+    KafkaLagResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/KafkaLagView'
+    KafkaReplayRequest:
+      type: object
+      required: [consumer_name]
+      properties:
+        consumer_name:
+          type: string
+          maxLength: 191
+        event_ids:
+          type: array
+          items:
+            type: string
+        processed_before:
+          type: [string, 'null']
+          format: date-time
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+    KafkaReplayResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [kafka_replay_enabled]
+        data:
+          type: object
+          required: [consumer_name, limit, cleared_count, performed_at]
+          properties:
+            consumer_name:
+              type: string
+            event_ids:
+              type: [array, 'null']
+              items:
+                type: string
+            processed_before:
+              type: [string, 'null']
+              format: date-time
+            limit:
+              type: integer
+            cleared_count:
+              type: integer
+            performed_at:
+              type: string
+              format: date-time
+    OutboxItem:
+      type: object
+      required: [id, event_id, event_type, topic, tenant_id, request_id, correlation_id, headers, payload, status, attempts]
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+        topic:
+          type: string
+        tenant_id:
+          type: [string, 'null']
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        causation_id:
+          type: [string, 'null']
+          format: uuid
+        partition_key:
+          type: [string, 'null']
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        payload:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [pending, processing, failed, delivered]
+        attempts:
+          type: integer
+        next_attempt_at:
+          type: [string, 'null']
+          format: date-time
+        claimed_at:
+          type: [string, 'null']
+          format: date-time
+        delivered_at:
+          type: [string, 'null']
+          format: date-time
+        last_error:
+          type: [string, 'null']
+        created_at:
+          type: [string, 'null']
+          format: date-time
+    OutboxCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutboxItem'
+    OutboxDrainRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+    OutboxDrainResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [outbox_drained]
+        data:
+          type: object
+          required: [limit, claimed, delivered, failed, performed_at]
+          properties:
+            limit:
+              type: integer
+            claimed:
+              type: integer
+            delivered:
+              type: integer
+            failed:
+              type: integer
+            performed_at:
+              type: string
+              format: date-time
+    OutboxMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [outbox_item_retried]
+        data:
+          $ref: '#/components/schemas/OutboxItem'
+    LoggingPipeline:
+      type: object
+      required: [key, name, destination, enabled, status, last_reloaded_at]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        destination:
+          type: string
+        enabled:
+          type: boolean
+        status:
+          type: string
+          enum: [active, disabled]
+        last_reloaded_at:
+          type: [string, 'null']
+          format: date-time
+    LoggingPipelineCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoggingPipeline'
+    ReloadLoggingPipelinesRequest:
+      type: object
+      properties:
+        pipelines:
+          type: array
+          items:
+            type: string
+    LoggingPipelineMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [logging_pipelines_reloaded]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoggingPipeline'
+    FeatureFlag:
+      type: object
+      required: [key, name, description, module, enabled, default_enabled, source, updated_at]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        module:
+          type: string
+        enabled:
+          type: boolean
+        default_enabled:
+          type: boolean
+        source:
+          type: string
+          enum: [default, tenant_override]
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    FeatureFlagCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlag'
+    SetFeatureFlagsRequest:
+      type: object
+      required: [flags]
+      properties:
+        flags:
+          type: array
+          items:
+            type: object
+            required: [key, enabled]
+            properties:
+              key:
+                type: string
+              enabled:
+                type: boolean
+    FeatureFlagMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [feature_flags_updated]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlag'
+    RateLimitBucket:
+      type: object
+      required: [bucket_key, name, description, requests_per_minute, burst, source, updated_at]
+      properties:
+        bucket_key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        requests_per_minute:
+          type: integer
+        burst:
+          type: integer
+        source:
+          type: string
+          enum: [default, tenant_override]
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    RateLimitCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RateLimitBucket'
+    UpdateRateLimitsRequest:
+      type: object
+      required: [limits]
+      properties:
+        limits:
+          type: array
+          items:
+            type: object
+            required: [bucket_key, requests_per_minute, burst]
+            properties:
+              bucket_key:
+                type: string
+              requests_per_minute:
+                type: integer
+                minimum: 1
+              burst:
+                type: integer
+                minimum: 1
+    RateLimitMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [rate_limits_updated]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RateLimitBucket'
+    RuntimeConfigView:
+      type: object
+      required: [service, environment, version, cache_store, queue_connection, modules, kafka, outbox, last_reloaded_at]
+      properties:
+        service:
+          type: string
+        environment:
+          type: string
+        version:
+          type: string
+        cache_store:
+          type: string
+        queue_connection:
+          type: string
+        modules:
+          type: array
+          items:
+            type: string
+        kafka:
+          type: object
+          required: [brokers, consumer_group]
+          properties:
+            brokers:
+              type: array
+              items:
+                type: string
+            consumer_group:
+              type: string
+        outbox:
+          type: object
+          required: [batch_size, max_attempts]
+          properties:
+            batch_size:
+              type: integer
+            max_attempts:
+              type: integer
+        last_reloaded_at:
+          type: [string, 'null']
+          format: date-time
+    RuntimeConfigResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/RuntimeConfigView'
+    RuntimeConfigMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [runtime_config_reloaded]
+        data:
+          $ref: '#/components/schemas/RuntimeConfigView'

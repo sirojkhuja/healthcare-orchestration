@@ -20,6 +20,8 @@ use App\Modules\Integrations\Infrastructure\Persistence\DatabaseIntegrationState
 use App\Modules\Integrations\Infrastructure\Persistence\DatabaseIntegrationTokenRepository;
 use App\Modules\Integrations\Infrastructure\Persistence\DatabaseIntegrationWebhookRepository;
 use App\Modules\Integrations\Infrastructure\Persistence\DatabaseMyIdVerificationRepository;
+use App\Modules\Observability\Application\Contracts\FeatureFlagResolver;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 final class IntegrationHubServiceProvider extends ServiceProvider
@@ -27,7 +29,9 @@ final class IntegrationHubServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
-        $this->app->singleton(IntegrationCatalog::class, ConfigIntegrationCatalog::class);
+        $this->app->scoped(IntegrationCatalog::class, function (Application $app): ConfigIntegrationCatalog {
+            return new ConfigIntegrationCatalog($app->make(FeatureFlagResolver::class));
+        });
         $this->app->bind(IntegrationStateRepository::class, DatabaseIntegrationStateRepository::class);
         $this->app->bind(IntegrationCredentialRepository::class, DatabaseIntegrationCredentialRepository::class);
         $this->app->bind(IntegrationLogRepository::class, DatabaseIntegrationLogRepository::class);

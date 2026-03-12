@@ -51,6 +51,29 @@ Platform integrations route inventory includes the tenant-scoped integrations hu
 - `/integrations/eimzo:sign`
 - `/webhooks/eimzo`
 
+Observability and admin ops route inventory includes:
+
+- `/health`
+- `/ready`
+- `/live`
+- `/metrics`
+- `/version`
+- `/admin/cache:flush`
+- `/admin/cache:rebuild`
+- `/admin/jobs`
+- `/admin/jobs/{jobId}:retry`
+- `/admin/kafka/lag`
+- `/admin/kafka:replay`
+- `/admin/outbox`
+- `/admin/outbox:drain`
+- `/admin/outbox/{outboxId}:retry`
+- `/admin/logging/pipelines`
+- `/admin/logging:pipeline-reload`
+- `/admin/feature-flags`
+- `/admin/rate-limits`
+- `/admin/config`
+- `/admin/config:reload`
+
 Audit and compliance route inventory includes the tenant-scoped governance surface under:
 
 - `/audit/events`

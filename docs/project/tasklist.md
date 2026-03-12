@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-12`
 
-Overall Progress: `91% (64/70 tasks completed)`
+Overall Progress: `92% (65/70 tasks completed)`
 
 Active Task: `None`
 
@@ -122,7 +122,7 @@ Active Task: `None`
 | --- | --- | --- | --- | --- | --- |
 | T063 | Done | Implement audit retention, export, object views, and PII field management. | T014 | Audit query APIs, retention config, PII field registry. | Compliance and audit tests pass. |
 | T064 | Done | Implement consent views and data access request workflows with approval actions. | T032, T063 | Consent endpoints, request workflows, approval and denial actions. | Compliance workflow tests pass. |
-| T065 | Todo | Implement health, readiness, liveness, metrics, version, and admin operations endpoints. | T019 | Ops endpoints, cache controls, job retry, outbox and Kafka operations. | Admin authorization and operational tests pass. |
+| T065 | Done | Implement health, readiness, liveness, metrics, version, and admin operations endpoints. | T019 | Ops endpoints, cache controls, job retry, outbox and Kafka operations. | Admin authorization and operational tests pass. |
 | T066 | Todo | Implement reference data, global search, and reporting endpoints. | T029, T033, T038, T049, T055 | Shared reference APIs, global search, report lifecycle endpoints. | Search relevance and report generation tests pass. |
 | T067 | Todo | Implement structured logging, OpenTelemetry, Sentry, Prometheus metrics, Grafana dashboards, and Elastic log shipping. | T012, T019, T065 | Instrumentation, dashboards, alerts, log pipeline config. | Traces, metrics, and alerts work in local and CI validation paths. |
 

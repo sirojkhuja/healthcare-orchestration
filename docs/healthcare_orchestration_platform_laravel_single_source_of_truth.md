@@ -1592,6 +1592,15 @@ Compliance consent views and data-access-request rules:
 - PUT `/admin/rate-limits` → `UpdateRateLimitsCommand` → Ops
 - GET `/admin/config` → `GetRuntimeConfigQuery` → Ops
 - POST `/admin/config:reload` → `ReloadRuntimeConfigCommand` → Ops
+- all ops routes are authenticated, tenant-scoped for authorization, and protected by `admin.view` or `admin.manage`
+- `GET /live` returns process liveness only; `GET /ready` fails when critical runtime probes fail; `GET /health` returns `healthy|degraded|failing` with ordered checks
+- `GET /metrics` returns Prometheus-compatible text with app info, health state, outbox lag, queue counts, and Kafka consumer receipt lag in this phase
+- cache admin uses explicit namespace invalidation only; raw store flush is forbidden
+- failed job retry reinserts one `failed_jobs` payload into the queue backend and removes the failed row on success
+- Kafka replay in this phase clears consumer replay receipts for the selected consumer and event window; broker offset movement remains an operator action outside the API
+- outbox admin supports tenant-visible listing, synchronous relay drain, and retry of failed outbox rows only
+- feature flags and rate limits are tenant-scoped overrides with config-backed defaults
+- runtime config reload refreshes the safe config projection and audit history only; it does not hot-reload environment variables or restart workers
 
 ---
 

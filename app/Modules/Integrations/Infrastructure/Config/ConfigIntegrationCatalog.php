@@ -3,6 +3,7 @@
 namespace App\Modules\Integrations\Infrastructure\Config;
 
 use App\Modules\Integrations\Application\Contracts\IntegrationCatalog;
+use App\Modules\Observability\Application\Contracts\FeatureFlagResolver;
 
 /**
  * @phpstan-import-type IntegrationCapability from IntegrationCatalog
@@ -12,6 +13,10 @@ use App\Modules\Integrations\Application\Contracts\IntegrationCatalog;
  */
 final class ConfigIntegrationCatalog implements IntegrationCatalog
 {
+    public function __construct(
+        private readonly FeatureFlagResolver $featureFlagResolver,
+    ) {}
+
     #[\Override]
     /**
      * @return list<IntegrationDefinition>
@@ -73,7 +78,7 @@ final class ConfigIntegrationCatalog implements IntegrationCatalog
             'category' => $category,
             'default_enabled' => (bool) ($definition['default_enabled'] ?? false),
             'feature_flag' => $featureFlag,
-            'available' => $featureFlag === null ? true : (bool) config('integrations.feature_flags.'.$featureFlag, false),
+            'available' => $featureFlag === null ? true : $this->featureFlagResolver->isEnabled($featureFlag),
             'supports' => $this->normalizeSupports($definition['supports'] ?? null),
             'credential_fields' => $this->normalizeCredentialFields($definition['credential_fields'] ?? null),
             'webhook' => $this->normalizeWebhook($definition['webhook'] ?? null),

@@ -39,6 +39,23 @@ final class DatabaseOutboxRepository implements OutboxRepository
     }
 
     #[\Override]
+    public function findForAdmin(string $outboxId, ?string $tenantId): ?OutboxMessage
+    {
+        $query = OutboxMessageRecord::query()->whereKey($outboxId);
+
+        if ($tenantId !== null) {
+            $query->where(function (Builder $builder) use ($tenantId): void {
+                $builder->where('tenant_id', $tenantId)
+                    ->orWhereNull('tenant_id');
+            });
+        }
+
+        $record = $query->first();
+
+        return $record instanceof OutboxMessageRecord ? $this->toData($record) : null;
+    }
+
+    #[\Override]
     public function claimReadyBatch(int $limit, DateTimeInterface $now): array
     {
         /** @var list<OutboxMessage> $messages */
@@ -75,6 +92,48 @@ final class DatabaseOutboxRepository implements OutboxRepository
         });
 
         return $messages;
+    }
+
+    #[\Override]
+    public function listForAdmin(?string $tenantId, ?string $status, ?string $topic, ?string $eventType, int $limit): array
+    {
+        $query = OutboxMessageRecord::query();
+
+        if ($tenantId !== null) {
+            $query->where(function (Builder $builder) use ($tenantId): void {
+                $builder->where('tenant_id', $tenantId)
+                    ->orWhereNull('tenant_id');
+            });
+        }
+
+        if ($status !== null) {
+            $query->where('status', $status);
+        }
+
+        if ($topic !== null) {
+            $query->where('topic', $topic);
+        }
+
+        if ($eventType !== null) {
+            $query->where('event_type', $eventType);
+        }
+
+        if (DB::getDriverName() === 'pgsql') {
+            $query->orderByRaw(
+                "CASE status WHEN 'pending' THEN 1 WHEN 'failed' THEN 2 WHEN 'processing' THEN 3 WHEN 'delivered' THEN 4 ELSE 5 END",
+            );
+        }
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, OutboxMessageRecord> $records */
+        $records = $query
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+
+        /** @var list<OutboxMessageRecord> $recordItems */
+        $recordItems = $records->all();
+
+        return array_map(fn (OutboxMessageRecord $record): OutboxMessage => $this->toData($record), $recordItems);
     }
 
     #[\Override]
@@ -125,6 +184,24 @@ final class DatabaseOutboxRepository implements OutboxRepository
                 'last_error' => $lastError,
                 'updated_at' => now(),
             ]);
+    }
+
+    #[\Override]
+    public function retry(string $outboxId): ?OutboxMessage
+    {
+        OutboxMessageRecord::query()
+            ->whereKey($outboxId)
+            ->update([
+                'status' => OutboxMessageRecord::STATUS_PENDING,
+                'next_attempt_at' => null,
+                'claimed_at' => null,
+                'last_error' => null,
+                'updated_at' => now(),
+            ]);
+
+        $record = OutboxMessageRecord::query()->find($outboxId);
+
+        return $record instanceof OutboxMessageRecord ? $this->toData($record) : null;
     }
 
     private function toData(OutboxMessageRecord $record): OutboxMessage

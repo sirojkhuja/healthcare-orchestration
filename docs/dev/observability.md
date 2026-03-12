@@ -32,6 +32,14 @@ Track at minimum:
 - payment reconciliation failures
 - webhook verification failures
 
+Current `T065` endpoint surface:
+
+- `/api/v1/live` for process liveness
+- `/api/v1/ready` for critical runtime readiness
+- `/api/v1/health` for ordered health checks and degraded-state warnings
+- `/api/v1/metrics` for Prometheus text exposition of app info, health status, outbox lag, queue counts, and Kafka consumer receipt lag
+- `/api/v1/admin/*` for strongly gated operational controls over caches, failed jobs, Kafka replay receipts, outbox retry/drain, logging pipeline reload, feature flags, rate limits, and runtime config views
+
 ## Error Monitoring
 
 - Send application exceptions to Sentry.
