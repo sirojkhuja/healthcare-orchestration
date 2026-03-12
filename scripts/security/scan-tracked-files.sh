@@ -26,7 +26,7 @@ fi
 
 patterns=(
   'BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY'
-  'github_pat_'
+  'github''_pat_'
   'ghp_[A-Za-z0-9]+'
   'glpat-[A-Za-z0-9_-]+'
   'xox[baprs]-[A-Za-z0-9-]+'
