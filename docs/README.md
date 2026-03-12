@@ -23,6 +23,7 @@ The split documents in this repository are derived from that source and exist to
 13. Read [hardening.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/dev/hardening.md) before touching architecture gates, performance baselines, or release-blocking security checks.
 14. Read the relevant API module document in [docs/api/modules](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/api/modules).
 15. Open [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md) before making any code or documentation change.
+16. Read [release-management.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/release-management.md) before touching release automation, changelog generation, cutover planning, or rollback policy.
 
 ## Documentation Areas
 
@@ -32,6 +33,10 @@ The split documents in this repository are derived from that source and exist to
 - [progress-workflow.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/progress-workflow.md): mandatory task lifecycle for Codex and humans.
 - [roadmap.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/roadmap.md): implementation sequence.
 - [tasklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/tasklist.md): executable project backlog with status tracking.
+- [release-management.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/release-management.md): release automation, changelog generation, and tag publication flow.
+- [production-readiness-review.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/production-readiness-review.md): approved release readiness decision record.
+- [cutover-checklist.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/cutover-checklist.md): ordered go-live checklist.
+- [rollback-plan.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/project/rollback-plan.md): rollback triggers and recovery sequence.
 
 ### Product
 
@@ -93,7 +98,7 @@ Author the six module fragments directly. The bundled `openapi.yaml` and `openap
 - [008-kafka-client-selection.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/008-kafka-client-selection.md)
 - [009-jwt-api-authentication.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/009-jwt-api-authentication.md)
 
-Later ADRs continue in numerical order under [docs/adr](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr), including [056-openapi-bundle-and-contract-governance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/056-openapi-bundle-and-contract-governance.md) and [057-hardening-baselines-and-governance-checks.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/057-hardening-baselines-and-governance-checks.md).
+Later ADRs continue in numerical order under [docs/adr](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr), including [056-openapi-bundle-and-contract-governance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/056-openapi-bundle-and-contract-governance.md), [057-hardening-baselines-and-governance-checks.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/057-hardening-baselines-and-governance-checks.md), and [058-release-automation-and-go-live-governance.md](/var/www/personal/said-team/portfolio/healthcare-orchestration/docs/adr/058-release-automation-and-go-live-governance.md).
 
 ## Maintenance Rule
 

@@ -656,6 +656,9 @@ Standard error:
 ### 16.2 Releases
 - semantic versioning
 - changelog generation
+- repository-owned dry-run release workflow
+- approved production readiness review before tag publication
+- approved cutover checklist and rollback plan before go-live
 
 ---
 

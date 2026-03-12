@@ -27,6 +27,7 @@ Future Laravel bootstrap work must provide these repository commands:
 - `make build`
 - `make verify`
 - `make harden`
+- `make release-dry-run RELEASE_VERSION=<semver>`
 
 Each command delegates through Docker Compose and Composer scripts in the current foundation setup, and the interface must stay stable even if the internals change later.
 
@@ -40,6 +41,7 @@ OpenAPI contract work also uses these repository-level commands:
 
 - `.github/workflows/governance.yml` validates tasklist and governance artifacts.
 - `.github/workflows/ci.yml` validates Docker Compose, runs `make bootstrap`, then runs lint, analysis, tests, build, explicit OpenAPI validation, and hardening checks through the stable repository commands.
+- `.github/workflows/release.yml` runs dry-run release validation on manual dispatch and publishes GitHub releases from semantic-version tags after the same dry-run checks pass.
 
 OpenAPI validation in CI must include:
 
@@ -67,6 +69,14 @@ Observability validation in the current repository must include:
 - generate changelog entries from merged work
 - promote through documented environments
 - block release when critical alerts or failing tests exist
+
+Release automation in the current repository uses this contract:
+
+- local dry run: `make release-dry-run RELEASE_VERSION=<semver>`
+- release notes generator: `bash scripts/release/build-changelog.sh --version <semver> --output <path>`
+- readiness gate: `bash scripts/release/check-readiness.sh --version <semver>`
+- workflow dispatch performs dry-run validation only
+- semantic-version tag pushes publish the GitHub release from the generated changelog artifact
 
 ## Pull Request Expectations
 

@@ -15,6 +15,7 @@ Read these files in order before making changes:
 4. `docs/dev/coding-standards.md`
 5. `docs/dev/architecture.md`
 6. `docs/dev/authentication.md` for login, JWT, refresh-token, and session work
+7. `docs/project/release-management.md` for releases, changelogs, cutovers, rollback plans, or tag publication work
 
 Then read only the relevant product, API, testing, security, observability, and ADR documents for the task.
 

@@ -14,8 +14,9 @@ Before answering questions, planning work, or editing code, read:
 4. `docs/dev/coding-standards.md`
 5. `docs/dev/architecture.md`
 6. `docs/dev/authentication.md` when the task touches login, JWTs, refresh tokens, sessions, or current-user flows
-7. The most relevant module document under `docs/api/modules/`
-8. The most relevant product, testing, security, observability, and CI/CD documents
+7. `docs/project/release-management.md` when the task touches releases, changelogs, tags, cutovers, or rollback behavior
+8. The most relevant module document under `docs/api/modules/`
+9. The most relevant product, testing, security, observability, and CI/CD documents
 
 Also load the local skill at `.codex/skills/medflow-development-governance/SKILL.md`.
 

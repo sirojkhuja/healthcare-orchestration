@@ -14,9 +14,11 @@ A task is done only when all of the following are true:
 - build passes
 - verification passes
 - hardening checks pass
+- release dry run passes for release workflow changes
 - OpenAPI fragments and generated bundle are updated or marked as unaffected
 - module and workflow docs are updated
 - ADR is updated when architectural decisions changed
 - observability and security requirements are satisfied
+- approved readiness, cutover, and rollback documents exist for release-readiness changes
 
 If any item is missing, the task remains incomplete.

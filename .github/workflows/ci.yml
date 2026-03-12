@@ -20,6 +20,9 @@ jobs:
       - name: Validate governance artifacts
         run: bash scripts/quality-gate.sh --docs-only
 
+      - name: Validate release dry-run tooling
+        run: bash scripts/release/dry-run.sh --version 0.1.0-rc.1 --skip-verify
+
       - name: Validate Docker Compose
         run: docker compose config >/dev/null
 

@@ -1,9 +1,10 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: bootstrap format lint analyse test build verify harden docs-check install-hooks compose-config
+.PHONY: bootstrap format lint analyse test build verify harden release-dry-run docs-check install-hooks compose-config
 
 bootstrap:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/bootstrap-app.sh; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
@@ -11,7 +12,8 @@ bootstrap:
 	fi
 
 format:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/composer.sh run format; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
@@ -19,7 +21,8 @@ format:
 	fi
 
 lint:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/composer.sh run lint; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
@@ -27,7 +30,8 @@ lint:
 	fi
 
 analyse:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/composer.sh run analyse; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
@@ -35,7 +39,8 @@ analyse:
 	fi
 
 test:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/node.sh run openapi:build; \
 		bash scripts/composer.sh run test; \
 	else \
@@ -44,7 +49,8 @@ test:
 	fi
 
 build:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/node.sh run build; \
 	else \
 		echo "No composer.json yet; running documentation checks only."; \
@@ -52,7 +58,8 @@ build:
 	fi
 
 harden:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/architecture/check.sh; \
 		bash scripts/performance/check.sh; \
 		bash scripts/security/check.sh; \
@@ -62,8 +69,24 @@ harden:
 		bash scripts/quality-gate.sh --docs-only; \
 	fi
 
+release-dry-run:
+	@set -euo pipefail; \
+	if [[ -z "$${RELEASE_VERSION:-}" ]]; then \
+		echo "RELEASE_VERSION is required."; \
+		exit 1; \
+	fi
+	@args=(--version "$${RELEASE_VERSION}"); \
+	if [[ "$${ALLOW_EXISTING_TAG:-0}" == "1" ]]; then \
+		args+=(--allow-existing-tag); \
+	fi; \
+	if [[ "$${RELEASE_SKIP_VERIFY:-0}" == "1" ]]; then \
+		args+=(--skip-verify); \
+	fi; \
+	bash scripts/release/dry-run.sh "$${args[@]}"
+
 verify:
-	@if [[ -f composer.json ]]; then \
+	@set -euo pipefail; \
+	if [[ -f composer.json ]]; then \
 		bash scripts/node.sh run openapi:validate; \
 		bash scripts/openapi/validate-schema.sh; \
 		bash scripts/composer.sh run verify; \
@@ -78,11 +101,14 @@ verify:
 	fi
 
 install-hooks:
-	@bash scripts/install-git-hooks.sh
+	@set -euo pipefail; \
+	bash scripts/install-git-hooks.sh
 
 docs-check:
-	@bash scripts/check-tasklist.sh
-	@bash scripts/quality-gate.sh --docs-only
+	@set -euo pipefail; \
+	bash scripts/check-tasklist.sh; \
+	bash scripts/quality-gate.sh --docs-only
 
 compose-config:
-	@docker compose config >/dev/null
+	@set -euo pipefail; \
+	docker compose config >/dev/null

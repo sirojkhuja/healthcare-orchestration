@@ -95,6 +95,8 @@
 
 No feature is complete until all required test layers for that feature pass locally and in CI.
 
+The repository test contract runs the full Laravel test suite with an explicit PHP memory limit of `256M` so `make test` and `make verify` stay consistent under the full endpoint surface.
+
 OpenAPI-affecting work is not complete until the generated bundle, official schema validation, and the route/spec contract suite all pass together.
 
 Hardening work is not complete until `bash scripts/architecture/check.sh`, `bash scripts/performance/check.sh`, and `bash scripts/security/check.sh` all pass.
