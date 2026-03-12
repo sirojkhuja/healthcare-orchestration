@@ -15,7 +15,9 @@ use App\Modules\Lab\Application\Data\LabWebhookProcessResultData;
 use App\Modules\Lab\Application\Data\LabWebhookVerificationData;
 use App\Modules\Lab\Application\Exceptions\InvalidLabWebhookSignatureException;
 use App\Modules\Lab\Domain\LabOrders\LabOrderActor;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class LabWebhookService
@@ -27,6 +29,7 @@ final class LabWebhookService
         private readonly LabWebhookDeliveryRepository $labWebhookDeliveryRepository,
         private readonly LabOrderWorkflowService $labOrderWorkflowService,
         private readonly AuditTrailWriter $auditTrailWriter,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -37,6 +40,12 @@ final class LabWebhookService
         $gateway = $this->labProviderGatewayRegistry->resolve($providerKey);
 
         if (! $gateway->verifyWebhookSignature($signature, $rawPayload)) {
+            $this->metricRecorder->recordWebhookVerificationFailure($providerKey);
+            $this->metricRecorder->recordIntegrationError($providerKey, 'webhook.process', 'invalid_signature');
+            Log::warning('integration.webhook.verification_failed', [
+                'provider_key' => $providerKey,
+                'operation' => 'webhook.process',
+            ]);
             throw new InvalidLabWebhookSignatureException('Inbound webhook signature failed verification.');
         }
 

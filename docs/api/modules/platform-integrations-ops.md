@@ -217,9 +217,10 @@
 - `GET /admin/config` -> `GetRuntimeConfigQuery` -> Ops
 - `POST /admin/config:reload` -> `ReloadRuntimeConfigCommand` -> Ops
 - ADR `053` defines the observability and admin-ops contract for this surface.
+- ADR `055` expands the instrumentation, logging, and internal scrape behavior for this surface.
 - All ops routes in this phase require authenticated tenant context and `admin.view` or `admin.manage`.
 - `GET /live` returns process liveness only; `GET /ready` fails with `503` when critical runtime probes fail; `GET /health` returns `healthy|degraded|failing` with ordered checks plus outbox and failed-job summary.
-- `GET /metrics` returns Prometheus text exposition for app info, health status, outbox lag, queue counts, and Kafka consumer-receipt lag.
+- `GET /metrics` returns Prometheus text exposition for app info, health status, outbox lag, queue counts, Kafka consumer-receipt lag, HTTP request totals and latency histogram, cache hit/miss totals and hit ratio, integration error totals, payment reconciliation failure totals, and webhook verification failure totals.
 - `POST /admin/cache:flush` invalidates supported tenant cache namespaces only and never performs a raw cache-store flush.
 - `POST /admin/cache:rebuild` performs the same invalidation and eagerly warms feature-flag, rate-limit, and runtime-config projections for the active tenant.
 - `GET /admin/jobs` returns queue summary plus failed-job inventory. `POST /admin/jobs/{jobId}:retry` retries one Laravel failed job by reinserting its payload into the queue and removing the failed-job row.
@@ -227,6 +228,7 @@
 - `POST /admin/kafka:replay` clears consumer receipt rows for a selected consumer and event IDs or time window so operator-managed republish or offset reset can replay safely.
 - `GET /admin/outbox` returns active-tenant outbox rows plus global rows. `POST /admin/outbox:drain` runs one synchronous relay pass. `POST /admin/outbox/{outboxId}:retry` resets a failed row back to `pending`.
 - `GET /admin/logging/pipelines` returns configured pipeline projections with `active|disabled` status and `last_reloaded_at` from audit history. Reload actions record operator intent in audit but do not shell out to external shippers in this phase.
+- Local Prometheus scraping uses the internal nginx path `GET /internal/metrics` with `OPS_PROMETHEUS_SCRAPE_KEY`; that path is infrastructure-only and is not part of the public API inventory.
 - `GET /admin/feature-flags` and `PUT /admin/feature-flags` manage tenant-scoped feature-flag overrides with config-backed defaults. Optional integrations such as MyID and E-IMZO resolve availability through these overrides before falling back to static config.
 - `GET /admin/rate-limits` and `PUT /admin/rate-limits` manage tenant-scoped named bucket settings with config-backed defaults. This phase establishes the admin source of truth; broader enforcement remains future work.
 - `GET /admin/config` returns a safe runtime projection for app, queue, cache, Kafka, modules, and outbox settings. `POST /admin/config:reload` refreshes the projection and records audit history but does not restart workers or hot-reload environment variables.

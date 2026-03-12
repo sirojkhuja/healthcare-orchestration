@@ -10,7 +10,11 @@
         "firebase/php-jwt": "7.0.3",
         "laravel/framework": "12.53.0",
         "laravel/tinker": "2.11.1",
-        "longlang/phpkafka": "1.2.5"
+        "longlang/phpkafka": "1.2.5",
+        "open-telemetry/api": "^1.8",
+        "open-telemetry/exporter-otlp": "^1.4",
+        "open-telemetry/sdk": "^1.13",
+        "sentry/sentry-laravel": "4.21.0"
     },
     "require-dev": {
         "fakerphp/faker": "1.24.1",
@@ -106,7 +110,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "pestphp/pest-plugin-arch": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     },
     "minimum-stability": "stable",

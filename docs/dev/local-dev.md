@@ -4,7 +4,7 @@
 
 - keep PostgreSQL private to the internal Docker network
 - keep Redis private to the internal Docker network
-- expose only the API gateway and approved UI ports
+- expose only the API gateway port and route approved observability UIs through nginx
 - run app, queue workers, and Kafka consumers as separate services where appropriate
 
 ## Required Services
@@ -34,6 +34,14 @@
 3. start observability services only when needed with `docker compose --profile observability up -d`
 4. run `make verify`
 5. begin with the current `In Progress` task only
+
+When the observability profile is running:
+
+- Grafana is reachable at `http://localhost:8080/grafana/`
+- Prometheus is reachable at `http://localhost:8080/prometheus/`
+- Kibana is reachable at `http://localhost:8080/kibana/`
+- Prometheus scrapes the internal nginx path `/internal/metrics` using `OPS_PROMETHEUS_SCRAPE_KEY`
+- Fluent Bit tails `storage/logs/medflow.json` and ships logs to Elasticsearch
 
 ## Local Command Contract
 

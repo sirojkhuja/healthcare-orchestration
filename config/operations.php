@@ -4,6 +4,21 @@ return [
     'health' => [
         'outbox_warning_age_seconds' => (int) env('OPS_HEALTH_OUTBOX_WARNING_AGE_SECONDS', 60),
     ],
+    'tracing' => [
+        'enabled' => env('OTEL_PHP_AUTOLOAD_ENABLED', false),
+    ],
+    'metrics' => [
+        'http_duration_buckets' => [
+            0.05,
+            0.1,
+            0.25,
+            0.5,
+            1,
+            2,
+            5,
+        ],
+        'scrape_key' => env('OPS_PROMETHEUS_SCRAPE_KEY', ''),
+    ],
     'cache' => [
         'domains' => [
             'permissions',
@@ -69,11 +84,16 @@ return [
     'logging_pipelines' => [
         'app-json' => [
             'name' => 'Application JSON Logs',
-            'destination' => 'stdout',
+            'destination' => 'stdout + file',
             'enabled' => true,
         ],
-        'otel-export' => [
-            'name' => 'OpenTelemetry Export',
+        'sentry' => [
+            'name' => 'Sentry Error Monitoring',
+            'destination' => 'sentry',
+            'enabled' => true,
+        ],
+        'otel-traces' => [
+            'name' => 'OpenTelemetry Traces',
             'destination' => 'otel-collector',
             'enabled' => true,
         ],
@@ -83,8 +103,8 @@ return [
             'enabled' => true,
         ],
         'elastic-shipper' => [
-            'name' => 'Elastic Shipper',
-            'destination' => 'elastic',
+            'name' => 'Fluent Bit Log Shipping',
+            'destination' => 'fluent-bit -> elasticsearch',
             'enabled' => true,
         ],
     ],

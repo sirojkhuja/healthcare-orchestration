@@ -8,6 +8,8 @@ use App\Modules\Integrations\Application\Data\PaymeJsonRpcResponseData;
 use App\Modules\Integrations\Application\Data\PaymentWebhookDeliveryData;
 use App\Modules\Integrations\Application\Data\PaymeWebhookVerificationData;
 use App\Modules\Integrations\Application\Exceptions\PaymeJsonRpcException;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class PaymeWebhookService
@@ -20,6 +22,7 @@ final class PaymeWebhookService
         private readonly PaymePaymentResolver $paymePaymentResolver,
         private readonly PaymeTransactionViewBuilder $paymeTransactionViewBuilder,
         private readonly PaymeWebhookMutationService $paymeWebhookMutationService,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     public function process(string $authorization, string $rawPayload, mixed $payload): PaymeJsonRpcResponseData
@@ -31,6 +34,12 @@ final class PaymeWebhookService
             $request = $this->parseRequest($payload);
 
             if (! $this->gateway()->verifyWebhookSignature($authorization, $rawPayload)) {
+                $this->metricRecorder->recordWebhookVerificationFailure(self::PROVIDER_KEY);
+                $this->metricRecorder->recordIntegrationError(self::PROVIDER_KEY, 'webhook.process', 'invalid_signature');
+                Log::warning('integration.webhook.verification_failed', [
+                    'provider_key' => self::PROVIDER_KEY,
+                    'operation' => 'webhook.process',
+                ]);
                 throw new PaymeJsonRpcException(-32504, 'Insufficient privileges to execute the method.');
             }
 
@@ -53,6 +62,12 @@ final class PaymeWebhookService
                 $exception->errorData,
             );
         } catch (Throwable) {
+            $this->metricRecorder->recordIntegrationError(self::PROVIDER_KEY, 'webhook.process', 'system_error');
+            Log::warning('integration.webhook.failed', [
+                'provider_key' => self::PROVIDER_KEY,
+                'operation' => 'webhook.process',
+            ]);
+
             return PaymeJsonRpcResponseData::error($requestId, -32400, 'System error.');
         }
     }

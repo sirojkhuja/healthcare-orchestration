@@ -1,0 +1,43 @@
+groups:
+  - name: medflow-platform
+    rules:
+      - alert: MedFlowElevated5xxRate
+        expr: sum(rate(medflow_http_requests_total{status_class="5xx"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Elevated 5xx responses
+          description: The MedFlow API is returning 5xx responses during the last 5 minutes.
+      - alert: MedFlowOutboxBacklogGrowing
+        expr: medflow_outbox_oldest_ready_age_seconds > 60
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Outbox backlog is aging
+          description: The oldest pending outbox message is older than the warning threshold.
+      - alert: MedFlowWebhookVerificationFailures
+        expr: sum(rate(medflow_webhook_verification_failures_total[10m])) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Webhook verification failures detected
+          description: One or more inbound webhooks failed signature verification.
+      - alert: MedFlowPaymentReconciliationFailures
+        expr: sum(rate(medflow_payment_reconciliation_failures_total[15m])) > 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Payment reconciliation failures detected
+          description: Payment reconciliation is reporting failed results or runtime errors.
+      - alert: MedFlowIntegrationErrors
+        expr: sum(rate(medflow_integration_errors_total[10m])) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Integration errors detected
+          description: At least one provider integration is returning runtime errors.

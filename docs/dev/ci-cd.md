@@ -34,6 +34,13 @@ Each command delegates through Docker Compose and Composer scripts in the curren
 - `.github/workflows/governance.yml` validates tasklist and governance artifacts.
 - `.github/workflows/ci.yml` validates Docker Compose, runs `make bootstrap`, and then runs lint, analysis, tests, and build through the stable `make` contract.
 
+Observability validation in the current repository must include:
+
+- `docker compose config`
+- Prometheus config validation through the containerized toolchain when observability files change
+- Grafana provisioning files committed alongside dashboard changes
+- docs and ADR updates whenever metric families, logging pipelines, or scrape behavior change
+
 ## Release Rules
 
 - use semantic versioning

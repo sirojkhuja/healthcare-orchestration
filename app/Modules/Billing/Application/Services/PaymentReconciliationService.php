@@ -11,8 +11,11 @@ use App\Modules\Billing\Application\Data\PaymentData;
 use App\Modules\Billing\Application\Data\PaymentReconciliationResultData;
 use App\Modules\Billing\Application\Data\PaymentReconciliationRunData;
 use App\Modules\Billing\Domain\Payments\PaymentActor;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
 use App\Shared\Application\Contracts\TenantContext;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 final class PaymentReconciliationService
 {
@@ -23,6 +26,7 @@ final class PaymentReconciliationService
         private readonly PaymentSnapshotSynchronizationService $paymentSnapshotSynchronizationService,
         private readonly PaymentReconciliationRunRepository $paymentReconciliationRunRepository,
         private readonly AuditTrailWriter $auditTrailWriter,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -45,8 +49,32 @@ final class PaymentReconciliationService
         $actor = new PaymentActor(type: 'system', name: sprintf('payment-reconciliation/%s', $providerKey));
 
         foreach ($payments as $payment) {
-            $updated = $this->reconcilePayment($payment, $gateway->supportsRefunds(), $runId, $providerKey, $actor);
+            try {
+                $updated = $this->reconcilePayment($payment, $gateway->supportsRefunds(), $runId, $providerKey, $actor);
+            } catch (Throwable $exception) {
+                $this->metricRecorder->recordIntegrationError($providerKey, 'payments.reconcile', $exception::class);
+                $this->metricRecorder->recordPaymentReconciliationFailure($providerKey);
+                Log::warning('payment.reconciliation.failed', [
+                    'provider_key' => $providerKey,
+                    'payment_id' => $payment->paymentId,
+                    'error_type' => $exception::class,
+                    'error_message' => $exception->getMessage(),
+                ]);
+
+                throw $exception;
+            }
             $changed = $this->paymentChanged($payment, $updated);
+
+            if ($updated->status === 'failed' || $updated->failureCode !== null) {
+                $this->metricRecorder->recordPaymentReconciliationFailure($providerKey);
+                Log::warning('payment.reconciliation.result_failed', [
+                    'provider_key' => $providerKey,
+                    'payment_id' => $updated->paymentId,
+                    'status' => $updated->status,
+                    'failure_code' => $updated->failureCode,
+                    'failure_message' => $updated->failureMessage,
+                ]);
+            }
 
             if ($changed) {
                 $changedCount++;

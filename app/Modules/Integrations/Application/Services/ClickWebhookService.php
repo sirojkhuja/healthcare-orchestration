@@ -7,6 +7,8 @@ use App\Modules\Billing\Infrastructure\Integrations\ClickPaymentGateway;
 use App\Modules\Integrations\Application\Data\ClickWebhookResponseData;
 use App\Modules\Integrations\Application\Data\ClickWebhookVerificationData;
 use App\Modules\Integrations\Application\Exceptions\ClickWebhookException;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class ClickWebhookService
@@ -15,6 +17,7 @@ final class ClickWebhookService
         private readonly PaymentGatewayRegistry $paymentGatewayRegistry,
         private readonly ClickPaymentResolver $clickPaymentResolver,
         private readonly ClickWebhookMutationService $clickWebhookMutationService,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -27,6 +30,12 @@ final class ClickWebhookService
             $signature = $request['sign_string'];
 
             if (! $this->gateway()->verifyWebhookSignature($signature, $rawPayload !== '' ? $rawPayload : json_encode($request, JSON_THROW_ON_ERROR))) {
+                $this->metricRecorder->recordWebhookVerificationFailure('click');
+                $this->metricRecorder->recordIntegrationError('click', 'webhook.process', 'invalid_signature');
+                Log::warning('integration.webhook.verification_failed', [
+                    'provider_key' => 'click',
+                    'operation' => 'webhook.process',
+                ]);
                 throw new ClickWebhookException(-1, 'SIGN CHECK FAILED!');
             }
 
@@ -40,11 +49,22 @@ final class ClickWebhookService
                     : $this->clickWebhookMutationService->complete($request),
             );
         } catch (ClickWebhookException $exception) {
+            $this->metricRecorder->recordIntegrationError('click', 'webhook.process', 'click_webhook_exception');
+            Log::warning('integration.webhook.failed', [
+                'provider_key' => 'click',
+                'operation' => 'webhook.process',
+                'error_message' => $exception->getMessage(),
+            ]);
             $response = $this->errorBody($payload, $exception->clickCode, $exception->getMessage());
             $this->clickWebhookMutationService->storeFailure($this->methodName($payload), $payload, $response);
 
             return new ClickWebhookResponseData($response);
         } catch (Throwable) {
+            $this->metricRecorder->recordIntegrationError('click', 'webhook.process', 'system_error');
+            Log::warning('integration.webhook.failed', [
+                'provider_key' => 'click',
+                'operation' => 'webhook.process',
+            ]);
             $response = $this->errorBody($payload, -7, 'Failed to update user');
             $this->clickWebhookMutationService->storeFailure($this->methodName($payload), $payload, $response);
 

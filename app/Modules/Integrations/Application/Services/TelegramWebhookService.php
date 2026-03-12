@@ -7,7 +7,9 @@ use App\Modules\AuditCompliance\Application\Data\AuditRecordInput;
 use App\Modules\Integrations\Application\Contracts\TelegramWebhookDeliveryRepository;
 use App\Modules\Notifications\Application\Contracts\TelegramBotGateway;
 use App\Modules\Notifications\Application\Contracts\TelegramProviderSettingsRepository;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -18,6 +20,7 @@ final class TelegramWebhookService
         private readonly TelegramWebhookDeliveryRepository $telegramWebhookDeliveryRepository,
         private readonly TelegramProviderSettingsRepository $telegramProviderSettingsRepository,
         private readonly AuditTrailWriter $auditTrailWriter,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -27,6 +30,12 @@ final class TelegramWebhookService
     public function process(string $secretToken, string $rawPayload, array $payload): array
     {
         if (! $this->telegramBotGateway->verifyWebhookSecret($secretToken)) {
+            $this->metricRecorder->recordWebhookVerificationFailure($this->telegramBotGateway->providerKey());
+            $this->metricRecorder->recordIntegrationError($this->telegramBotGateway->providerKey(), 'webhook.process', 'invalid_secret');
+            Log::warning('integration.webhook.verification_failed', [
+                'provider_key' => $this->telegramBotGateway->providerKey(),
+                'operation' => 'webhook.process',
+            ]);
             throw new UnauthorizedHttpException('', 'The Telegram webhook secret token is invalid.');
         }
 

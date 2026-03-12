@@ -3086,6 +3086,7 @@ paths:
       operationId: MetricsQuery
       tags: [Ops]
       summary: Get Prometheus-compatible runtime metrics
+      description: Returns app health gauges plus HTTP request totals and latency histogram, cache hit and miss totals with hit ratio, integration error totals, payment reconciliation failures, and webhook verification failures.
       security:
         - bearerAuth: []
       parameters:

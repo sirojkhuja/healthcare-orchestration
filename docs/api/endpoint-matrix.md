@@ -74,6 +74,10 @@ Observability and admin ops route inventory includes:
 - `/admin/config`
 - `/admin/config:reload`
 
+Internal infrastructure paths outside the public API inventory include:
+
+- `/internal/metrics` for Prometheus scraping through nginx with `OPS_PROMETHEUS_SCRAPE_KEY`
+
 Audit and compliance route inventory includes the tenant-scoped governance surface under:
 
 - `/audit/events`

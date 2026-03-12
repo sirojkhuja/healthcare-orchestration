@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-12`
 
-Overall Progress: `94% (66/70 tasks completed)`
+Overall Progress: `95% (67/70 tasks completed)`
 
 Active Task: `None`
 
@@ -124,7 +124,7 @@ Active Task: `None`
 | T064 | Done | Implement consent views and data access request workflows with approval actions. | T032, T063 | Consent endpoints, request workflows, approval and denial actions. | Compliance workflow tests pass. |
 | T065 | Done | Implement health, readiness, liveness, metrics, version, and admin operations endpoints. | T019 | Ops endpoints, cache controls, job retry, outbox and Kafka operations. | Admin authorization and operational tests pass. |
 | T066 | Done | Implement reference data, global search, and reporting endpoints. | T029, T033, T038, T049, T055 | Shared reference APIs, global search, report lifecycle endpoints. | Search relevance and report generation tests pass. |
-| T067 | Todo | Implement structured logging, OpenTelemetry, Sentry, Prometheus metrics, Grafana dashboards, and Elastic log shipping. | T012, T019, T065 | Instrumentation, dashboards, alerts, log pipeline config. | Traces, metrics, and alerts work in local and CI validation paths. |
+| T067 | Done | Implement structured logging, OpenTelemetry, Sentry, Prometheus metrics, Grafana dashboards, and Elastic log shipping. | T012, T019, T065 | Instrumentation, dashboards, alerts, log pipeline config. | Traces, metrics, and alerts work in local and CI validation paths. |
 
 ## Phase 9: Hardening and Release Readiness
 

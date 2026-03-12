@@ -7,6 +7,8 @@ use App\Modules\Billing\Infrastructure\Integrations\UzumPaymentGateway;
 use App\Modules\Integrations\Application\Data\UzumWebhookResponseData;
 use App\Modules\Integrations\Application\Data\UzumWebhookVerificationData;
 use App\Modules\Integrations\Application\Exceptions\UzumWebhookException;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class UzumWebhookService
@@ -15,6 +17,7 @@ final class UzumWebhookService
         private readonly PaymentGatewayRegistry $paymentGatewayRegistry,
         private readonly UzumPaymentResolver $uzumPaymentResolver,
         private readonly UzumWebhookMutationService $uzumWebhookMutationService,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -37,6 +40,12 @@ final class UzumWebhookService
 
             return new UzumWebhookResponseData($response);
         } catch (UzumWebhookException $exception) {
+            $this->metricRecorder->recordIntegrationError('uzum', 'webhook.process', 'uzum_webhook_exception');
+            Log::warning('integration.webhook.failed', [
+                'provider_key' => 'uzum',
+                'operation' => 'webhook.process',
+                'error_message' => $exception->getMessage(),
+            ]);
             $response = $this->errorResponse(
                 code: $exception->uzumCode,
                 message: $exception->getMessage(),
@@ -51,6 +60,11 @@ final class UzumWebhookService
 
             return new UzumWebhookResponseData($response);
         } catch (Throwable) {
+            $this->metricRecorder->recordIntegrationError('uzum', 'webhook.process', 'system_error');
+            Log::warning('integration.webhook.failed', [
+                'provider_key' => 'uzum',
+                'operation' => 'webhook.process',
+            ]);
             $response = $this->errorResponse(
                 code: 'PROCESSING_FAILED',
                 message: 'The Uzum webhook could not be processed.',
@@ -115,6 +129,12 @@ final class UzumWebhookService
         $body = $rawPayload !== '' ? $rawPayload : json_encode($payload, JSON_THROW_ON_ERROR);
 
         if (! $this->gateway()->verifyWebhookSignature($authorization, $body)) {
+            $this->metricRecorder->recordWebhookVerificationFailure('uzum');
+            $this->metricRecorder->recordIntegrationError('uzum', 'webhook.process', 'invalid_signature');
+            Log::warning('integration.webhook.verification_failed', [
+                'provider_key' => 'uzum',
+                'operation' => 'webhook.process',
+            ]);
             throw new UzumWebhookException('AUTHENTICATION_FAILED', 'The Uzum webhook authorization header is invalid.');
         }
     }

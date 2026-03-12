@@ -134,7 +134,7 @@ it('returns health runtime feature flag rate limit logging and config views', fu
         ->withHeaders($headers)
         ->getJson('/api/v1/admin/logging/pipelines')
         ->assertOk()
-        ->assertJsonCount(4, 'data')
+        ->assertJsonCount(5, 'data')
         ->assertJsonPath('data.0.status', 'active');
 
     $reloadResponse = $this->withToken($token)

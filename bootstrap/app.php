@@ -3,6 +3,7 @@
 use App\Modules\IdentityAccess\Infrastructure\Authorization\Http\Middleware\RequirePermission;
 use App\Shared\Infrastructure\Context\Http\Middleware\ResolveRequestMetadata;
 use App\Shared\Infrastructure\Idempotency\Http\Middleware\RequireIdempotencyKey;
+use App\Shared\Infrastructure\Observability\Http\Middleware\ObserveHttpRequests;
 use App\Shared\Infrastructure\Presentation\ApiErrorResponseFactory;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\RequireTenantContext;
 use App\Shared\Infrastructure\Tenancy\Http\Middleware\ResolveTenantContext;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(ResolveRequestMetadata::class);
         $middleware->appendToGroup('api', ResolveTenantContext::class);
+        $middleware->appendToGroup('api', ObserveHttpRequests::class);
         $middleware->alias([
             'idempotency' => RequireIdempotencyKey::class,
             'permission' => RequirePermission::class,
@@ -28,5 +31,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        Integration::handles($exceptions);
         $exceptions->render(fn (\Throwable $exception, Request $request) => app(ApiErrorResponseFactory::class)->make($exception, $request));
     })->create();

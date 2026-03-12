@@ -9,6 +9,9 @@ use App\Modules\Notifications\Application\Data\EmailSendRequestData;
 use App\Modules\Notifications\Application\Data\EmailSendResultData;
 use App\Modules\Notifications\Application\Exceptions\EmailGatewayException;
 use App\Modules\Notifications\Domain\NotificationTemplateChannel;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 final class EmailGatewaySendService
 {
@@ -16,6 +19,7 @@ final class EmailGatewaySendService
         private readonly NotificationRecipientNormalizer $notificationRecipientNormalizer,
         private readonly EmailProviderSettingsRepository $emailProviderSettingsRepository,
         private readonly EmailGateway $emailGateway,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -46,10 +50,8 @@ final class EmailGatewaySendService
         $email = $this->requiredRecipientString($recipientPayload['email'] ?? null);
         $name = $this->nullableRecipientString($recipientPayload['name'] ?? null);
 
-        return [
-            'recipient' => $recipientPayload,
-            'settings' => $settings,
-            'result' => $this->emailGateway->send(new EmailSendRequestData(
+        try {
+            $result = $this->emailGateway->send(new EmailSendRequestData(
                 tenantId: $tenantId,
                 recipientEmail: $email,
                 recipientName: $name,
@@ -61,7 +63,22 @@ final class EmailGatewaySendService
                 replyToAddress: $settings->replyToAddress,
                 replyToName: $settings->replyToName,
                 notificationId: $notificationId,
-            )),
+            ));
+        } catch (Throwable $exception) {
+            $this->metricRecorder->recordIntegrationError($settings->providerKey, 'email.send', $exception::class);
+            Log::warning('integration.email.failed', [
+                'provider_key' => $settings->providerKey,
+                'operation' => 'email.send',
+                'error_message' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+
+        return [
+            'recipient' => $recipientPayload,
+            'settings' => $settings,
+            'result' => $result,
         ];
     }
 

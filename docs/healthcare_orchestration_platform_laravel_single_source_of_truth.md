@@ -604,13 +604,17 @@ Standard error:
 ### 14.4 Metrics
 - Prometheus metrics for:
   - request latency
+  - request totals and status-class error rates
   - queue lag
   - kafka consumer lag
   - integration error rates
   - cache hit ratio
+  - payment reconciliation failures
+  - webhook verification failures
 
 ### 14.5 Central Logs
 - Elastic for log indexing and dashboards.
+- Grafana dashboards provisioned from repository files.
 
 ---
 
@@ -655,6 +659,7 @@ Standard error:
 - DB ports **NOT exposed**.
 - services on a private network.
 - only API gateway ports exposed.
+- observability UIs are routed through the API gateway path space instead of exposing separate container ports.
 
 ### 17.2 Services
 - app
@@ -667,6 +672,7 @@ Standard error:
 - grafana
 - elasticsearch
 - kibana
+- fluent-bit or equivalent log shipper
 
 ---
 
@@ -1594,13 +1600,14 @@ Compliance consent views and data-access-request rules:
 - POST `/admin/config:reload` → `ReloadRuntimeConfigCommand` → Ops
 - all ops routes are authenticated, tenant-scoped for authorization, and protected by `admin.view` or `admin.manage`
 - `GET /live` returns process liveness only; `GET /ready` fails when critical runtime probes fail; `GET /health` returns `healthy|degraded|failing` with ordered checks
-- `GET /metrics` returns Prometheus-compatible text with app info, health state, outbox lag, queue counts, and Kafka consumer receipt lag in this phase
+- `GET /metrics` returns Prometheus-compatible text with app info, health state, outbox lag, queue counts, Kafka consumer receipt lag, HTTP request totals and latency histogram, cache hit and miss totals plus hit ratio, integration error totals, payment reconciliation failures, and webhook verification failures
 - cache admin uses explicit namespace invalidation only; raw store flush is forbidden
 - failed job retry reinserts one `failed_jobs` payload into the queue backend and removes the failed row on success
 - Kafka replay in this phase clears consumer replay receipts for the selected consumer and event window; broker offset movement remains an operator action outside the API
 - outbox admin supports tenant-visible listing, synchronous relay drain, and retry of failed outbox rows only
 - feature flags and rate limits are tenant-scoped overrides with config-backed defaults
 - runtime config reload refreshes the safe config projection and audit history only; it does not hot-reload environment variables or restart workers
+- Prometheus uses an internal nginx scrape path outside the public API inventory so the authenticated `/metrics` route does not need to relax its authorization rules
 
 ---
 

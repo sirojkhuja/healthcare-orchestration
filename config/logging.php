@@ -54,7 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => explode(',', (string) env('LOG_STACK', 'json_stderr,json_daily')),
             'ignore_exceptions' => false,
         ],
 
@@ -103,6 +103,29 @@ return [
             ],
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'processors' => [PsrLogMessageProcessor::class],
+        ],
+
+        'json_stderr' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => StreamHandler::class,
+            'handler_with' => [
+                'stream' => 'php://stderr',
+            ],
+            'tap' => [
+                App\Shared\Infrastructure\Logging\MedFlowStructuredLoggingTap::class,
+            ],
+        ],
+
+        'json_daily' => [
+            'driver' => 'daily',
+            'path' => env('LOG_JSON_PATH', storage_path('logs/medflow.json')),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_JSON_DAYS', 14),
+            'replace_placeholders' => false,
+            'tap' => [
+                App\Shared\Infrastructure\Logging\MedFlowStructuredLoggingTap::class,
+            ],
         ],
 
         'syslog' => [

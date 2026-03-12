@@ -3,6 +3,7 @@
 namespace App\Shared\Infrastructure\Cache;
 
 use App\Shared\Application\Contracts\CacheKeyBuilder;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
 use App\Shared\Application\Contracts\TenantCache;
 use Closure;
 use DateInterval;
@@ -14,6 +15,7 @@ final class VersionedTenantCache implements TenantCache
     public function __construct(
         private readonly CacheFactory $cacheFactory,
         private readonly CacheKeyBuilder $cacheKeyBuilder,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     #[\Override]
@@ -39,6 +41,13 @@ final class VersionedTenantCache implements TenantCache
     {
         $store = $this->cacheFactory->store();
         $key = $this->cacheKeyBuilder->itemKey($domain, $segments, $tenantId, $this->namespaceVersion($domain, $tenantId));
+        $tenantScoped = $tenantId !== null;
+
+        if ($store->has($key)) {
+            $this->metricRecorder->recordCacheHit($domain, $tenantScoped);
+        } else {
+            $this->metricRecorder->recordCacheMiss($domain, $tenantScoped);
+        }
 
         if ($ttl === null) {
             return $store->rememberForever($key, $callback);

@@ -7,7 +7,9 @@ use App\Modules\Notifications\Application\Data\SmsDeliveryAttemptData;
 use App\Modules\Notifications\Application\Data\SmsDeliveryRequestData;
 use App\Modules\Notifications\Application\Data\SmsDeliveryResultData;
 use App\Modules\Notifications\Application\Exceptions\SmsProviderDeliveryException;
+use App\Shared\Application\Contracts\ObservabilityMetricRecorder;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class SmsRoutingService
@@ -15,6 +17,7 @@ final class SmsRoutingService
     public function __construct(
         private readonly SmsProviderRegistry $smsProviderRegistry,
         private readonly SmsRoutingPolicyService $smsRoutingPolicyService,
+        private readonly ObservabilityMetricRecorder $metricRecorder,
     ) {}
 
     /**
@@ -43,6 +46,12 @@ final class SmsRoutingService
             try {
                 $attempt = $this->smsProviderRegistry->resolve($providerKey)->send($request);
             } catch (Throwable $exception) {
+                $this->metricRecorder->recordIntegrationError($providerKey, 'sms.send', $exception::class);
+                Log::warning('integration.sms.failed', [
+                    'provider_key' => $providerKey,
+                    'operation' => 'sms.send',
+                    'error_message' => $exception->getMessage(),
+                ]);
                 $attempt = $this->failedAttempt($providerKey, $exception);
             }
 
