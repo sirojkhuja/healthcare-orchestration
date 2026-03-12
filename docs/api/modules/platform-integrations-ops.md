@@ -159,6 +159,27 @@
 - `GET /data-access-requests/{requestId}` -> `GetDataAccessRequestQuery` -> Compliance
 - `GET /compliance/reports` -> `ListComplianceReportsQuery` -> Compliance
 
+## Audit and Compliance Notes
+
+- ADR `051` defines the generic audit and compliance contract for this module slice.
+- All audit and compliance routes are tenant-scoped and require `X-Tenant-Id`.
+- `GET /audit/events` and `GET /audit/export` support the same filters: `q`, `action_prefix`, `object_type`, `object_id`, `actor_type`, `actor_id`, `occurred_from`, `occurred_to`, and `limit`.
+- `GET /audit/events` returns newest first and caps `limit` at `100`.
+- `GET /audit/events/{eventId}` returns only tenant-owned audit rows from the active tenant.
+- `GET /audit/object/{objectType}/{objectId}` is the generic object-history route and supports optional `action_prefix` plus `limit`.
+- `GET /audit/export` supports only `format=csv`, stores the export on the configured exports disk, and writes audit action `audit.exported` with object type `audit_export`.
+- `GET /audit/retention` returns the platform default retention, optional tenant override, effective retention, and whether pruning is enabled.
+- `PUT /audit/retention` fully replaces the tenant override. `retention_days = 0` explicitly disables pruning for that tenant.
+- The operational `audit:prune` command applies tenant overrides first and falls back to `AUDIT_RETENTION_DAYS` for tenants without overrides and for non-tenant audit rows.
+- `GET /compliance/pii-fields` returns the tenant PII field registry including `active|retired` rows ordered by `object_type` and `field_path`.
+- `PUT /compliance/pii-fields` uses replacement semantics keyed by normalized `object_type + field_path`, inserts new fields with `key_version = 1`, and marks omitted active rows as `retired`.
+- Supported PII classifications are `identity`, `contact`, `government_id`, `clinical`, `financial`, `biometric`, and `other`.
+- Supported encryption profiles are `encrypted_string` and `encrypted_json`.
+- `POST /compliance/pii:rotate-keys` targets the provided `field_ids[]` or all active fields when omitted, increments `key_version`, updates `last_rotated_at`, and returns a compliance report of type `pii_key_rotation`.
+- `POST /compliance/pii:re-encrypt` targets the provided `field_ids[]` or all active fields when omitted, updates `last_reencrypted_at`, and returns a compliance report of type `pii_reencryption`.
+- In this phase, re-encryption is a registry-governance pass. Business-record rewrites remain future module work after registry-backed encryptors are adopted.
+- `GET /compliance/reports` lists append-only compliance reports for `pii_key_rotation` and `pii_reencryption`, newest first, with filters `type`, `status`, and `limit`.
+
 ## Observability, Admin Ops, Reference Data, and Search
 
 - `GET /health` -> `HealthQuery` -> Ops

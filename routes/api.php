@@ -1,5 +1,10 @@
 <?php
 
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\AuditEventController;
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\AuditRetentionController;
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\ComplianceReportController;
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\ObjectAuditController;
+use App\Modules\AuditCompliance\Presentation\Http\Controllers\PiiFieldController;
 use App\Modules\Billing\Presentation\Http\Controllers\BillableServiceController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceController;
 use App\Modules\Billing\Presentation\Http\Controllers\InvoiceItemController;
@@ -821,6 +826,25 @@ Route::prefix('v1')->group(function (): void {
                 Route::delete('/roles/{roleId}', [RoleController::class, 'delete'])->name('roles.delete');
                 Route::put('/roles/{roleId}/permissions', [RoleController::class, 'setPermissions'])->name('roles.permissions.update');
                 Route::put('/users/{userId}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+            });
+            Route::middleware('permission:audit.view')->group(function (): void {
+                Route::get('/audit/events', [AuditEventController::class, 'list'])->name('audit.events.list');
+                Route::get('/audit/events/{eventId}', [AuditEventController::class, 'show'])->name('audit.events.show');
+                Route::get('/audit/retention', [AuditRetentionController::class, 'show'])->name('audit.retention.show');
+                Route::get('/audit/object/{objectType}/{objectId}', [ObjectAuditController::class, 'list'])->name('audit.object.list');
+            });
+            Route::middleware('permission:audit.manage')->group(function (): void {
+                Route::get('/audit/export', [AuditEventController::class, 'export'])->name('audit.export');
+                Route::put('/audit/retention', [AuditRetentionController::class, 'update'])->name('audit.retention.update');
+            });
+            Route::middleware('permission:compliance.view')->group(function (): void {
+                Route::get('/compliance/pii-fields', [PiiFieldController::class, 'list'])->name('compliance.pii-fields.list');
+                Route::get('/compliance/reports', [ComplianceReportController::class, 'list'])->name('compliance.reports.list');
+            });
+            Route::middleware('permission:compliance.manage')->group(function (): void {
+                Route::put('/compliance/pii-fields', [PiiFieldController::class, 'update'])->name('compliance.pii-fields.update');
+                Route::post('/compliance/pii:rotate-keys', [PiiFieldController::class, 'rotateKeys'])->name('compliance.pii.rotate-keys');
+                Route::post('/compliance/pii:re-encrypt', [PiiFieldController::class, 'reEncrypt'])->name('compliance.pii.re-encrypt');
             });
         });
     });

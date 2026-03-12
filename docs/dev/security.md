@@ -22,6 +22,8 @@
 ## Data Protection
 
 - Sensitive PII requires field-level encryption where appropriate.
+- Sensitive-field governance is tracked in a tenant-scoped PII registry with explicit classification, encryption profile, key version, and rotation timestamps.
+- PII key rotation and re-encryption operations must create append-only compliance reports and audit records.
 - Audit data must capture actor, timing, before and after values, and request metadata.
 - Audit storage is write-once; normal application flows must not mutate existing audit records.
 - Retention policies must be explicit for audit and compliance artifacts.

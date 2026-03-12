@@ -549,6 +549,10 @@ Standard error:
 
 ### 12.14 Audit
 - query audit events
+- generic audit reads are tenant-scoped in this phase and support free-text, actor, object, action-prefix, and time-range filters
+- object audit views use `GET /audit/object/{objectType}/{objectId}` and return newest first
+- audit export is synchronous CSV generation stored on the exports disk and recorded as audit action `audit.exported`
+- audit retention uses platform default `AUDIT_RETENTION_DAYS` plus optional tenant override; `0` disables pruning for the tenant override scope
 
 ### 12.15 Observability
 - health, readiness, liveness
@@ -622,6 +626,8 @@ Standard error:
 - Webhook signature verification for all inbound callbacks
 - Encrypt integration secrets at rest
 - PII handling: field-level encryption for sensitive fields
+- PII governance uses a tenant-scoped registry with explicit classification, encryption profile, key version, and rotation history
+- PII key rotation and re-encryption operations must create append-only compliance reports and audit records
 - Audit logging mandatory
 - Security event tracking mandatory for authentication, MFA, and other sensitive IAM actions
 

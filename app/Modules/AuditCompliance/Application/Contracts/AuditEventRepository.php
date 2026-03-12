@@ -3,6 +3,7 @@
 namespace App\Modules\AuditCompliance\Application\Contracts;
 
 use App\Modules\AuditCompliance\Application\Data\AuditEventData;
+use App\Modules\AuditCompliance\Application\Data\AuditEventSearchCriteria;
 use Carbon\CarbonImmutable;
 
 interface AuditEventRepository
@@ -20,6 +21,11 @@ interface AuditEventRepository
      * @return list<AuditEventData>
      */
     public function forActionPrefix(string $actionPrefix, ?string $tenantId = null, int $limit = 50): array;
+
+    /**
+     * @return list<AuditEventData>
+     */
+    public function search(AuditEventSearchCriteria $criteria, ?string $tenantId = null): array;
 
     public function pruneOlderThan(CarbonImmutable $cutoff): int;
 }

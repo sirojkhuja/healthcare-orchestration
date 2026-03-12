@@ -114,5 +114,15 @@ return [
                 'admin.manage' => 'Operate admin actions, retries, and cache controls.',
             ],
         ],
+        'compliance' => [
+            'name' => 'Compliance',
+            'description' => 'Audit history, retention policies, and PII governance.',
+            'permissions' => [
+                'audit.view' => 'View tenant-scoped audit events, object history, and retention settings.',
+                'audit.manage' => 'Export audit events and manage tenant audit retention policies.',
+                'compliance.view' => 'View tenant PII field registry entries and compliance reports.',
+                'compliance.manage' => 'Manage tenant PII field registry entries and compliance operations.',
+            ],
+        ],
     ],
 ];

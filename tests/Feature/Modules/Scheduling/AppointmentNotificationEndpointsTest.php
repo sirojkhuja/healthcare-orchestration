@@ -164,6 +164,8 @@ it('dispatches appointment reminders by window with idempotent notification link
         ->assertOk()
         ->assertJsonPath('data.status', 'scheduled');
 
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-03-12T08:00:00+05:00'));
+
     $advance = schedulingAppointmentAction(
         $this,
         $fixture['token'],

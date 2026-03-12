@@ -5,6 +5,7 @@ namespace App\Modules\AuditCompliance\Infrastructure\Persistence;
 use App\Modules\AuditCompliance\Application\Contracts\AuditEventRepository;
 use App\Modules\AuditCompliance\Application\Data\AuditActor;
 use App\Modules\AuditCompliance\Application\Data\AuditEventData;
+use App\Modules\AuditCompliance\Application\Data\AuditEventSearchCriteria;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -60,18 +61,69 @@ final class DatabaseAuditEventRepository implements AuditEventRepository
     #[\Override]
     public function forActionPrefix(string $actionPrefix, ?string $tenantId = null, int $limit = 50): array
     {
-        $actionPattern = sprintf('%s%%', $actionPrefix);
-        $query = AuditEventRecord::query()
-            ->whereRaw('action like ?', [$actionPattern])
-            ->orderByDesc('occurred_at')
-            ->limit($limit);
+        return $this->search(new AuditEventSearchCriteria(
+            actionPrefix: $actionPrefix,
+            limit: $limit,
+        ), $tenantId);
+    }
+
+    #[\Override]
+    public function search(AuditEventSearchCriteria $criteria, ?string $tenantId = null): array
+    {
+        $query = AuditEventRecord::query();
 
         if ($tenantId !== null) {
             $query->where('tenant_id', $tenantId);
         }
 
+        $normalizedQuery = $criteria->normalizedQuery();
+
+        if ($normalizedQuery !== null) {
+            $like = '%'.$normalizedQuery.'%';
+
+            $query->where(function (Builder $builder) use ($like): void {
+                $builder
+                    ->whereRaw('action like ?', [$like])
+                    ->orWhereRaw('object_type like ?', [$like])
+                    ->orWhereRaw('object_id like ?', [$like])
+                    ->orWhereRaw('actor_name like ?', [$like]);
+            });
+        }
+
+        if ($criteria->actionPrefix !== null) {
+            $query->whereRaw('action like ?', [$criteria->actionPrefix.'%']);
+        }
+
+        if ($criteria->objectType !== null) {
+            $query->where('object_type', $criteria->objectType);
+        }
+
+        if ($criteria->objectId !== null) {
+            $query->where('object_id', $criteria->objectId);
+        }
+
+        if ($criteria->actorType !== null) {
+            $query->where('actor_type', $criteria->actorType);
+        }
+
+        if ($criteria->actorId !== null) {
+            $query->where('actor_id', $criteria->actorId);
+        }
+
+        if ($criteria->occurredFrom instanceof CarbonImmutable) {
+            $query->where('occurred_at', '>=', $criteria->occurredFrom);
+        }
+
+        if ($criteria->occurredTo instanceof CarbonImmutable) {
+            $query->where('occurred_at', '<=', $criteria->occurredTo);
+        }
+
         /** @var \Illuminate\Database\Eloquent\Collection<int, AuditEventRecord> $records */
-        $records = $query->get();
+        $records = $query
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id')
+            ->limit($criteria->limit)
+            ->get();
 
         /** @var list<AuditEventData> $events */
         $events = array_values(array_map(

@@ -51,6 +51,18 @@ Platform integrations route inventory includes the tenant-scoped integrations hu
 - `/integrations/eimzo:sign`
 - `/webhooks/eimzo`
 
+Audit and compliance route inventory includes the tenant-scoped governance surface under:
+
+- `/audit/events`
+- `/audit/events/{eventId}`
+- `/audit/export`
+- `/audit/retention`
+- `/audit/object/{objectType}/{objectId}`
+- `/compliance/pii-fields`
+- `/compliance/pii:rotate-keys`
+- `/compliance/pii:re-encrypt`
+- `/compliance/reports`
+
 ## Inventory Summary
 
 | Area | Approximate endpoints |

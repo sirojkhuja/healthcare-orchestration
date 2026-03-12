@@ -2065,6 +2065,532 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/audit/events:
+    get:
+      operationId: ListAuditEventsQuery
+      tags: [Audit]
+      summary: List tenant-scoped audit events
+      description: Returns immutable audit events in descending occurrence order for the active tenant scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 160
+        - name: action_prefix
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+        - name: object_type
+          in: query
+          schema:
+            type: string
+            maxLength: 64
+        - name: object_id
+          in: query
+          schema:
+            type: string
+            maxLength: 191
+        - name: actor_type
+          in: query
+          schema:
+            type: string
+            maxLength: 32
+        - name: actor_id
+          in: query
+          schema:
+            type: string
+            maxLength: 191
+        - name: occurred_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: occurred_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEventCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or audit read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid audit query filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/audit/events/{eventId}:
+    get:
+      operationId: GetAuditEventQuery
+      tags: [Audit]
+      summary: Get one tenant-scoped audit event
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEventResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or audit read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Event not found in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/audit/export:
+    get:
+      operationId: ExportAuditEventsQuery
+      tags: [Audit]
+      summary: Export tenant-scoped audit events
+      description: Applies the same filters as the list route and stores a CSV export on the configured exports disk.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 160
+        - name: action_prefix
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+        - name: object_type
+          in: query
+          schema:
+            type: string
+            maxLength: 64
+        - name: object_id
+          in: query
+          schema:
+            type: string
+            maxLength: 191
+        - name: actor_type
+          in: query
+          schema:
+            type: string
+            maxLength: 32
+        - name: actor_id
+          in: query
+          schema:
+            type: string
+            maxLength: 191
+        - name: occurred_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: occurred_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv]
+      responses:
+        '200':
+          description: Audit export created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditExportResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or audit manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid export request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/audit/retention:
+    get:
+      operationId: GetAuditRetentionQuery
+      tags: [Audit]
+      summary: Get the effective audit retention policy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Effective audit retention policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRetentionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or audit read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: UpdateAuditRetentionCommand
+      tags: [Audit]
+      summary: Replace the tenant audit retention override
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAuditRetentionRequest'
+      responses:
+        '200':
+          description: Audit retention override updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRetentionMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or audit manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid retention payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/audit/object/{objectType}/{objectId}:
+    get:
+      operationId: GetObjectAuditQuery
+      tags: [Audit]
+      summary: Get the audit history for one tenant-scoped object
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: objectType
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: objectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: action_prefix
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Object audit history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditObjectHistoryResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or audit read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/compliance/pii-fields:
+    get:
+      operationId: ListPiiFieldsQuery
+      tags: [Compliance]
+      summary: List tenant PII registry fields
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: PII registry entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiiFieldCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      operationId: SetPiiFieldsCommand
+      tags: [Compliance]
+      summary: Replace the tenant PII field registry
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePiiFieldsRequest'
+      responses:
+        '200':
+          description: Tenant PII registry replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiiFieldMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid PII field payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/compliance/pii:rotate-keys:
+    post:
+      operationId: RotatePiiKeysCommand
+      tags: [Compliance]
+      summary: Rotate active PII key versions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceFieldOperationRequest'
+      responses:
+        '201':
+          description: PII key rotation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceReportMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: One or more requested field ids do not exist in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid operation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/compliance/pii:re-encrypt:
+    post:
+      operationId: ReEncryptPiiCommand
+      tags: [Compliance]
+      summary: Run a tenant PII re-encryption governance pass
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceFieldOperationRequest'
+      responses:
+        '200':
+          description: PII re-encryption governance pass completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceReportMutationResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance manage permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: One or more requested field ids do not exist in the current tenant scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: Invalid operation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/compliance/reports:
+    get:
+      operationId: ListComplianceReportsQuery
+      tags: [Compliance]
+      summary: List tenant compliance reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantIdHeader'
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [pii_key_rotation, pii_reencryption]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [completed]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Compliance reports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceReportCollectionResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Missing tenant scope or compliance read permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -3952,3 +4478,327 @@ components:
       properties:
         ok:
           type: boolean
+    AuditEventActor:
+      type: object
+      required: [type, id, name]
+      properties:
+        type:
+          type: string
+        id:
+          type: [string, 'null']
+        name:
+          type: [string, 'null']
+    AuditEvent:
+      type: object
+      required: [event_id, tenant_id, action, object_type, object_id, actor, request_id, correlation_id, before, after, metadata, occurred_at]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: [string, 'null']
+          format: uuid
+        action:
+          type: string
+        object_type:
+          type: string
+        object_id:
+          type: string
+        actor:
+          $ref: '#/components/schemas/AuditEventActor'
+        request_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        occurred_at:
+          type: string
+          format: date-time
+    AuditEventCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    AuditEventResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuditEvent'
+    AuditObjectHistoryResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        meta:
+          type: object
+          required: [object_type, object_id, limit]
+          properties:
+            object_type:
+              type: string
+            object_id:
+              type: string
+            limit:
+              type: integer
+    AuditExport:
+      type: object
+      required: [export_id, format, file_name, row_count, generated_at, filters, disk, path, visibility]
+      properties:
+        export_id:
+          type: string
+          format: uuid
+        format:
+          type: string
+          enum: [csv]
+        file_name:
+          type: string
+        row_count:
+          type: integer
+          minimum: 0
+        generated_at:
+          type: string
+          format: date-time
+        filters:
+          type: object
+          additionalProperties: true
+        disk:
+          type: string
+        path:
+          type: string
+        visibility:
+          type: string
+    AuditExportResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [audit_export_created]
+        data:
+          $ref: '#/components/schemas/AuditExport'
+    AuditRetention:
+      type: object
+      required: [tenant_id, default_retention_days, tenant_retention_days, effective_retention_days, pruning_enabled, updated_at]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        default_retention_days:
+          type: integer
+          minimum: 0
+        tenant_retention_days:
+          type: [integer, 'null']
+          minimum: 0
+        effective_retention_days:
+          type: integer
+          minimum: 0
+        pruning_enabled:
+          type: boolean
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+    AuditRetentionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuditRetention'
+    UpdateAuditRetentionRequest:
+      type: object
+      required: [retention_days]
+      properties:
+        retention_days:
+          type: integer
+          minimum: 0
+          maximum: 3650
+    AuditRetentionMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [audit_retention_updated]
+        data:
+          $ref: '#/components/schemas/AuditRetention'
+    PiiField:
+      type: object
+      required:
+        [field_id, tenant_id, object_type, field_path, classification, encryption_profile, key_version, status, notes, last_rotated_at, last_reencrypted_at, created_at, updated_at]
+      properties:
+        field_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        object_type:
+          type: string
+        field_path:
+          type: string
+        classification:
+          type: string
+          enum: [identity, contact, government_id, clinical, financial, biometric, other]
+        encryption_profile:
+          type: string
+          enum: [encrypted_string, encrypted_json]
+        key_version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [active, retired]
+        notes:
+          type: [string, 'null']
+        last_rotated_at:
+          type: [string, 'null']
+          format: date-time
+        last_reencrypted_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PiiFieldCollectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PiiField'
+    PiiFieldUpdate:
+      type: object
+      required: [object_type, field_path, classification, encryption_profile]
+      properties:
+        object_type:
+          type: string
+          maxLength: 64
+        field_path:
+          type: string
+          maxLength: 191
+        classification:
+          type: string
+          enum: [identity, contact, government_id, clinical, financial, biometric, other]
+        encryption_profile:
+          type: string
+          enum: [encrypted_string, encrypted_json]
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    UpdatePiiFieldsRequest:
+      type: object
+      required: [fields]
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/PiiFieldUpdate'
+    PiiFieldMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [pii_fields_updated]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PiiField'
+    ComplianceFieldOperationRequest:
+      type: object
+      properties:
+        field_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ComplianceReport:
+      type: object
+      required:
+        [report_id, tenant_id, type, status, requested_field_count, processed_field_count, skipped_field_count, field_ids, summary, created_at, completed_at]
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [pii_key_rotation, pii_reencryption]
+        status:
+          type: string
+          enum: [completed]
+        requested_field_count:
+          type: integer
+          minimum: 0
+        processed_field_count:
+          type: integer
+          minimum: 0
+        skipped_field_count:
+          type: integer
+          minimum: 0
+        field_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        summary:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: [string, 'null']
+          format: date-time
+    ComplianceReportCollectionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceReport'
+        meta:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              type: object
+              additionalProperties: true
+    ComplianceReportMutationResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          enum: [pii_key_rotation_completed, pii_reencryption_completed]
+        data:
+          $ref: '#/components/schemas/ComplianceReport'

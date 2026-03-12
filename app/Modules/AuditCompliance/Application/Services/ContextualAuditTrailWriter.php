@@ -26,7 +26,7 @@ final class ContextualAuditTrailWriter implements AuditTrailWriter
     {
         $requestMetadata = $this->requestMetadataContext->current();
         $event = new AuditEventData(
-            eventId: (string) Str::uuid(),
+            eventId: (string) Str::orderedUuid(),
             tenantId: $input->tenantId ?? $this->tenantContext->tenantId(),
             action: $input->action,
             objectType: $input->objectType,
