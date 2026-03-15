@@ -59,6 +59,15 @@ it('rejects invalid login credentials', function (): void {
         ->assertJsonPath('code', 'UNAUTHENTICATED');
 });
 
+it('returns the standard unauthenticated envelope for protected api routes even when html is preferred', function (): void {
+    $this->get('/api/v1/tenants', [
+        'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    ])
+        ->assertStatus(401)
+        ->assertHeader('Content-Type', 'application/json')
+        ->assertJsonPath('code', 'UNAUTHENTICATED');
+});
+
 it('refreshes tokens, rotates the bearer token, and invalidates the previous access token', function (): void {
     User::factory()->create([
         'email' => 'doctor@example.test',

@@ -1,8 +1,8 @@
 # Project Task List
 
-Last Updated: `2026-03-13`
+Last Updated: `2026-03-15`
 
-Overall Progress: `100% (70/70 tasks completed)`
+Overall Progress: `100% (71/71 tasks completed)`
 
 Active Task: `None`
 
@@ -133,3 +133,4 @@ Active Task: `None`
 | T068 | Done | Complete production-grade OpenAPI documentation and contract test coverage for the full endpoint surface. | T028, T045, T055, T062, T066 | Complete OpenAPI spec, examples, schema validation, contract tests. | OpenAPI validation and contract suite pass. |
 | T069 | Done | Perform performance, security, and architecture hardening across the platform. | T067, T068 | Performance baselines, architecture checks, security review actions. | Load checks, security checks, and architecture rules pass. |
 | T070 | Done | Finalize release automation, changelog generation, production readiness review, and cutover checklist. | T069 | Release workflow, changelog process, go-live checklist, rollback plan. | Dry-run release succeeds and readiness review is signed off. |
+| T071 | Done | Ensure protected API routes return JSON `401` responses without redirecting to a web login route. | T020, T068 | API guest-redirect configuration, regression coverage, auth contract clarification. | Browser-style unauthenticated API requests return the standard `UNAUTHENTICATED` envelope. |

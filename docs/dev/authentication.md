@@ -62,6 +62,7 @@ This document defines the MedFlow API authentication contract.
 - API-key-authenticated routes must not assume the presence of an `auth_session` id.
 - Request handling must fail with `401` and `UNAUTHENTICATED` when the JWT is invalid, expired, revoked, or mismatched with the active session row.
 - Request handling must fail with `401` and `API_KEY_REVOKED` when a presented API key matches a revoked key record.
+- Protected API routes must never redirect to a web login page and must return the JSON auth envelope even when the client sends a browser-style `Accept` header.
 
 ## Security Rules
 

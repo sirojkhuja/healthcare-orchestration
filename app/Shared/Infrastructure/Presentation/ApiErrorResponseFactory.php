@@ -38,7 +38,7 @@ final class ApiErrorResponseFactory
 
     public function make(Throwable $throwable, Request $request): ?JsonResponse
     {
-        if (! $request->expectsJson()) {
+        if (! $this->shouldRenderJson($request, $throwable)) {
             return null;
         }
 
@@ -59,6 +59,18 @@ final class ApiErrorResponseFactory
         }
 
         return $response;
+    }
+
+    private function shouldRenderJson(Request $request, Throwable $throwable): bool
+    {
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return true;
+        }
+
+        return $throwable instanceof AuthenticationException
+            || $throwable instanceof AuthorizationException
+            || $throwable instanceof UnauthorizedHttpException
+            || $throwable instanceof AccessDeniedHttpException;
     }
 
     /**

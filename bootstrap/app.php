@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(fn (Request $request): string => '/');
         $middleware->append(ResolveRequestMetadata::class);
         $middleware->appendToGroup('api', ResolveTenantContext::class);
         $middleware->appendToGroup('api', ObserveHttpRequests::class);
