@@ -74,7 +74,8 @@
             "@composer validate --no-check-publish",
             "@composer lint",
             "@composer analyse",
-            "@composer test"
+            "@php artisan config:clear --ansi",
+            "@php -d memory_limit=256M artisan test --env=testing"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

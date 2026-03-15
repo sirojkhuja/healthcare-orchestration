@@ -26,6 +26,11 @@ jobs:
       - name: Validate Docker Compose
         run: docker compose config >/dev/null
 
+      - name: Create SQLite database file
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
       - name: Bootstrap application workspace
         run: make bootstrap
 

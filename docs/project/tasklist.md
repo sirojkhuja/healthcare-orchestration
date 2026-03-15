@@ -2,7 +2,7 @@
 
 Last Updated: `2026-03-15`
 
-Overall Progress: `100% (71/71 tasks completed)`
+Overall Progress: `100% (72/72 tasks completed)`
 
 Active Task: `None`
 
@@ -134,3 +134,4 @@ Active Task: `None`
 | T069 | Done | Perform performance, security, and architecture hardening across the platform. | T067, T068 | Performance baselines, architecture checks, security review actions. | Load checks, security checks, and architecture rules pass. |
 | T070 | Done | Finalize release automation, changelog generation, production readiness review, and cutover checklist. | T069 | Release workflow, changelog process, go-live checklist, rollback plan. | Dry-run release succeeds and readiness review is signed off. |
 | T071 | Done | Ensure protected API routes return JSON `401` responses without redirecting to a web login route. | T020, T068 | API guest-redirect configuration, regression coverage, auth contract clarification. | Browser-style unauthenticated API requests return the standard `UNAUTHENTICATED` envelope. |
+| T072 | Done | Ensure GitHub Actions creates the SQLite test database file before bootstrapping and running the test suite. | T008, T009 | CI workflow step for SQLite file creation, synced CI/CD documentation, aligned verify-path test execution, and regression-safe verification. | CI workflow declares SQLite file creation before bootstrap and tests no longer depend on a missing file. |

@@ -30,6 +30,7 @@ Future Laravel bootstrap work must provide these repository commands:
 - `make release-dry-run RELEASE_VERSION=<semver>`
 
 Each command delegates through Docker Compose and Composer scripts in the current foundation setup, and the interface must stay stable even if the internals change later.
+`make verify` must reuse the same Laravel test runner memory settings as `make test` so CI and local verification do not diverge on route-heavy suites.
 
 OpenAPI contract work also uses these repository-level commands:
 
@@ -40,7 +41,7 @@ OpenAPI contract work also uses these repository-level commands:
 ## Current Workflow Files
 
 - `.github/workflows/governance.yml` validates tasklist and governance artifacts.
-- `.github/workflows/ci.yml` validates Docker Compose, runs `make bootstrap`, then runs lint, analysis, tests, build, explicit OpenAPI validation, and hardening checks through the stable repository commands.
+- `.github/workflows/ci.yml` validates Docker Compose, creates `database/database.sqlite` for the SQLite-backed test runtime, runs `make bootstrap`, then runs lint, analysis, tests, build, explicit OpenAPI validation, and hardening checks through the stable repository commands.
 - `.github/workflows/release.yml` runs dry-run release validation on manual dispatch and publishes GitHub releases from semantic-version tags after the same dry-run checks pass.
 
 OpenAPI validation in CI must include:
