@@ -6,7 +6,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { InvoiceStatusBadge } from '@/components/shared/StateMachineBadge';
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay';
 import { generateIdempotencyKey } from '@/lib/api/idempotency';
 import { STALE } from '@/lib/query/queryClient';
@@ -68,7 +68,7 @@ export default function InvoiceDetailPage() {
               <h1 className="text-2xl font-bold text-gray-900">Invoice</h1>
               <p className="text-gray-500 font-mono">#{invoice.invoice_number}</p>
             </div>
-            <StateMachineBadge status={invoice.status} colorMap={STATUS_COLORS} />
+            <InvoiceStatusBadge status={invoice.status} />
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-4 text-sm">

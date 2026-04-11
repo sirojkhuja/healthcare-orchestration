@@ -5,7 +5,7 @@ import api from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { AppointmentStatusBadge } from '@/components/shared/StateMachineBadge';
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay';
 import { STALE } from '@/lib/query/queryClient';
 import type { Appointment } from '@/types/api/appointments';
@@ -157,7 +157,7 @@ export default function DashboardPage() {
                     {appt.provider_name} · {format(new Date(appt.scheduled_start_at), 'h:mm a')}
                   </p>
                 </div>
-                <StateMachineBadge status={appt.status} colorMap={APPOINTMENT_COLORS} />
+                <AppointmentStatusBadge status={appt.status} />
               </Link>
             ))}
           </div>

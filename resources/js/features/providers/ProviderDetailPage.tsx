@@ -7,7 +7,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { AppointmentStatusBadge } from '@/components/shared/StateMachineBadge';
 import { STALE } from '@/lib/query/queryClient';
 import type { Provider } from '@/types/api/providers';
 import type { Appointment, AvailabilitySlot } from '@/types/api/appointments';
@@ -227,7 +227,7 @@ export default function ProviderDetailPage() {
                   <p className="text-sm font-medium text-gray-900">{appt.patient_name}</p>
                   <p className="text-xs text-gray-500">{format(new Date(appt.scheduled_start_at), 'MMM d, yyyy · h:mm a')}</p>
                 </div>
-                <StateMachineBadge status={appt.status} colorMap={APPT_COLORS} />
+                <AppointmentStatusBadge status={appt.status} />
               </Link>
             ))}
           </div>

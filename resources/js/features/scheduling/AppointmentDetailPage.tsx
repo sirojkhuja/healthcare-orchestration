@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { AppointmentStatusBadge } from '@/components/shared/StateMachineBadge';
 import { ApiErrorAlert } from '@/components/feedback/ApiErrorAlert';
 import { generateIdempotencyKey } from '@/lib/api/idempotency';
 import { STALE } from '@/lib/query/queryClient';
@@ -147,7 +147,7 @@ export default function AppointmentDetailPage() {
                 </Link>
               </p>
             </div>
-            <StateMachineBadge status={appt.status} colorMap={STATUS_COLORS} />
+            <AppointmentStatusBadge status={appt.status} />
           </div>
 
           <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">

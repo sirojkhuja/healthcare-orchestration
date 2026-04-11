@@ -8,7 +8,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { InvoiceStatusBadge } from '@/components/shared/StateMachineBadge';
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay';
 import { STALE } from '@/lib/query/queryClient';
 import type { Invoice, InvoiceFilters, InvoiceStatus } from '@/types/api/billing';
@@ -72,7 +72,7 @@ export default function InvoiceListPage() {
     },
     {
       header: 'Status',
-      cell: ({ row }) => <StateMachineBadge status={row.original.status} colorMap={STATUS_COLORS} />,
+      cell: ({ row }) => <InvoiceStatusBadge status={row.original.status} />,
     },
   ];
 

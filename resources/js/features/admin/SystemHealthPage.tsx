@@ -17,7 +17,7 @@ interface Job { id: string; name: string; status: string; attempts: number; last
 export default function SystemHealthPage() {
   const qc = useQueryClient();
   const [confirmFlush, setConfirmFlush] = useState(false);
-  const [mutationError, setMutationError] = useState<unknown>(null);
+  const [mutationError, setMutationError] = useState<Error | null>(null);
 
   const { data: health, dataUpdatedAt } = useQuery({
     queryKey: ['health'],

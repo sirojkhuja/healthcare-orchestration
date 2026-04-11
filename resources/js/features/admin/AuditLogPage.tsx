@@ -150,7 +150,7 @@ export default function AuditLogPage() {
             <tr>
               <td colSpan={6} className="bg-gray-50 px-5 py-4">
                 <div className="grid grid-cols-2 gap-4 text-xs">
-                  {row.before_data && (
+                  {row.before_data != null && (
                     <div>
                       <p className="font-semibold text-gray-600 mb-1">Before</p>
                       <pre className="bg-white border border-gray-200 rounded p-3 overflow-x-auto text-gray-700">
@@ -158,7 +158,7 @@ export default function AuditLogPage() {
                       </pre>
                     </div>
                   )}
-                  {row.after_data && (
+                  {row.after_data != null && (
                     <div>
                       <p className="font-semibold text-gray-600 mb-1">After</p>
                       <pre className="bg-white border border-gray-200 rounded p-3 overflow-x-auto text-gray-700">

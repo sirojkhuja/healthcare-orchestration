@@ -32,8 +32,8 @@ export default function LoginPage() {
     resolver: zodResolver(schema),
   });
 
-  const { mutate, isPending, error } = useMutation({
-    mutationFn: (credentials: LoginCredentials) =>
+  const { mutate, isPending, error } = useMutation<AuthSessionResponse, Error, LoginCredentials>({
+    mutationFn: (credentials) =>
       api.post<AuthSessionResponse>(endpoints.auth.login, credentials).then((r) => r.data),
     onSuccess: (data) => {
       setAuth({

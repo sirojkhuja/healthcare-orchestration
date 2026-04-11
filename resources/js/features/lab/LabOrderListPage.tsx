@@ -7,7 +7,7 @@ import api from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { DataTable } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { LabOrderStatusBadge } from '@/components/shared/StateMachineBadge';
 import { STALE } from '@/lib/query/queryClient';
 import type { LabOrder, LabOrderStatus, LabOrderFilters } from '@/types/api/lab';
 import type { PaginatedResponse } from '@/types/common';
@@ -66,7 +66,7 @@ export default function LabOrderListPage() {
     },
     {
       header: 'Status',
-      cell: ({ row }) => <StateMachineBadge status={row.original.status} colorMap={STATUS_COLORS} />,
+      cell: ({ row }) => <LabOrderStatusBadge status={row.original.status} />,
     },
   ];
 
