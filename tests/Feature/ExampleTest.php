@@ -1,7 +1,7 @@
 <?php
 
 it('returns the service root payload', function (): void {
-    $response = $this->get('/');
+    $response = $this->getJson('/');
 
     $response
         ->assertOk()
