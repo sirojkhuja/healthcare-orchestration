@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import api from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { DataTable } from '@/components/ui/DataTable';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { ClaimStatusBadge } from '@/components/shared/StateMachineBadge';
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay';
 import { STALE } from '@/lib/query/queryClient';
 import type { Claim, ClaimFilters, ClaimStatus } from '@/types/api/insurance';
@@ -63,7 +63,7 @@ export default function ClaimListPage() {
     },
     {
       header: 'Status',
-      cell: ({ row }) => <StateMachineBadge status={row.original.status} colorMap={STATUS_COLORS} />,
+      cell: ({ row }) => <ClaimStatusBadge status={row.original.status} />,
     },
   ];
 

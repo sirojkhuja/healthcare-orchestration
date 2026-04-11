@@ -14,7 +14,7 @@ function PageLoader() {
   );
 }
 
-function lazy_page<T extends React.ComponentType>(factory: () => Promise<{ default: T }>) {
+function lazy_page(factory: () => Promise<{ default: React.ComponentType<object> }>) {
   const Comp = lazy(factory);
   return (
     <Suspense fallback={<PageLoader />}>

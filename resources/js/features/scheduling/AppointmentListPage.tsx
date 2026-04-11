@@ -8,7 +8,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { AppointmentStatusBadge } from '@/components/shared/StateMachineBadge';
 import { STALE } from '@/lib/query/queryClient';
 import type { Appointment, AppointmentFilters, AppointmentStatus } from '@/types/api/appointments';
 import type { PaginatedResponse } from '@/types/common';
@@ -81,7 +81,7 @@ export default function AppointmentListPage() {
     },
     {
       header: 'Status',
-      cell: ({ row }) => <StateMachineBadge status={row.original.status} colorMap={STATUS_COLORS} />,
+      cell: ({ row }) => <AppointmentStatusBadge status={row.original.status} />,
     },
   ];
 

@@ -6,7 +6,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { ClaimStatusBadge } from '@/components/shared/StateMachineBadge';
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay';
 import { generateIdempotencyKey } from '@/lib/api/idempotency';
 import { STALE } from '@/lib/query/queryClient';
@@ -86,7 +86,7 @@ export default function ClaimDetailPage() {
                   {claim.patient_name}
                 </Link>
               </div>
-              <StateMachineBadge status={claim.status} colorMap={STATUS_COLORS} />
+              <ClaimStatusBadge status={claim.status} />
             </div>
 
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">

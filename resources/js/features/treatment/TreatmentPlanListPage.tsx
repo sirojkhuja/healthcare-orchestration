@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import api from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { DataTable } from '@/components/ui/DataTable';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { TreatmentPlanStatusBadge } from '@/components/shared/StateMachineBadge';
 import { STALE } from '@/lib/query/queryClient';
 import type { TreatmentPlan, TreatmentPlanStatus } from '@/types/api/treatment';
 import type { PaginatedResponse } from '@/types/common';
@@ -52,7 +52,7 @@ export default function TreatmentPlanListPage() {
     },
     {
       header: 'Status',
-      cell: ({ row }) => <StateMachineBadge status={row.original.status} colorMap={STATUS_COLORS} />,
+      cell: ({ row }) => <TreatmentPlanStatusBadge status={row.original.status} />,
     },
     {
       header: 'Created',

@@ -1,6 +1,14 @@
 import { QueryClient } from '@tanstack/react-query';
 import { ApiError } from '@/types/api/errors';
 
+// Register Error as the default TError type so useMutation/useQuery errors
+// are typed as Error (not unknown) without explicit generic parameters.
+declare module '@tanstack/react-query' {
+  interface Register {
+    defaultError: Error;
+  }
+}
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

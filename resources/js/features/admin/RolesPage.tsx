@@ -20,7 +20,7 @@ const PERMISSION_GROUPS = [
 export default function RolesPage() {
   const qc = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [saveError, setSaveError] = useState<unknown>(null);
+  const [saveError, setSaveError] = useState<Error | null>(null);
 
   const { data: roles, isLoading } = useQuery({
     queryKey: ['roles', 'list'],

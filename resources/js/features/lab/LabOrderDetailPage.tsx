@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { DataTable } from '@/components/ui/DataTable';
 import { Spinner } from '@/components/ui/Spinner';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { LabOrderStatusBadge } from '@/components/shared/StateMachineBadge';
 import { generateIdempotencyKey } from '@/lib/api/idempotency';
 import { STALE } from '@/lib/query/queryClient';
 import type { LabOrder, LabTest, LabResult } from '@/types/api/lab';
@@ -107,7 +107,7 @@ export default function LabOrderDetailPage() {
             <p className="text-sm text-gray-500 mt-1">Ordered by {order.provider_name}</p>
           </div>
           <div className="flex items-center gap-3">
-            <StateMachineBadge status={order.status} colorMap={STATUS_COLORS} />
+            <LabOrderStatusBadge status={order.status} />
             {order.status === 'draft' && (
               <Button size="sm" isLoading={isPending} onClick={() => doAction('submit')}>Submit</Button>
             )}

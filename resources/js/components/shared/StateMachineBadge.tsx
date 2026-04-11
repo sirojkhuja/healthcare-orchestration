@@ -3,6 +3,7 @@ import type { AppointmentStatus } from '@/types/api/appointments';
 import type { ClaimStatus } from '@/types/api/insurance';
 import type { InvoiceStatus, PaymentStatus } from '@/types/api/billing';
 import type { LabOrderStatus } from '@/types/api/lab';
+import type { TreatmentPlanStatus } from '@/types/api/treatment';
 
 // Generic badge driven by a color map
 interface StateMachineBadgeProps {
@@ -103,4 +104,17 @@ const LAB_ORDER_COLOR_MAP: Record<LabOrderStatus, BadgeVariant> = {
 
 export function LabOrderStatusBadge({ status, className }: { status: LabOrderStatus; className?: string }) {
   return <StateMachineBadge status={status} colorMap={LAB_ORDER_COLOR_MAP} className={className} />;
+}
+
+// ─── Treatment Plan ───────────────────────────────────────────────────────────
+const TREATMENT_PLAN_COLOR_MAP: Record<TreatmentPlanStatus, BadgeVariant> = {
+  draft: 'gray',
+  approved: 'green',
+  in_progress: 'blue',
+  completed: 'indigo',
+  canceled: 'red',
+};
+
+export function TreatmentPlanStatusBadge({ status, className }: { status: TreatmentPlanStatus; className?: string }) {
+  return <StateMachineBadge status={status} colorMap={TREATMENT_PLAN_COLOR_MAP} className={className} />;
 }

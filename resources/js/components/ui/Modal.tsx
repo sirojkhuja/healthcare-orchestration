@@ -3,7 +3,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { cn } from '@/lib/utils/cn';
 
 interface ModalProps {
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
@@ -19,9 +19,9 @@ const sizeClasses = {
   '2xl': 'max-w-2xl',
 };
 
-export function Modal({ open, onClose, title, children, size = 'md', className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', className }: ModalProps) {
   return (
-    <Transition show={open} as={Fragment}>
+    <Transition show={isOpen} as={Fragment}>
       <Dialog onClose={onClose} className="relative z-50">
         <TransitionChild
           as={Fragment}

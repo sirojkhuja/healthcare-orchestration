@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import api from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { DataTable } from '@/components/ui/DataTable';
-import { StateMachineBadge } from '@/components/shared/StateMachineBadge';
+import { PaymentStatusBadge } from '@/components/shared/StateMachineBadge';
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay';
 import { STALE } from '@/lib/query/queryClient';
 import type { Payment, PaymentFilters, PaymentStatus } from '@/types/api/billing';
@@ -68,7 +68,7 @@ export default function PaymentListPage() {
     },
     {
       header: 'Status',
-      cell: ({ row }) => <StateMachineBadge status={row.original.status} colorMap={STATUS_COLORS} />,
+      cell: ({ row }) => <PaymentStatusBadge status={row.original.status} />,
     },
   ];
 
