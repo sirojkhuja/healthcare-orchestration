@@ -6,12 +6,19 @@ use App\Shared\Infrastructure\Observability\Http\Middleware\RequirePrometheusScr
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return response()->json([
-        'service' => config('app.name'),
-        'status' => 'ok',
-        'docs' => url('/docs'),
-    ]);
+    // Return JSON for API clients, SPA shell for browsers
+    if (request()->expectsJson()) {
+        return response()->json([
+            'service' => config('app.name'),
+            'status' => 'ok',
+            'docs' => url('/docs'),
+        ]);
+    }
+    return view('app');
 });
+
+// SPA catch-all — must come after all other web routes
+Route::get('/{any}', fn () => view('app'))->where('any', '^(?!api|internal).*$');
 
 Route::get('/internal/metrics', function (MetricsQueryHandler $handler) {
     return response($handler->handle(new MetricsQuery), 200, [
